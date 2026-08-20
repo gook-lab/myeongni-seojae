@@ -104,7 +104,6 @@ export function buildTimeline(
       });
     }
 
-    const birthYear = f.year;
     const currentYear = today.getUTCFullYear();
 
     const entries: DaeunEntry[] = [];
@@ -153,7 +152,6 @@ export function buildTimeline(
   } catch (e) {
     return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
       cause: e instanceof Error ? e.message : String(e),
-      birthYear: solarTime.cstFields.year,
     });
   }
 }

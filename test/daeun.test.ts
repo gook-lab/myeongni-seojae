@@ -162,12 +162,14 @@ describe('대운수', () => {
     const tl = timeline({ year: 1990, month: 5, day: 5, gender: '남' });
     expect(tl.startAge).toBe(1);
     // 순행이면 월주(庚辰) 다음 간지가 첫 대운
-    expect(tl.entries[0]?.pillar.stemHanja + tl.entries[0]?.pillar.branchHanja).toBe('辛巳');
+    const first = tl.entries[0];
+    expect(first && first.pillar.stemHanja + first.pillar.branchHanja).toBe('辛巳');
   });
 
   it('역행이면 월주 이전 간지가 첫 대운이다 (1957-06-15 월주 丙午)', () => {
     const tl = timeline({ year: 1957, month: 6, day: 15, gender: '남' });
-    expect(tl.entries[0]?.pillar.stemHanja + tl.entries[0]?.pillar.branchHanja).toBe('乙巳');
+    const first = tl.entries[0];
+    expect(first && first.pillar.stemHanja + first.pillar.branchHanja).toBe('乙巳');
   });
 });
 
