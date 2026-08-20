@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Song+Myung&display=swap" rel="stylesheet">
+<script src="./saju.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#14161A;}
+body{font-family:'Gowun Batang',serif;color:#EDE6D6;-webkit-font-smoothing:antialiased;}
+a{color:#D25B41;} a:hover{color:#E07357;}
+select,input,button{font-family:'Gowun Batang',serif;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:radial-gradient(1200px 500px at 50% -100px,#242A36,transparent),linear-gradient(180deg,#1A1D22,#14161A);padding:0 20px 90px;">
+<div style="max-width:780px;margin:0 auto;">
+
+<header style="text-align:center;padding:52px 0 26px;">
+  <div style="width:44px;height:44px;margin:0 auto 14px;background:#D25B41;color:#F5EFE2;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Song Myung',serif;font-size:24px;box-shadow:0 2px 6px rgba(0,0,0,0.45);">命</div>
+  <h1 style="margin:0;font-family:'Song Myung',serif;font-size:34px;letter-spacing:10px;text-indent:10px;font-weight:400;">명리서재</h1>
+  <p style="margin:10px 0 0;font-size:12px;letter-spacing:5px;color:#8B8069;">命理書齋 · 사주명리 연구</p>
+</header>
+
+<nav style="display:flex;justify-content:center;gap:6px;border-bottom:1px solid #333945;margin-bottom:34px;flex-wrap:wrap;">
+  <button onClick="{{goSaju}}" style="padding:11px 18px;background:transparent;border:none;border-bottom:2px solid {{tbS}};margin-bottom:-1px;font-size:15px;cursor:pointer;white-space:nowrap;color:{{tcS}};letter-spacing:1px;">사주풀이</button>
+  <button onClick="{{goDaily}}" style="padding:11px 18px;background:transparent;border:none;border-bottom:2px solid {{tbD}};margin-bottom:-1px;font-size:15px;cursor:pointer;white-space:nowrap;color:{{tcD}};letter-spacing:1px;">오늘의 운세</button>
+  <button onClick="{{goGung}}" style="padding:11px 18px;background:transparent;border:none;border-bottom:2px solid {{tbG}};margin-bottom:-1px;font-size:15px;cursor:pointer;white-space:nowrap;color:{{tcG}};letter-spacing:1px;">궁합</button>
+  <button onClick="{{goYear}}" style="padding:11px 18px;background:transparent;border:none;border-bottom:2px solid {{tbY}};margin-bottom:-1px;font-size:15px;cursor:pointer;white-space:nowrap;color:{{tcY}};letter-spacing:1px;">신년운세</button>
+</nav>
+
+<sc-if value="{{isInput}}" hint-placeholder-val="{{ true }}">
+<section data-screen-label="사주 입력" style="background:#1E222A;border:1px solid #333945;padding:36px 32px;animation:fadeUp .4s ease;">
+  <h2 style="margin:0 0 6px;font-family:'Song Myung',serif;font-size:21px;font-weight:400;letter-spacing:2px;">사주 정보 입력</h2>
+  <p style="margin:0 0 26px;font-size:13px;color:#8B8069;">양력 생년월일 기준으로 입력해 주세요.</p>
+  <div style="display:grid;gap:20px;">
+    <div style="display:grid;gap:8px;">
+      <label style="font-size:13px;color:#A79B82;">이름 <span style="color:#6E6553;">(선택)</span></label>
+      <input value="{{fName}}" onChange="{{onName}}" placeholder="이름을 입력하세요" style="padding:12px 14px;border:1px solid #333945;background:#262B34;font-size:15px;outline:none;border-radius:3px;" />
+    </div>
+    <div style="display:grid;gap:8px;">
+      <label style="font-size:13px;color:#A79B82;">성별</label>
+      <div style="display:flex;gap:8px;">
+        <button onClick="{{setM}}" style="flex:1;padding:12px;border:1px solid {{gMBd}};background:{{gMBg}};color:{{gMC}};font-size:15px;cursor:pointer;border-radius:3px;">남자</button>
+        <button onClick="{{setF}}" style="flex:1;padding:12px;border:1px solid {{gFBd}};background:{{gFBg}};color:{{gFC}};font-size:15px;cursor:pointer;border-radius:3px;">여자</button>
+      </div>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <label style="font-size:13px;color:#A79B82;">생년월일 (양력)</label>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;">
+        <select value="{{fy}}" onChange="{{onFy}}" style="padding:12px 10px;border:1px solid #333945;background:#262B34;font-size:15px;border-radius:3px;">
+          <sc-for list="{{years}}" as="yy" hint-placeholder-count="3"><option value="{{yy}}">{{yy}}년</option></sc-for>
+        </select>
+        <select value="{{fm}}" onChange="{{onFm}}" style="padding:12px 10px;border:1px solid #333945;background:#262B34;font-size:15px;border-radius:3px;">
+          <sc-for list="{{monthsArr}}" as="mm" hint-placeholder-count="3"><option value="{{mm}}">{{mm}}월</option></sc-for>
+        </select>
+        <select value="{{fd}}" onChange="{{onFd}}" style="padding:12px 10px;border:1px solid #333945;background:#262B34;font-size:15px;border-radius:3px;">
+          <sc-for list="{{daysArr}}" as="dd" hint-placeholder-count="3"><option value="{{dd}}">{{dd}}일</option></sc-for>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;gap:8px;">
+      <label style="font-size:13px;color:#A79B82;">태어난 시간</label>
+      <select value="{{fhb}}" onChange="{{onFhb}}" style="padding:12px 10px;border:1px solid #333945;background:#262B34;font-size:15px;border-radius:3px;">
+        <sc-for list="{{hoursArr}}" as="hh" hint-placeholder-count="3"><option value="{{hh.v}}">{{hh.label}}</option></sc-for>
+      </select>
+    </div>
+    <button onClick="{{doCalc}}" style="margin-top:8px;padding:16px;background:#D25B41;color:#F3E9D2;border:none;font-size:16px;letter-spacing:5px;cursor:pointer;border-radius:3px;box-shadow:0 2px 8px rgba(0,0,0,0.45);" style-hover="background:#B84A33;">사주 풀어보기</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{isResult}}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="사주 결과" style="animation:fadeUp .4s ease;display:grid;gap:18px;">
+  <div style="text-align:center;padding:4px 0 6px;">
+    <p style="margin:0;font-size:14px;color:#A79B82;">{{resultName}}</p>
+    <p style="margin:6px 0 0;font-family:'Song Myung',serif;font-size:19px;letter-spacing:1px;">{{summary}}</p>
+  </div>
+  <div style="background:#1E222A;border:1px solid #333945;padding:28px 24px;">
+    <h3 style="margin:0 0 18px;text-align:center;font-family:'Song Myung',serif;font-size:16px;font-weight:400;letter-spacing:4px;color:#A79B82;">四柱八字 · 사주팔자</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="4">
+        <div style="border:{{c.bd}};background:{{c.bg}};padding:14px 6px;text-align:center;display:grid;gap:6px;border-radius:3px;">
+          <div style="font-size:12px;color:#8B8069;letter-spacing:2px;">{{c.title}}</div>
+          <sc-if value="{{c.empty}}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px 0;color:#6E6553;font-size:13px;">시간<br />미상</div>
+          </sc-if>
+          <sc-if value="{{c.full}}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:11px;color:#D25B41;min-height:14px;">{{c.tgS}}</div>
+            <div style="font-family:'Song Myung',serif;font-size:38px;line-height:1;color:{{c.sc}};">{{c.sh}}</div>
+            <div style="font-size:12px;color:#A79B82;">{{c.sk}}</div>
+            <div style="height:1px;background:#3A4150;margin:2px 10px;"></div>
+            <div style="font-family:'Song Myung',serif;font-size:38px;line-height:1;color:{{c.bc}};">{{c.bh}}</div>
+            <div style="font-size:12px;color:#A79B82;">{{c.bk}}</div>
+            <div style="font-size:11px;color:#D25B41;min-height:14px;">{{c.tgB}}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+    <div style="background:#1E222A;border:1px solid #333945;padding:24px;">
+      <h3 style="margin:0 0 16px;font-family:'Song Myung',serif;font-size:15px;font-weight:400;letter-spacing:3px;color:#A79B82;">五行 · 오행 분포</h3>
+      <div style="display:grid;gap:10px;">
+        <sc-for list="{{elems}}" as="e" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:26px;height:26px;border:1px solid {{e.color}};color:{{e.color}};display:flex;align-items:center;justify-content:center;font-family:'Song Myung',serif;font-size:14px;border-radius:3px;">{{e.h}}</div>
+            <div style="flex:1;height:8px;background:#2C313B;border-radius:4px;overflow:hidden;"><div style="height:100%;width:{{e.w}};background:{{e.color}};border-radius:4px;"></div></div>
+            <div style="width:20px;text-align:right;font-size:13px;color:#A79B82;">{{e.count}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="background:#1E222A;border:1px solid #333945;padding:24px;">
+      <h3 style="margin:0 0 12px;font-family:'Song Myung',serif;font-size:15px;font-weight:400;letter-spacing:3px;color:#A79B82;">日干 · 나의 일간</h3>
+      <p style="margin:0 0 10px;font-size:20px;font-family:'Song Myung',serif;color:#D25B41;">{{dmName}}</p>
+      <p style="margin:0;font-size:14px;line-height:1.8;color:#C9C0AC;">{{dmText}}</p>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;gap:18px;margin-top:4px;">
+    <button onClick="{{goDaily}}" style="padding:12px 22px;background:#D25B41;color:#F3E9D2;border:none;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:3px;">오늘의 운세 보기</button>
+    <button onClick="{{reset}}" style="padding:12px 22px;background:transparent;color:#A79B82;border:1px solid #6E6146;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:3px;">다시 입력</button>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{isDaily}}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="오늘의 운세" style="animation:fadeUp .4s ease;">
+  <sc-if value="{{noSaju}}" hint-placeholder-val="{{ false }}">
+    <div style="background:#1E222A;border:1px solid #333945;padding:44px 32px;text-align:center;">
+      <p style="margin:0 0 18px;font-size:15px;color:#A79B82;">먼저 사주 정보를 입력하면<br />오늘의 운세를 풀어드립니다.</p>
+      <button onClick="{{goSaju}}" style="padding:12px 24px;background:#D25B41;color:#F3E9D2;border:none;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:3px;">사주 입력하러 가기</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasSaju}}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;gap:18px;">
+      <div style="background:#1E222A;border:1px solid #333945;padding:34px 32px;text-align:center;">
+        <p style="margin:0;font-size:13px;color:#8B8069;letter-spacing:2px;">{{dDate}}</p>
+        <p style="margin:8px 0 22px;font-family:'Song Myung',serif;font-size:18px;">오늘의 일진 · {{dPillar}}</p>
+        <div style="width:110px;height:110px;margin:0 auto;border:2px solid #D25B41;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+          <span style="font-family:'Song Myung',serif;font-size:36px;color:#D25B41;">{{dScore}}</span>
+          <span style="font-size:12px;color:#8B8069;">점</span>
+        </div>
+        <p style="margin:20px 0 0;"><span style="display:inline-block;padding:5px 14px;border:1px solid #D25B41;color:#D25B41;font-size:13px;letter-spacing:2px;border-radius:2px;">{{dCat}}의 날</span></p>
+        <p style="margin:18px auto 0;max-width:460px;font-size:15px;line-height:1.9;color:#C9C0AC;">{{dText}}</p>
+      </div>
+      <sc-if value="{{showLucky}}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+          <div style="background:#1E222A;border:1px solid #333945;padding:18px;text-align:center;"><p style="margin:0 0 6px;font-size:12px;color:#8B8069;letter-spacing:2px;">행운의 색</p><p style="margin:0;font-size:16px;font-family:'Song Myung',serif;">{{luckyColor}}</p></div>
+          <div style="background:#1E222A;border:1px solid #333945;padding:18px;text-align:center;"><p style="margin:0 0 6px;font-size:12px;color:#8B8069;letter-spacing:2px;">행운의 방위</p><p style="margin:0;font-size:16px;font-family:'Song Myung',serif;">{{luckyDir}}</p></div>
+          <div style="background:#1E222A;border:1px solid #333945;padding:18px;text-align:center;"><p style="margin:0 0 6px;font-size:12px;color:#8B8069;letter-spacing:2px;">행운의 숫자</p><p style="margin:0;font-size:16px;font-family:'Song Myung',serif;">{{luckyNum}}</p></div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{isGung}}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="궁합" style="animation:fadeUp .4s ease;display:grid;gap:18px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <div style="background:#1E222A;border:1px solid #333945;padding:24px;display:grid;gap:10px;">
+      <p style="margin:0;font-family:'Song Myung',serif;font-size:15px;letter-spacing:3px;color:#D25B41;">나</p>
+      <select value="{{ay}}" onChange="{{onAy}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{years}}" as="yy" hint-placeholder-count="3"><option value="{{yy}}">{{yy}}년</option></sc-for></select>
+      <select value="{{am}}" onChange="{{onAm}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{monthsArr}}" as="mm" hint-placeholder-count="3"><option value="{{mm}}">{{mm}}월</option></sc-for></select>
+      <select value="{{ad}}" onChange="{{onAd}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{daysArr}}" as="dd" hint-placeholder-count="3"><option value="{{dd}}">{{dd}}일</option></sc-for></select>
+    </div>
+    <div style="background:#1E222A;border:1px solid #333945;padding:24px;display:grid;gap:10px;">
+      <p style="margin:0;font-family:'Song Myung',serif;font-size:15px;letter-spacing:3px;color:#6D93B8;">상대</p>
+      <select value="{{by}}" onChange="{{onBy}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{years}}" as="yy" hint-placeholder-count="3"><option value="{{yy}}">{{yy}}년</option></sc-for></select>
+      <select value="{{bm}}" onChange="{{onBm}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{monthsArr}}" as="mm" hint-placeholder-count="3"><option value="{{mm}}">{{mm}}월</option></sc-for></select>
+      <select value="{{bd}}" onChange="{{onBd}}" style="padding:11px 10px;border:1px solid #333945;background:#262B34;font-size:14px;border-radius:3px;"><sc-for list="{{daysArr}}" as="dd" hint-placeholder-count="3"><option value="{{dd}}">{{dd}}일</option></sc-for></select>
+    </div>
+  </div>
+  <button onClick="{{doGung}}" style="padding:15px;background:#D25B41;color:#F3E9D2;border:none;font-size:15px;letter-spacing:5px;cursor:pointer;border-radius:3px;">궁합 풀어보기</button>
+  <sc-if value="{{hasGung}}" hint-placeholder-val="{{ false }}">
+    <div style="background:#1E222A;border:1px solid #333945;padding:34px 32px;text-align:center;">
+      <p style="margin:0 0 4px;font-size:13px;color:#8B8069;letter-spacing:2px;">{{gPair}}</p>
+      <p style="margin:0;font-family:'Song Myung',serif;font-size:52px;color:#D25B41;">{{gScore}}<span style="font-size:18px;color:#8B8069;"> 점</span></p>
+      <p style="margin:18px auto 0;max-width:480px;font-size:15px;line-height:1.9;color:#C9C0AC;">{{gMain}}</p>
+      <p style="margin:10px auto 0;max-width:480px;font-size:13px;line-height:1.8;color:#8B8069;">{{gSub}}</p>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{isYear}}" hint-placeholder-val="{{ false }}">
+<section data-screen-label="신년운세" style="animation:fadeUp .4s ease;">
+  <sc-if value="{{noSaju}}" hint-placeholder-val="{{ false }}">
+    <div style="background:#1E222A;border:1px solid #333945;padding:44px 32px;text-align:center;">
+      <p style="margin:0 0 18px;font-size:15px;color:#A79B82;">먼저 사주 정보를 입력하면<br />2026년 운세를 풀어드립니다.</p>
+      <button onClick="{{goSaju}}" style="padding:12px 24px;background:#D25B41;color:#F3E9D2;border:none;font-size:14px;letter-spacing:2px;cursor:pointer;border-radius:3px;">사주 입력하러 가기</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{hasSaju}}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;gap:18px;">
+      <div style="background:#1E222A;border:1px solid #333945;padding:30px 32px;text-align:center;">
+        <p style="margin:0;font-family:'Song Myung',serif;font-size:22px;letter-spacing:2px;">2026 {{yName}} 신년운세</p>
+        <p style="margin:12px auto 0;max-width:480px;font-size:14px;line-height:1.8;color:#C9C0AC;">{{yOverall}}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;">
+        <sc-for list="{{yMonths}}" as="mo" hint-placeholder-count="6">
+          <div style="background:#1E222A;border:1px solid #333945;padding:18px;display:grid;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;">
+              <span style="font-family:'Song Myung',serif;font-size:17px;">{{mo.label}}</span>
+              <span style="font-size:12px;color:#8B8069;">{{mo.pk}} {{mo.ph}}</span>
+            </div>
+            <span style="justify-self:start;padding:3px 9px;border:1px solid #6E6146;color:#C9A45C;font-size:11px;letter-spacing:1px;border-radius:2px;">{{mo.cat}}</span>
+            <p style="margin:0;font-size:12.5px;line-height:1.7;color:#A79B82;">{{mo.text}}</p>
+            <div style="height:5px;background:#2C313B;border-radius:3px;overflow:hidden;"><div style="height:100%;width:{{mo.w}};background:#D25B41;border-radius:3px;"></div></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</sc-if>
+
+<footer style="text-align:center;margin-top:60px;font-size:11.5px;color:#79705C;letter-spacing:1px;line-height:1.8;">본 풀이는 양력·절기 기준 만세력 계산에 따른 참고용 해석입니다.<br />命理書齋</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showTenGods&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;표시&quot;},&quot;luckyItems&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;표시&quot;}}">
+class Component extends DCLogic {
+  state = {
+    view: 'saju', saju: null, gung: null,
+    form: { name: '', gender: '여', y: 1995, m: 7, d: 15, hb: -1 },
+    fa: { y: 1993, m: 3, d: 21 }, fb: { y: 1995, m: 7, d: 15 }
+  };
+  componentDidMount() { if (!window.SAJU) setTimeout(() => this.forceUpdate(), 300); }
+  setForm(key, field, val) { this.setState(s => ({ [key]: Object.assign({}, s[key], { [field]: val }) })); }
+  renderVals() {
+    const S = window.SAJU, st = this.state;
+    if (!S) { setTimeout(() => this.forceUpdate(), 200); return { isInput: true }; }
+    const showTG = this.props.showTenGods ?? true;
+    const showLucky = this.props.luckyItems ?? true;
+    const EC = ['#6FAF8A', '#D25B41', '#C9A45C', '#9BA3AE', '#6D93B8'];
+    const years = []; for (let y = 2026; y >= 1930; y--) years.push(y);
+    const monthsArr = Array.from({ length: 12 }, (_, i) => i + 1);
+    const daysArr = Array.from({ length: 31 }, (_, i) => i + 1);
+    const hoursArr = [{ v: -1, label: '시간 모름' }].concat(['자시 23:00~00:59', '축시 01:00~02:59', '인시 03:00~04:59', '묘시 05:00~06:59', '진시 07:00~08:59', '사시 09:00~10:59', '오시 11:00~12:59', '미시 13:00~14:59', '신시 15:00~16:59', '유시 17:00~18:59', '술시 19:00~20:59', '해시 21:00~22:59'].map((label, i) => ({ v: i, label })));
+    const v = st.view, f = st.form;
+    const male = f.gender === '남';
+    const vals = {
+      isInput: v === 'saju' && !st.saju, isResult: v === 'saju' && !!st.saju,
+      isDaily: v === 'daily', isGung: v === 'gung', isYear: v === 'year',
+      hasSaju: !!st.saju, noSaju: !st.saju, showLucky,
+      goSaju: () => this.setState({ view: 'saju' }), goDaily: () => this.setState({ view: 'daily' }),
+      goGung: () => this.setState({ view: 'gung' }), goYear: () => this.setState({ view: 'year' }),
+      tbS: v === 'saju' ? '#D25B41' : 'transparent', tcS: v === 'saju' ? '#EDE6D6' : '#8B8069',
+      tbD: v === 'daily' ? '#D25B41' : 'transparent', tcD: v === 'daily' ? '#EDE6D6' : '#8B8069',
+      tbG: v === 'gung' ? '#D25B41' : 'transparent', tcG: v === 'gung' ? '#EDE6D6' : '#8B8069',
+      tbY: v === 'year' ? '#D25B41' : 'transparent', tcY: v === 'year' ? '#EDE6D6' : '#8B8069',
+      years, monthsArr, daysArr, hoursArr,
+      fName: f.name, onName: e => this.setForm('form', 'name', e.target.value),
+      fy: f.y, onFy: e => this.setForm('form', 'y', +e.target.value),
+      fm: f.m, onFm: e => this.setForm('form', 'm', +e.target.value),
+      fd: f.d, onFd: e => this.setForm('form', 'd', +e.target.value),
+      fhb: f.hb, onFhb: e => this.setForm('form', 'hb', +e.target.value),
+      setM: () => this.setForm('form', 'gender', '남'), setF: () => this.setForm('form', 'gender', '여'),
+      gMBg: male ? '#D25B41' : '#262B34', gMC: male ? '#F3E9D2' : '#A79B82', gMBd: male ? '#D25B41' : '#333945',
+      gFBg: !male ? '#D25B41' : '#262B34', gFC: !male ? '#F3E9D2' : '#A79B82', gFBd: !male ? '#D25B41' : '#333945',
+      doCalc: () => this.setState({ saju: S.calc(f.y, f.m, f.d, f.hb, f.gender) }),
+      reset: () => this.setState({ saju: null, view: 'saju' }),
+      ay: st.fa.y, onAy: e => this.setForm('fa', 'y', +e.target.value),
+      am: st.fa.m, onAm: e => this.setForm('fa', 'm', +e.target.value),
+      ad: st.fa.d, onAd: e => this.setForm('fa', 'd', +e.target.value),
+      by: st.fb.y, onBy: e => this.setForm('fb', 'y', +e.target.value),
+      bm: st.fb.m, onBm: e => this.setForm('fb', 'm', +e.target.value),
+      bd: st.fb.d, onBd: e => this.setForm('fb', 'd', +e.target.value),
+      doGung: () => {
+        const a = S.calc(st.fa.y, st.fa.m, st.fa.d, -1, '남'), b = S.calc(st.fb.y, st.fb.m, st.fb.d, -1, '여');
+        const g = S.gunghap(a, b);
+        this.setState({ gung: { score: g.score, main: g.main, sub: g.sub || '두 사람의 일간과 일지를 비교한 결과입니다.', pair: a.dayMaster.k + a.dayMaster.elemK + '(' + a.dayMaster.h + ') · ' + b.dayMaster.k + b.dayMaster.elemK + '(' + b.dayMaster.h + ')' } });
+      },
+      hasGung: !!st.gung,
+      gScore: st.gung ? st.gung.score : '', gMain: st.gung ? st.gung.main : '', gSub: st.gung ? st.gung.sub : '', gPair: st.gung ? '일간 ' + st.gung.pair : ''
+    };
+    if (st.saju) {
+      const p = st.saju.pillars, tg = st.saju.tenGods;
+      const mk = (title, pp, t, isDay) => pp ? { title, full: true, empty: false, sh: pp.sh, sk: pp.sk + '(' + pp.seK + ')', bh: pp.bh, bk: pp.bk + '(' + pp.beK + ')', sc: EC[pp.se], bc: EC[pp.be], tgS: showTG && t ? t.s : '', tgB: showTG && t ? t.b : '', bd: isDay ? '2px solid #D25B41' : '1px solid #333945', bg: isDay ? '#2E2721' : '#262B34' } : { title, full: false, empty: true, bd: '1px dashed #6E6146', bg: 'transparent' };
+      vals.cols = [mk('시주 時柱', p.hour, tg.hour), mk('일주 日柱', p.day, tg.day, true), mk('월주 月柱', p.month, tg.month), mk('년주 年柱', p.year, tg.year)];
+      const mx = Math.max.apply(null, st.saju.counts.concat([1]));
+      vals.elems = st.saju.counts.map((c, i) => ({ k: S.ELEM_K[i], h: S.ELEM_H[i], count: c, w: Math.round(c / mx * 100) + '%', color: EC[i] }));
+      vals.dmName = st.saju.dayMaster.k + st.saju.dayMaster.elemK + ' ' + st.saju.dayMaster.h + st.saju.dayMaster.elemH;
+      vals.dmText = st.saju.dayMaster.text;
+      const hbl = st.saju.hourBranch >= 0 ? S.BR_K[st.saju.hourBranch] + '시생' : '시간 미상';
+      vals.summary = st.saju.y + '년 ' + st.saju.m + '월 ' + st.saju.d + '일 · ' + hbl + ' · ' + st.saju.animal + '띠';
+      vals.resultName = (f.name ? f.name + ' 님' : '') + (f.name ? ' · ' : '') + f.gender + '자';
+      const d = S.daily(st.saju);
+      vals.dDate = d.t.y + '년 ' + d.t.m + '월 ' + d.t.d + '일';
+      vals.dPillar = d.t.p.sk + d.t.p.bk + '일 (' + d.t.p.sh + d.t.p.bh + '日)';
+      vals.dScore = d.score; vals.dCat = d.cat; vals.dText = d.text;
+      vals.luckyColor = d.lucky.color; vals.luckyDir = d.lucky.dir; vals.luckyNum = d.lucky.num;
+      const r = S.yearReport(st.saju, 2026);
+      vals.yName = r.yp.sk + r.yp.bk + '년 ' + r.yp.sh + r.yp.bh + '年';
+      vals.yOverall = '올해는 당신의 일간 ' + st.saju.dayMaster.k + st.saju.dayMaster.elemK + ' 기준으로 ' + r.overallCat + '의 기운이 흐르는 해입니다. ' + r.overallText;
+      vals.yMonths = r.months.map(m => Object.assign({}, m, { w: m.score + '%' }));
+    }
+    return vals;
+  }
+}
+</script>
+</body>
+</html>

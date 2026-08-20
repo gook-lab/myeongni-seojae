@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f0eee9;font-family:'Gaegu',system-ui,sans-serif}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 17px/1.2 'Gaegu',sans-serif;color:#1a1a1a}
+.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 14px/1.3 'Gaegu',sans-serif;color:rgba(0,0,0,.6)}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+.dv-next{margin:22px 0 0;font:14px/1.5 'Gaegu',sans-serif;color:rgba(0,0,0,.5)}
+.lane{display:flex;align-items:center;gap:10px;padding:18px 20px;flex-wrap:wrap}
+.lane+.lane{border-top:1px dashed rgba(0,0,0,.15)}
+.lanelb{writing-mode:vertical-rl;font-weight:700;font-size:14px;color:#a63a2b;letter-spacing:2px;border-right:1.5px solid #a63a2b;padding-right:6px;align-self:stretch;display:flex;align-items:center}
+.wf{width:180px;background:#fff;border:1.5px solid #333;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;box-shadow:2px 2px 0 rgba(0,0,0,.12)}
+.wfwrap{display:flex;flex-direction:column;gap:5px;align-items:center}
+.wfname{font-size:14px;font-weight:700;color:#333}
+.tag{font-size:11px;padding:0 6px;border-radius:3px;margin-left:4px}
+.tag.done{background:#e2ecdf;color:#3e6b4f}
+.tag.new{background:#f6ddd6;color:#a63a2b}
+.arr{font-size:22px;color:#a63a2b;flex:none}
+.bx{border:1.5px solid #888;border-radius:5px;padding:5px 6px;font-size:12px;color:#555;text-align:center}
+.bx.dash{border-style:dashed}
+.bx.cta{background:#a63a2b;border-color:#a63a2b;color:#fff;font-weight:700}
+.bx.ghost{border-style:dashed;color:#999}
+.tl{height:7px;background:#ddd;border-radius:3px}
+.tl.s{width:55%}.tl.m{width:80%}
+.row{display:flex;gap:5px}
+.row>*{flex:1}
+.hdr{display:flex;gap:4px;align-items:center;justify-content:center;font-size:12px;color:#777;border-bottom:1.5px dashed #ccc;padding-bottom:5px}
+.seal{width:16px;height:16px;background:#a63a2b;border-radius:3px}
+.circ{width:56px;height:56px;border:2px solid #a63a2b;border-radius:50%;margin:2px auto;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#a63a2b}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.g4>div{border:1px solid #aaa;border-radius:3px;height:44px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#666}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.g3>div{border:1px dashed #aaa;border-radius:3px;height:26px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#888}
+.note{font-size:12px;color:#a63a2b}
+</style></helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">명리서재 와이어플로우 — 전체 흐름과 결과화면 구조 3안</span></div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>전체 서비스 와이어플로우 <span class="tag done">✓ 구현됨</span><span class="tag new">신규 제안</span></div>
+<div class="dv-card" style="width:1230px">
+<div class="lane"><div class="lanelb">핵심 흐름</div>
+  <div class="wfwrap"><div class="wf"><div class="hdr"><div class="seal"></div>명리서재</div><div class="tl m" style="margin:0 auto"></div><div class="tl s" style="margin:0 auto"></div><div class="bx cta">사주 보기</div><div class="row"><div class="bx dash">오늘</div><div class="bx dash">궁합</div><div class="bx dash">신년</div></div></div><div class="wfname">홈 <span class="tag new">신규</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf"><div class="hdr">사주 정보 입력</div><div class="bx dash">이름 (선택)</div><div class="row"><div class="bx">남</div><div class="bx">여</div></div><div class="row"><div class="bx">년</div><div class="bx">월</div><div class="bx">일</div></div><div class="bx">태어난 시간 ▾</div><div class="bx cta">사주 풀어보기</div></div><div class="wfname">입력 <span class="tag done">✓</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf"><div class="hdr">사주팔자 결과</div><div class="tl s" style="margin:0 auto"></div><div class="g4"><div>時</div><div style="border-color:#a63a2b;color:#a63a2b">日</div><div>月</div><div>年</div></div><div class="bx dash">오행 분포 ▬▬▬</div><div class="bx dash">일간 해석</div><div class="bx cta">상세 풀이 보기</div></div><div class="wfname">만세력 결과 <span class="tag done">✓</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf"><div class="hdr">상세 풀이</div><div class="bx">총평</div><div class="bx dash">십성 이야기</div><div class="bx dash">대운 타임라인 ▸▸</div><div class="row"><div class="bx">성격</div><div class="bx">재물</div><div class="bx">애정</div></div><div class="bx cta">카드로 공유</div></div><div class="wfname">결과 상세 <span class="tag new">신규</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf" style="width:130px"><div class="hdr">공유 카드</div><div style="border:1.5px solid #333;border-radius:6px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><div class="seal"></div><div style="font-size:12px;color:#777">일간 · 한 줄 운세</div></div><div class="row"><div class="bx">저장</div><div class="bx">공유</div></div></div><div class="wfname">공유 카드 <span class="tag new">신규</span></div></div>
+</div>
+<div class="lane"><div class="lanelb">부가 흐름</div>
+  <div class="wfwrap"><div class="wf" style="width:150px"><div class="hdr">오늘의 운세</div><div class="tl s" style="margin:0 auto"></div><div class="circ">87점</div><div class="bx dash">운세 텍스트</div><div class="g3"><div>색</div><div>방위</div><div>숫자</div></div></div><div class="wfname">오늘의 운세 <span class="tag done">✓</span></div></div>
+  <div class="arr" style="opacity:.35">|</div>
+  <div class="wfwrap"><div class="wf" style="width:150px"><div class="hdr">궁합 입력</div><div class="row"><div class="bx">나</div><div class="bx">상대</div></div><div class="row"><div class="bx dash">생년월일시</div><div class="bx dash">생년월일시</div></div><div class="bx cta">궁합 풀어보기</div></div><div class="wfname">궁합 입력 <span class="tag done">✓</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf" style="width:150px"><div class="hdr">궁합 결과</div><div class="circ">78점</div><div class="bx dash">상생/상극 풀이</div><div class="row"><div class="bx">나 日干</div><div class="bx">상대 日干</div></div></div><div class="wfname">궁합 결과 <span class="tag done">✓</span></div></div>
+  <div class="arr" style="opacity:.35">|</div>
+  <div class="wfwrap"><div class="wf" style="width:150px"><div class="hdr">신년운세</div><div class="bx">2026 병오년 총평</div><div class="g3"><div>2월</div><div>3월</div><div>4월</div><div>5월</div><div>6월</div><div>7월</div></div></div><div class="wfname">신년운세 <span class="tag done">✓</span></div></div>
+  <div class="arr">→</div>
+  <div class="wfwrap"><div class="wf" style="width:140px"><div class="hdr">월별 상세</div><div class="bx">5월 · 계사월</div><div class="bx dash">달의 흐름 풀이</div><div class="tl m"></div><div class="tl s"></div></div><div class="wfname">월별 상세 <span class="tag new">신규</span></div></div>
+</div>
+<div class="lane" style="justify-content:flex-end"><span class="note">✱ 결과는 링크/로컬 저장으로 다시보기 — 재입력 없이 이어보게</span></div>
+</div></div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>결과 상세안 A — 스크롤 리포트형 (한 페이지에 전부)</div>
+<div class="dv-card" style="width:230px;padding:14px">
+<div class="wf" style="width:100%;box-sizing:border-box;box-shadow:none;border-style:dashed">
+<div class="hdr">상세 풀이</div>
+<div class="bx cta" style="background:#333;border-color:#333">총평 · 3줄 요약</div>
+<div class="bx dash">사주팔자 표 (접힘 ▾)</div>
+<div class="bx">① 성격 — 일간 중심</div><div class="tl m"></div><div class="tl s"></div>
+<div class="bx">② 재물 — 재성 분석</div><div class="tl m"></div>
+<div class="bx">③ 애정 — 일지/합충</div><div class="tl m"></div>
+<div class="bx">④ 직업 — 관성/식상</div><div class="tl s"></div>
+<div class="bx dash">대운 타임라인 ▸▸▸</div>
+<div class="bx cta">공유 카드 만들기</div>
+</div>
+<p style="margin:8px 0 0;font-size:13px;color:#777">읽는 흐름 그대로 위→아래. 길지만 몰입감 있음. 목차 점프 네비 추가 가능.</p>
+</div></div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>결과 상세안 B — 주제 탭형 (성격/재물/애정/직업)</div>
+<div class="dv-card" style="width:230px;padding:14px">
+<div class="wf" style="width:100%;box-sizing:border-box;box-shadow:none;border-style:dashed">
+<div class="hdr">상세 풀이</div>
+<div class="bx dash">총평 한 줄</div>
+<div class="row"><div class="bx cta" style="font-size:11px">성격</div><div class="bx" style="font-size:11px">재물</div><div class="bx" style="font-size:11px">애정</div><div class="bx" style="font-size:11px">직업</div></div>
+<div style="border:1.5px solid #333;border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:5px"><div class="tl m"></div><div class="tl m"></div><div class="tl s"></div><div class="bx dash">관련 십성 카드</div></div>
+<div class="bx ghost">← 탭 전환 시 내용 교체 →</div>
+<div class="bx cta">공유 카드 만들기</div>
+</div>
+<p style="margin:8px 0 0;font-size:13px;color:#777">짧게 끊어 읽기 좋음. 모바일에서 특히 유리. 탭별 점수 뱃지 가능.</p>
+</div></div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>결과 상세안 C — 카드 덱형 (한 장씩 넘기기)</div>
+<div class="dv-card" style="width:230px;padding:14px">
+<div class="wf" style="width:100%;box-sizing:border-box;box-shadow:none;border-style:dashed">
+<div class="hdr">상세 풀이</div>
+<div style="position:relative;height:150px">
+<div style="position:absolute;inset:0 18px 12px 0;border:1.5px solid #ccc;border-radius:8px;background:#fafafa"></div>
+<div style="position:absolute;inset:6px 9px 6px 9px;border:1.5px solid #999;border-radius:8px;background:#fff"></div>
+<div style="position:absolute;inset:12px 0 0 18px;border:1.5px solid #333;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px"><div class="seal"></div><div style="font-size:13px;font-weight:700">나의 일간 · 丁火</div><div class="tl s" style="width:60%"></div><div class="tl s" style="width:45%"></div></div>
+</div>
+<div class="bx ghost">‹ 스와이프로 8장 ›  ● ○ ○ ○</div>
+<div class="bx cta">이 카드 공유</div>
+</div>
+<p style="margin:8px 0 0;font-size:13px;color:#777">타로처럼 한 장씩 — 재미·공유성 최고. 각 장이 그대로 공유 카드가 됨.</p>
+</div></div>
+
+</div>
+<p class="dv-next">다음: "<a class="dv-oid" href="#1a">1a</a> 흐름대로 홈 화면부터 붙여줘" · "<a class="dv-oid" href="#1d">1d</a> 카드 덱으로 상세 풀이 만들어줘" · "다른 구조도 보여줘"</p>
+</section>
+</x-dc>
+</body>
+</html>
