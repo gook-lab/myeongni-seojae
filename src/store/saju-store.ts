@@ -40,7 +40,7 @@ export type Phase = 'idle' | 'loading' | 'ready' | 'error';
  * 결과 화면이 3.8화면 길이가 됐고, 대운 타임라인이 주인공 자리를 잃었다.
  * 별도 화면으로 두면 기능을 잃지 않으면서 타임라인이 깨끗하게 유지된다.
  */
-export type Route = 'intro' | 'home' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
+export type Route = 'intro' | 'home' | 'privacy' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
 
 const currentYear = new Date().getFullYear();
 
@@ -100,6 +100,8 @@ interface SajuState {
   go: (route: Route) => void;
   /** 인트로에서 메뉴로. 다음부터는 인트로를 건너뛴다. */
   enterFromIntro: () => void;
+  /** 처리방침에서 「돌아가기」가 갈 곳. 왔던 화면으로 되돌린다. */
+  returnTo: Route;
   setField: <K extends keyof RawFormValues>(key: K, value: RawFormValues[K]) => void;
   setYajasi: (policy: YajasiPolicy) => void;
   setTextScale: (scale: TextScale) => void;
@@ -134,6 +136,7 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   calcSteps: [],
   calcShown: 0,
   pendingReading: null,
+  returnTo: 'home',
 
   enterFromIntro: () => {
     try {
@@ -154,6 +157,9 @@ export const useSajuStore = create<SajuState>((set, get) => ({
       set({ route: 'saju', phase: 'idle' });
       return;
     }
+    // 처리방침은 읽고 나면 왔던 자리로 돌아가야 한다. 인트로에서 열었는데
+    // 홈으로 떨어지면 아직 「시작하기」를 누르지도 않았는데 지나쳐버린다.
+    if (route === 'privacy') set({ returnTo: get().route });
     set({ route });
     window.scrollTo(0, 0);
   },

@@ -200,11 +200,21 @@ test('콘솔 에러 없이 전체 플로우가 끝난다', async ({ page }) => {
 });
 
 test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
-  test('홈이 첫 화면이고 부가 기능은 사주 전에는 잠겨 있다', async ({ page }) => {
+  test('★부가 기능은 잠긴 척하지 않는다★', async ({ page }) => {
+    /*
+     * 예전에는 "잠김" 이라고 적어놓고 실제로는 눌렸다. 글자가 동작과
+     * 다르면 사람은 아예 안 누르는데, 정작 그 버튼이 하는 일이
+     * "여기부터 하세요" 다. 동작은 그대로 두고 글자를 맞췄다.
+     */
     await openApp(page);
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
-    await expect(page.getByText('사주를 먼저 본 뒤에 열립니다')).toBeVisible();
-    await expect(page.getByText('잠김').first()).toBeVisible();
+    await expect(page.getByText('눌러도 됩니다 — 생년월일부터 받습니다')).toBeVisible();
+    await expect(page.getByText('잠김')).toHaveCount(0);
+
+    // 셋 다 실제로 눌리는 상태여야 한다
+    for (const name of ['오늘', '궁합', '신년']) {
+      await expect(page.getByRole('button', { name: new RegExp(name) })).toBeEnabled();
+    }
   });
 
   test('사주 없이 궁합을 누르면 입력 화면으로 보낸다', async ({ page }) => {
@@ -219,7 +229,7 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await page.getByRole('button', { name: /홈으로/ }).click();
 
     await expect(page.getByText('내 명식으로 이어서 봅니다')).toBeVisible();
-    await expect(page.getByText('잠김')).toHaveCount(0);
+    await expect(page.getByText('생년월일부터')).toHaveCount(0);
   });
 
   test('궁합이 독립 화면으로 열리고 시각 없이 동작한다', async ({ page }) => {
@@ -600,7 +610,7 @@ test.describe('결과 링크 공유 — 프래그먼트에 불투명 토큰', ()
   test('링크를 가진 사람이 볼 수 있다는 사실을 숨기지 않는다', async ({ page }) => {
     await fillBirth(page, '1990', '5', '15');
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
-    await expect(page.getByText(/링크를 가진 사람은 이 사주를 그대로 볼 수 있습니다/)).toBeVisible();
+    await expect(page.getByText(/링크를 받으신 분은 이 사주를 그대로 보실 수 있습니다/)).toBeVisible();
   });
 });
 
@@ -618,7 +628,7 @@ test.describe('인생 대조표 — 맞다고 말해주는 대신 직접 적게 
   test('지나온 칸에는 무슨 일이 있었는지 묻는다', async ({ page }) => {
     const timeline = await openPastCard(page);
     await expect(timeline.getByText(/실제로 무슨 일이 있었나요/)).toBeVisible();
-    await expect(timeline.getByText('이 기기에만 저장됩니다')).toBeVisible();
+    await expect(timeline.getByText('이 기기에만 남습니다')).toBeVisible();
   });
 
   test('★적은 내용이 새로고침 후에도 남는다★', async ({ page }) => {

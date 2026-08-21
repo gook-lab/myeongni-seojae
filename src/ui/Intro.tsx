@@ -36,11 +36,12 @@ import { useSajuStore } from '../store/saju-store';
 const PROMISES = [
   { head: '겁주지 않습니다', body: '살(殺)이 붙은 이름도 기운의 결로 읽습니다' },
   { head: '점수를 매기지 않습니다', body: '사람을 숫자 한 개로 줄이지 않습니다' },
-  { head: '생년월일을 가져가지 않습니다', body: '계산은 전부 이 브라우저 안에서 끝납니다' },
+  { head: '생년월일을 보내지 않습니다', body: '적어주신 날짜는 이 기기 안에만 있습니다' },
 ];
 
 export function Intro() {
   const enter = useSajuStore((s) => s.enterFromIntro);
+  const go = useSajuStore((s) => s.go);
   const today = todayInKorea();
   // 도장을 누르면 다시 찍힌다. 필요해서가 아니라, 눌러보고 싶어지라고.
   const [stamp, setStamp] = useState(0);
@@ -93,9 +94,17 @@ export function Intro() {
       </button>
 
       <p className="card-enter mt-4 text-center text-[11px] leading-relaxed text-ink-faint" style={{ '--i': 7 } as never}>
-        한국 표준시 이력과 진태양시를 반영한 만세력입니다.
+        표준시가 여러 번 바뀐 시절에 태어나신 분도
         <br />
-        1954~61년생과 서머타임 구간도 정확합니다.
+        그 시절 시간으로 계산합니다.
+        <br />
+        <button
+          type="button"
+          onClick={() => go('privacy')}
+          className="mt-2 underline underline-offset-2"
+        >
+          생년월일은 어디로 가나요
+        </button>
       </p>
     </div>
   );

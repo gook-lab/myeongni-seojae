@@ -27,10 +27,10 @@
 | <img src="docs/screenshots/06-card-open.png" width="240"> | <img src="docs/screenshots/07-detail.png" width="240"> | <img src="docs/screenshots/08-report.png" width="240"> |
 | 지나온 10년에 **직접 적는다**.<br>맞다고 말해주는 대신 확인하게 한다 | 궁위·오행 균형·용신을<br>결과 화면에 쌓지 않고 갈라놓았다 | 계산 근거를 같이 싣는<br>A4 인쇄 문서 |
 
-| 오늘 | 궁합 | 없는 주소 |
+| 오늘 | 생년월일은 어디로 가나요 | 없는 주소 |
 |:--:|:--:|:--:|
-| <img src="docs/screenshots/09-daily.png" width="240"> | <img src="docs/screenshots/10-gunghap.png" width="240"> | <img src="docs/screenshots/12-404.png" width="240"> |
-| 일진과 내 일지의 관계까지 | 점수를 내지 않는다 | 링크가 잘렸을 때를 짚어준다 |
+| <img src="docs/screenshots/09-daily.png" width="240"> | <img src="docs/screenshots/13-privacy.png" width="240"> | <img src="docs/screenshots/12-404.png" width="240"> |
+| 일진과 내 일지의 관계까지 | 법률 문서 말투를 쓰지 않는다.<br>**불리한 사실도 빼지 않는다** | 링크가 잘렸을 때를 짚어준다 |
 
 ## 기술 스택
 

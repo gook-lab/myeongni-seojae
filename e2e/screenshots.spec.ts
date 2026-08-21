@@ -143,6 +143,14 @@ test('11 신년', async ({ page }) => {
   await shot(page, '11-year');
 });
 
+test('13 처리방침', async ({ page }) => {
+  await fresh(page);
+  await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+  await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
+  await page.waitForTimeout(600);
+  await shot(page, '13-privacy', true);
+});
+
 test('12 404', async ({ page }) => {
   await page.goto('/404.html');
   await page.waitForTimeout(800);

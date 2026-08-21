@@ -16,6 +16,7 @@ import { Home } from './ui/Home';
 import { InputForm } from './ui/InputForm';
 import { Calculating } from './ui/Calculating';
 import { Intro } from './ui/Intro';
+import { Privacy } from './ui/Privacy';
 import { ShareLink } from './ui/ShareLink';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
@@ -567,6 +568,7 @@ export function App() {
       <div key={`${route}:${phase}`} className="screen-enter">
         {route === 'intro' && <Intro />}
         {route === 'home' && <Home />}
+        {route === 'privacy' && <Privacy />}
         {route === 'saju' &&
           (phase === 'ready' ? <Result />
           : phase === 'loading' ? <Calculating />

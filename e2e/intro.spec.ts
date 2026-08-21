@@ -33,7 +33,7 @@ test('★무엇을 하지 않는지 먼저 말한다★', async ({ page }) => {
   await firstVisit(page);
   await expect(page.getByText('겁주지 않습니다')).toBeVisible();
   await expect(page.getByText('점수를 매기지 않습니다')).toBeVisible();
-  await expect(page.getByText('생년월일을 가져가지 않습니다')).toBeVisible();
+  await expect(page.getByText('생년월일을 보내지 않습니다')).toBeVisible();
 });
 
 test('★오늘의 일진이 진짜로 계산된 값이다★', async ({ page }) => {
@@ -111,4 +111,44 @@ test('★공유 링크로 열면 인트로를 거치지 않는다★', async ({ 
   await expect(fresh.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
   await expect(fresh.getByRole('button', { name: '시작하기' })).toHaveCount(0);
   await fresh.close();
+});
+
+test.describe('개인정보 처리방침', () => {
+  test('★인트로에서 열고, 읽고 나면 인트로로 돌아온다★', async ({ page }) => {
+    // 홈으로 떨어뜨리면 아직 「시작하기」를 누르지도 않았는데 지나쳐버린다.
+    await firstVisit(page);
+    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
+    await page.getByRole('button', { name: '‹ 돌아가기' }).click();
+    await expect(page.getByRole('button', { name: '시작하기' })).toBeVisible();
+  });
+
+  test('홈에서도 열리고 홈으로 돌아온다', async ({ page }) => {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '시작하기' }).click();
+    await page.getByRole('button', { name: '어디로 가는지 자세히 보기' }).click();
+    await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
+    await page.getByRole('button', { name: '‹ 돌아가기' }).click();
+    await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
+  });
+
+  test('★불리한 사실을 빼지 않는다★', async ({ page }) => {
+    // 좋은 말만 적어두면 방침이 아니라 광고다.
+    await firstVisit(page);
+    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await expect(
+      page.getByText('링크를 받으신 분은 그 사주를 그대로 볼 수 있습니다'),
+    ).toBeVisible();
+    await expect(page.getByText(/오류가 났을 때만 오류 내용을 보냅니다/)).toBeVisible();
+    await expect(page.getByText(/생년월일은 지우고 보냅니다/)).toBeVisible();
+  });
+
+  test('법률 문서 말투를 쓰지 않는다', async ({ page }) => {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    const text = await page.locator('body').innerText();
+    for (const jargon of ['제3자', '수탁', '위탁', '동의를 거부할 권리', '이용목적']) {
+      expect(text, `"${jargon}" 이 들어 있다`).not.toContain(jargon);
+    }
+  });
 });

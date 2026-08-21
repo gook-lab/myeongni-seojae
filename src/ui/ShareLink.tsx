@@ -34,9 +34,9 @@ export function ShareLink() {
         {label}
       </button>
       <p className="mt-2 text-center text-[11px] leading-relaxed text-ink-faint">
-        링크에는 생년월일이 글자로 들어가지 않지만,
+        링크에 생년월일이 글자로 보이지는 않지만,
         <br />
-        <b className="text-ink-soft">링크를 가진 사람은 이 사주를 그대로 볼 수 있습니다.</b>
+        <b className="text-ink-soft">링크를 받으신 분은 이 사주를 그대로 보실 수 있습니다.</b>
         <br />
         적어두신 인생 기록은 링크에 담기지 않습니다.
       </p>

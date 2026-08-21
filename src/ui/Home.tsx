@@ -10,6 +10,16 @@
  *
  * 원국이 없는 상태에서 부가 화면으로 가려 하면 store 의 go() 가
  * 입력 화면으로 돌린다. 여기서는 그 사실을 문구로 미리 알려준다.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * "잠김" 이라고 쓰지 않는다
+ *
+ * 처음에는 그렇게 적었는데, 실제로는 눌리고 누르면 입력 화면으로 간다.
+ * 글자가 동작과 달랐다 — 눌러도 안 될 것처럼 써놓고 눌리게 해두면
+ * 사람은 아예 안 누른다. 정작 그 버튼이 하는 일이 "여기부터 하세요" 인데.
+ *
+ * 그렇다고 진짜 잠그는 것도 답이 아니다. 막다른 문은 어떻게 열어야 하는지
+ * 알려주지 않는다. 동작은 그대로 두고 글자를 동작에 맞춘다.
  */
 
 import { useSajuStore } from '../store/saju-store';
@@ -59,7 +69,7 @@ export function Home() {
 
       {/* 부가 흐름 */}
       <p className="mb-2.5 mt-8 px-1 text-xs text-ink-faint">
-        {hasReading ? '내 명식으로 이어서 봅니다' : '사주를 먼저 본 뒤에 열립니다'}
+        {hasReading ? '내 명식으로 이어서 봅니다' : '눌러도 됩니다 — 생년월일부터 받습니다'}
       </p>
       <div className="space-y-2">
         {SUB_ENTRIES.map(({ route, label, note }) => (
@@ -67,6 +77,7 @@ export function Home() {
             key={route}
             type="button"
             onClick={() => go(route)}
+            aria-label={hasReading ? label : `${label} — 생년월일을 먼저 넣습니다`}
             className={
               'flex w-full items-center justify-between rounded-lg border px-4 py-3.5 text-left transition-colors ' +
               (hasReading
@@ -78,17 +89,26 @@ export function Home() {
               <span className="block text-base text-ink">{label}</span>
               <span className="mt-0.5 block text-xs text-ink-faint">{note}</span>
             </span>
-            <span aria-hidden className="text-ink-faint">
-              {hasReading ? '›' : '잠김'}
+            <span
+              aria-hidden
+              className={hasReading ? 'text-ink-faint' : 'text-xs text-ink-faint'}
+            >
+              {hasReading ? '›' : '생년월일부터 ›'}
             </span>
           </button>
         ))}
       </div>
 
       <p className="mt-10 text-center text-xs leading-relaxed text-ink-faint">
-        입력한 생년월일은 이 기기를 벗어나지 않습니다.
+        적어주신 생년월일은 이 기기 밖으로 나가지 않습니다.
         <br />
-        계산은 전부 브라우저 안에서 이루어집니다.
+        <button
+          type="button"
+          onClick={() => go('privacy')}
+          className="mt-1 underline underline-offset-2"
+        >
+          어디로 가는지 자세히 보기
+        </button>
       </p>
     </div>
   );

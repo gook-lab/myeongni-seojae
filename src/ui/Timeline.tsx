@@ -91,7 +91,7 @@ function LifeNote({ card }: { card: DaeunCard }) {
         className="w-full resize-y rounded-md border border-line bg-hanji px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-ink-faint"
       />
       <p className="mt-1.5 text-[11px] leading-relaxed text-ink-faint">
-        이 기기에만 저장됩니다. 서버로 보내지 않습니다.
+        여기 적으신 내용은 이 기기에만 남습니다.
       </p>
     </div>
   );
