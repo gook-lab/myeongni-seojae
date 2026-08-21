@@ -13,6 +13,7 @@
 
 import { useMemo } from 'react';
 import { DEFAULT_FORM, useSajuStore } from '../store/saju-store';
+import { AdvancedOptions } from './AdvancedOptions';
 
 const range = (from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, i) => from + i);
@@ -59,6 +60,22 @@ export function InputForm() {
           지나온 시기가 맞는지 직접 맞춰보세요.
         </p>
       </header>
+
+      {/* 이름 — 선택. 공유 카드에만 쓰이고 계산에는 안 들어간다 */}
+      <fieldset className="mb-5">
+        <label htmlFor="name" className={LABEL}>
+          이름 <span className="text-ink-faint">· 선택</span>
+        </label>
+        <input
+          id="name"
+          type="text"
+          className={FIELD}
+          value={form.name ?? ''}
+          maxLength={20}
+          placeholder="비워두셔도 됩니다"
+          onChange={(e) => setField('name', e.target.value)}
+        />
+      </fieldset>
 
       {/* 양력 / 음력 */}
       <fieldset className="mb-5">
@@ -195,7 +212,7 @@ export function InputForm() {
       </fieldset>
 
       {/* 성별 — 대운의 순행·역행을 정한다 */}
-      <fieldset className="mb-7">
+      <fieldset className="mb-5">
         <legend className={LABEL}>
           성별 <span className="text-ink-faint">· 대운의 방향을 정합니다</span>
         </legend>
@@ -218,6 +235,8 @@ export function InputForm() {
           ))}
         </div>
       </fieldset>
+
+      <AdvancedOptions />
 
       {/* 에러 — 조용한 실패를 만들지 않는다 */}
       {failed && error && (
