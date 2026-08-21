@@ -86,7 +86,8 @@ function DailyPanel() {
     return <Empty>오늘의 운세를 계산하지 못했습니다.</Empty>;
   }
   return (
-    <article className="rounded-lg border border-line bg-card px-4 py-4">
+    <div className="space-y-2.5">
+      <article className="rounded-lg border border-line bg-card px-4 py-4">
       <p className="text-xs text-ink-faint">{daily.date}</p>
       <p className="mt-1.5 flex items-baseline gap-2">
         <span className="text-2xl text-ink">{daily.ganji}</span>
@@ -98,18 +99,82 @@ function DailyPanel() {
       <p className="mt-2.5 text-sm leading-[1.85] text-ink">{daily.text}</p>
 
       <div className="mt-3.5 space-y-3 border-t border-dashed border-line-dash pt-3.5">
-        {daily.branchTenGod && (
-          <p className="text-xs leading-relaxed text-ink-soft">
-            <b className="text-jumuk">지지 {daily.branchTenGod}</b> — 겉으로 드러난 천간
-            아래 숨은 기운입니다.
-          </p>
-        )}
         <p className="text-xs leading-relaxed text-ink-soft">
           <b className="text-jumuk">{daily.stage}</b> {daily.stageText}
         </p>
         <p className="text-xs leading-relaxed text-ink-soft">{daily.branchNote}</p>
       </div>
     </article>
+
+      {/* ★용신 관점★ 오늘의 운세가 다 비슷한 이유는 원국을 안 봐서다 */}
+      <Card label="오늘 들어오는 기운">
+        <p className="mb-2 text-sm text-ink-soft">
+          {daily.yongsin.brings.join(' · ')}
+          <span className="ml-2 text-jumuk">{daily.yongsin.verdict}</span>
+        </p>
+        <p className="text-sm leading-[1.85] text-ink">{daily.yongsin.text}</p>
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+          지지 안에 숨은 천간까지 세어 그날 실제로 도는 기운을 봅니다.
+          당신에게 필요한 기운은 <b className="text-ink-soft">{daily.yongsin.need}</b>입니다.
+        </p>
+      </Card>
+
+      {daily.hidden.tenGods.length > 0 && (
+        <Card label={`${daily.hidden.glyph} 안에 숨은 것`}>
+          <p className="mb-1.5 text-sm text-ink">
+            {daily.hidden.tenGods.map((g, i) => (
+              <span key={g + String(i)}>
+                {i > 0 && <span className="text-ink-faint"> · </span>}
+                <b className={i === 0 ? 'text-jumuk' : 'text-ink-soft'}>{g}</b>
+              </span>
+            ))}
+          </p>
+          <p className="text-[11px] leading-relaxed text-ink-faint">{daily.hidden.text}</p>
+        </Card>
+      )}
+
+      {daily.contacts.length > 0 && (
+        <Card label="오늘이 건드리는 자리">
+          {daily.contacts.map((c) => (
+            <div key={c.palace} className="mt-1 first:mt-0">
+              <p className="text-sm text-ink-soft">
+                <b className="text-ink">{c.palace}</b> {c.pair}
+                <span className="ml-1.5 text-jumuk">{c.label}</span>
+              </p>
+              <p className="mt-0.5 text-sm leading-[1.85] text-ink">{c.text}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {daily.voidDay.yes && (
+        <Card label="오늘은 공망일입니다">
+          <p className="text-sm leading-[1.85] text-ink">{daily.voidDay.text}</p>
+        </Card>
+      )}
+
+      <Card label="오늘의 열두 시진">
+        <p className="mb-2.5 text-[11px] leading-relaxed text-ink-faint">{daily.hoursNote}</p>
+        <ol className="space-y-1">
+          {daily.hours.map((h) => (
+            <li
+              key={h.name}
+              className={
+                'flex items-center gap-2.5 rounded-md border px-2.5 py-2 text-xs ' +
+                (h.isNow ? 'border-jumuk bg-card-warm' : 'border-line bg-hanji')
+              }
+            >
+              <span className="w-9 shrink-0 text-ink-soft">{h.name}</span>
+              <span className="w-16 shrink-0 tabular-nums text-ink-faint">{h.range}</span>
+              <span className="w-10 shrink-0 text-sm text-ink">{h.ganji}</span>
+              <span className="w-12 shrink-0 text-jumuk">{h.tenGod}</span>
+              <span className="truncate text-ink-faint">{h.hint}</span>
+              {h.isNow && <span className="shrink-0 text-[10px] text-jumuk">지금</span>}
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </div>
   );
 }
 
@@ -129,6 +194,33 @@ function YearPanel() {
         <p className="mt-3 text-xs leading-relaxed text-ink-faint">{year.lead}</p>
         <p className="mt-2.5 text-sm leading-[1.85] text-ink">{year.text}</p>
       </article>
+
+      {/* ★용신 관점★ 올해가 내게 필요한 기운을 데려오는가 */}
+      <Card label="올해 들어오는 기운">
+        <p className="mb-2 text-sm text-ink-soft">
+          {year.yongsin.brings.join(' · ')}
+          <span className="ml-2 text-jumuk">{year.yongsin.verdict}</span>
+        </p>
+        <p className="text-sm leading-[1.85] text-ink">{year.yongsin.text}</p>
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+          당신에게 필요한 기운은 <b className="text-ink-soft">{year.yongsin.need}</b>입니다.
+          지지 안에 숨은 천간까지 세었습니다.
+        </p>
+      </Card>
+
+      {year.contacts.length > 0 && (
+        <Card label="올해가 건드리는 자리">
+          {year.contacts.map((c) => (
+            <div key={c.palace} className="mt-1 first:mt-0">
+              <p className="text-sm text-ink-soft">
+                <b className="text-ink">{c.palace}</b> {c.pair}
+                <span className="ml-1.5 text-jumuk">{c.label}</span>
+              </p>
+              <p className="mt-0.5 text-sm leading-[1.85] text-ink">{c.text}</p>
+            </div>
+          ))}
+        </Card>
+      )}
 
       {year.withDaeun && (
         <article className="rounded-lg border border-line bg-card px-4 py-4">

@@ -19,6 +19,23 @@ import { computeChart } from '../core/manse';
 import { natalDetail } from '../core/natal';
 import { findSinsal, groupSinsal } from '../core/sinsal';
 import { categoryToElement, yongsin } from '../core/yongsin';
+// DOM 전역에 Element 가 있어 우리 오행 타입과 부딪힌다. 이름을 바꿔 가져온다.
+import type { Element as OhaengElement } from '../core/types';
+import {
+  hiddenReading,
+  hoursOfDay,
+  isVoidDay,
+  natalContacts,
+  transitYongsin,
+} from '../core/transit';
+import {
+  HOURS_INTRO,
+  HOUR_TEN_GOD_HINT,
+  NATAL_CONTACT_TEXT,
+  TRANSIT_HIDDEN_INTRO,
+  TRANSIT_YONGSIN_TEXT,
+  VOID_DAY_TEXT,
+} from '../text/transit-text';
 import {
   branchPairs,
   combinedBalance,
@@ -104,6 +121,18 @@ export interface DailyReading {
   stageText: string;
   /** 내 일지와의 합충 */
   branchNote: string;
+
+  /** ★용신 관점★ 오늘 들어오는 기운이 내게 필요한 것인가 */
+  yongsin: { verdict: string; brings: string[]; need: string; text: string };
+  /** 원국 네 자리 중 오늘이 건드리는 곳 */
+  contacts: Array<{ palace: string; pair: string; label: string; text: string }>;
+  /** 오늘이 내 공망에 드는가 */
+  voidDay: { yes: boolean; text: string };
+  /** 오늘 지지에 숨은 천간이 내게 어떤 십성인가 */
+  hidden: { glyph: string; tenGods: string[]; text: string };
+  /** 열두 시진 */
+  hours: Array<{ name: string; range: string; ganji: string; tenGod: string; hint: string; isNow: boolean }>;
+  hoursNote: string;
 }
 
 export interface YearReading {
@@ -117,6 +146,10 @@ export interface YearReading {
    * 올해 세운이 지금 대운과 어떤 관계인가.
    * 명리에서 실제로 크게 보는 대목인데 원본은 아예 안 봤다.
    */
+  /** ★용신 관점★ 올해 들어오는 기운이 내게 필요한 것인가 */
+  yongsin: { verdict: string; brings: string[]; need: string; text: string };
+  /** 원국 네 자리 중 올해가 건드리는 곳 */
+  contacts: Array<{ palace: string; pair: string; label: string; text: string }>;
   withDaeun: {
     daeunGanji: string;
     daeunTenGod: string;
@@ -390,6 +423,16 @@ export function computeReading(
   // ── 부가 운세. 점수 없이 문장만. ──
   const dm = chart.dayMaster;
   const dmLabel = `${dm.stemHanja}${dm.stem}`;
+  /*
+   * 운을 본다는 건 지나가는 간지가 내 원국 위를 어떻게 지나가느냐를 보는
+   * 일이다. 원국을 안 보면 그 날 태어난 사람 모두에게 같은 말이 된다.
+   * 용신·공망·네 지지를 이미 갖고 있으니 여기서 쓴다.
+   */
+  const needEl = yongsinReading.primaryElement as OhaengElement;
+  const avoidEls: OhaengElement[] = yongsinReading.avoid.map(
+    (c) => categoryToElement(dm.stemElement as never, c as never),
+  );
+
   const dailyRes = dailyFortune(dm, today);
   const daily: DailyReading | null = dailyRes.ok
     ? {
@@ -403,6 +446,38 @@ export function computeReading(
         stage: dailyRes.value.stage,
         stageText: STAGE_TEXT[dailyRes.value.stage],
         branchNote: DAILY_BRANCH_TEXT[dailyRes.value.withMyBranch] ?? '',
+        ...(() => {
+          const p = dailyRes.value.pillar;
+          const ty = transitYongsin(p.stem, p.branch, needEl, avoidEls);
+          const cs = natalContacts(chart.pillars, p.branch);
+          const isVoid = isVoidDay(detail.voidBranches, p.branch);
+          const hid = hiddenReading(dm.stem, p.branch);
+          return {
+            yongsin: {
+              verdict: ty.verdict,
+              brings: ty.brings.map(String),
+              need: String(needEl),
+              text: TRANSIT_YONGSIN_TEXT(ty.verdict, '오늘', needEl, ty.needed.length, ty.unwanted.length),
+            },
+            contacts: cs.map((c) => ({
+              palace: String(c.palace),
+              pair: `${c.natalGlyph} · ${p.branch}`,
+              label: BRANCH_RELATION_LABEL[c.relation],
+              text: NATAL_CONTACT_TEXT(c.palace, c.relation),
+            })),
+            voidDay: { yes: isVoid, text: isVoid ? VOID_DAY_TEXT.replace(/\*\*/g, '') : '' },
+            hidden: { glyph: hid.glyph, tenGods: hid.tenGods.map(String), text: TRANSIT_HIDDEN_INTRO },
+            hours: hoursOfDay(dm.stem, p.stem, today.getHours()).map((h) => ({
+              name: h.name,
+              range: h.range,
+              ganji: h.ganji,
+              tenGod: String(h.tenGod),
+              hint: HOUR_TEN_GOD_HINT[h.tenGod] ?? '',
+              isNow: h.isNow,
+            })),
+            hoursNote: HOURS_INTRO,
+          };
+        })(),
       }
     : null;
 
@@ -415,6 +490,25 @@ export function computeReading(
         category: yearRes.value.category,
         lead: yearLead(yearRes.value.year, yearRes.value.ganji, yearRes.value.tenGod),
         text: INTERPRET[yearRes.value.category].monthly.replace('달', '해'),
+        ...(() => {
+          const p = yearRes.value.pillar;
+          const ty = transitYongsin(p.stem, p.branch, needEl, avoidEls);
+          const cs = natalContacts(chart.pillars, p.branch);
+          return {
+            yongsin: {
+              verdict: ty.verdict,
+              brings: ty.brings.map(String),
+              need: String(needEl),
+              text: TRANSIT_YONGSIN_TEXT(ty.verdict, '올해', needEl, ty.needed.length, ty.unwanted.length),
+            },
+            contacts: cs.map((c) => ({
+              palace: String(c.palace),
+              pair: `${c.natalGlyph} · ${p.branch}`,
+              label: BRANCH_RELATION_LABEL[c.relation],
+              text: NATAL_CONTACT_TEXT(c.palace, c.relation),
+            })),
+          };
+        })(),
         withDaeun: (() => {
           const cur = timeline.entries.find((e) => e.isCurrent);
           if (!cur) return null;

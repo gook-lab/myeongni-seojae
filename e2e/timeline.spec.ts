@@ -397,12 +397,20 @@ test.describe('원국 심화 — 궁위 · 오행 균형', () => {
     expect(text).not.toMatch(/이\(가\)|은\(는\)|을\(를\)/);
   });
 
-  test('오늘 화면이 지지 십성과 합충까지 보여준다', async ({ page }) => {
+  test('오늘 화면이 지장간과 합충까지 보여준다', async ({ page }) => {
+    /*
+     * 예전에는 지지의 정기 십성 하나만 보여줬다. 이제 지지 안에 숨은
+     * 천간을 전부 낸다 — 셋이 든 지지는 셋 다. 겉 글자 하나로만 읽으면
+     * 그 날의 결이 한 줄로 납작해진다.
+     */
     await page.getByRole('button', { name: /홈으로/ }).click();
     await page.getByRole('button', { name: /^오늘/ }).click();
 
     const s = page.getByRole('region', { name: '오늘의 운세' });
-    await expect(s.getByText(/지지 (비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/)).toBeVisible();
+    await expect(s.getByText(/안에 숨은 것/)).toBeVisible();
+    await expect(
+      s.getByText(/(비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/).first(),
+    ).toBeVisible();
     await expect(s.getByText(/오늘 일진(이|과) 내 일지/)).toBeVisible();
   });
 });
@@ -791,6 +799,79 @@ test.describe('궁합 — 여섯 자를 자리별로 본다', () => {
     const body = await page.locator('body').innerText();
     for (const scary of ['이별', '파탄', '흉합', '최악', '피하세요']) {
       expect(body, `"${scary}" 가 있다`).not.toContain(scary);
+    }
+  });
+});
+
+test.describe('오늘·신년 — 운이 내 원국 위를 지나간다', () => {
+  async function toReading(page: import('@playwright/test').Page) {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+  }
+
+  test('★오늘의 운세가 누구에게나 같은 말이 아니다★', async ({ page }) => {
+    /*
+     * "오늘은 정재의 날입니다" 는 그 날 태어난 사람 모두에게 같은 말이다.
+     * 원국을 봐야 그 사람에게만 하는 말이 나온다 — 용신이 그 잣대다.
+     */
+    await toReading(page);
+    await page.getByRole('button', { name: '오늘' }).click();
+    await expect(page.getByText('오늘 들어오는 기운')).toBeVisible();
+    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
+    await expect(page.getByText(/숨은 천간까지 세어/)).toBeVisible();
+  });
+
+  test('★열두 시진을 낸다 — 하루를 한 덩어리로 말하지 않는다★', async ({ page }) => {
+    await toReading(page);
+    await page.getByRole('button', { name: '오늘' }).click();
+    const section = page.getByText('오늘의 열두 시진').locator('..');
+    await expect(section.locator('ol > li')).toHaveCount(12);
+    // 지금 시각이 하나만 표시된다
+    await expect(section.getByText('지금')).toHaveCount(1);
+    // 좋고 나쁨으로 줄 세우지 않는다
+    const body = await section.innerText();
+    expect(body).not.toMatch(/길한|흉한|최고|최악/);
+  });
+
+  test('오늘이 원국의 어느 자리를 건드리는지 자리별로 본다', async ({ page }) => {
+    await toReading(page);
+    await page.getByRole('button', { name: '오늘' }).click();
+    // 합충이 없는 날도 있으므로 있을 때만 확인한다
+    const card = page.getByText('오늘이 건드리는 자리');
+    if (await card.isVisible().catch(() => false)) {
+      await expect(card.locator('..').getByText(/년주|월주|일주|시주/).first()).toBeVisible();
+    }
+  });
+
+  test('★신년도 원국을 본다★', async ({ page }) => {
+    await toReading(page);
+    await page.getByRole('button', { name: '신년' }).click();
+    await expect(page.getByText('올해 들어오는 기운')).toBeVisible();
+    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
+  });
+
+  test('공망일이면 나쁜 날이라 하지 않는다', async ({ page }) => {
+    await toReading(page);
+    await page.getByRole('button', { name: '오늘' }).click();
+    const card = page.getByText('오늘은 공망일입니다');
+    if (await card.isVisible().catch(() => false)) {
+      const text = await card.locator('..').innerText();
+      expect(text).toContain('나쁜 날이 아니라');
+    }
+  });
+
+  test('★여기서도 점수를 내지 않는다★', async ({ page }) => {
+    await toReading(page);
+    for (const menu of ['오늘', '신년']) {
+      await page.getByRole('button', { name: menu }).click();
+      const body = await page.locator('body').innerText();
+      expect(body, menu).not.toMatch(/\d+\s*점/);
+      await page.getByRole('button', { name: /^‹ 홈|홈$/ }).first().click().catch(async () => {
+        await page.goBack();
+      });
+      await expect(page.getByRole('button', { name: '신년' })).toBeVisible();
     }
   });
 });
