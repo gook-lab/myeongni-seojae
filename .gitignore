@@ -12,3 +12,6 @@ test-results/
 .claude/
 /playwright/.cache/
 dist-mcp/
+
+# 빌드 캐시 — 커밋마다 무의미하게 바뀐다
+*.tsbuildinfo
