@@ -549,9 +549,16 @@ export function App() {
   return (
     <ErrorBoundary>
       <TzWarning />
-      <div className="flex justify-end px-5 pt-4">
-        <TextScaleToggle />
-      </div>
+      {/*
+        글씨 크기 조절은 인트로에서는 감춘다. 이 앱이 무엇인지도 모르는
+        첫 화면에 설정 버튼이 먼저 보이면 그게 첫인상이 된다.
+        들어오고 나면 어느 화면에서든 바꿀 수 있다.
+      */}
+      {route !== 'intro' && (
+        <div className="flex justify-end px-5 pt-4">
+          <TextScaleToggle />
+        </div>
+      )}
       {/*
         화면이 바뀔 때마다 key 가 갈려 등장 애니메이션이 다시 돈다.
         phase 까지 키에 넣는 이유는 입력 → 결과가 같은 route 안에서

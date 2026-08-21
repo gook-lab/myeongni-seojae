@@ -30,12 +30,12 @@ export default defineConfig({
   projects: [
     {
       name: 'mobile',
-      testIgnore: /animation\.spec\.ts/,
+      testIgnore: /(animation|screenshots)\.spec\.ts/,
       use: { ...devices['Galaxy S9+'] },
     },
     {
       name: 'desktop',
-      testIgnore: /animation\.spec\.ts/,
+      testIgnore: /(animation|screenshots)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
     {
@@ -48,6 +48,12 @@ export default defineConfig({
       name: 'motion',
       testMatch: /animation\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      // 문서용 스크린샷. 손으로 돌린다 (pnpm shots).
+      name: 'shots',
+      testMatch: /screenshots\.spec\.ts/,
+      use: { ...devices['Galaxy S9+'] },
     },
   ],
   webServer: {
