@@ -552,3 +552,125 @@ test.describe('신살 — 겁주지 않고 근거를 붙인다', () => {
     await expect(page.getByText(/근거 ·/).first()).toBeVisible();
   });
 });
+
+test.describe('결과 링크 공유 — 프래그먼트에 불투명 토큰', () => {
+  test('★링크를 복사해 새 탭에서 열면 같은 사주가 나온다★', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+
+    // 결과를 하나 기억해둔다 — 링크로 열었을 때 같은지 보려고
+    const before = await page.getByRole('region', { name: '대운 인생 타임라인' }).innerText();
+
+    await page.getByRole('button', { name: '결과 링크 복사' }).click();
+    await expect(page.getByRole('button', { name: '링크를 복사했습니다' })).toBeVisible();
+
+    const url = await page.evaluate(() => navigator.clipboard.readText());
+    expect(url).toContain('#r=');
+    // 생년월일이 글자로 들어가면 안 된다
+    expect(url).not.toContain('1957');
+    expect(url).not.toContain('06-15');
+
+    const fresh = await context.newPage();
+    await fresh.goto(url);
+    // 입력 화면을 한 번 더 거치지 않고 바로 결과로 간다
+    const timeline = fresh.getByRole('region', { name: '대운 인생 타임라인' });
+    await expect(timeline).toBeVisible();
+    await expect(timeline.locator('ol > li')).toHaveCount(10);
+    expect(await timeline.innerText()).toBe(before);
+    await fresh.close();
+  });
+
+  test('★잘린 링크는 조용히 다른 사주를 보여주지 않는다★', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '결과 링크 복사' }).click();
+    const url = await page.evaluate(() => navigator.clipboard.readText());
+
+    // 메신저가 뒤를 자른 상황
+    const cut = await context.newPage();
+    await cut.goto(url.slice(0, -2));
+    await expect(cut.getByText(/링크가 손상됐습니다/)).toBeVisible();
+    await expect(cut.getByRole('region', { name: '대운 인생 타임라인' })).toHaveCount(0);
+    await cut.close();
+  });
+
+  test('링크를 가진 사람이 볼 수 있다는 사실을 숨기지 않는다', async ({ page }) => {
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByText(/링크를 가진 사람은 이 사주를 그대로 볼 수 있습니다/)).toBeVisible();
+  });
+});
+
+test.describe('인생 대조표 — 맞다고 말해주는 대신 직접 적게 한다', () => {
+  async function openPastCard(page: import('@playwright/test').Page) {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    const timeline = page.getByRole('region', { name: '대운 인생 타임라인' });
+    await expect(timeline).toBeVisible();
+    // 첫 칸(가장 오래된 대운)을 연다
+    await timeline.locator('ol > li').first().getByRole('button').first().click();
+    return timeline;
+  }
+
+  test('지나온 칸에는 무슨 일이 있었는지 묻는다', async ({ page }) => {
+    const timeline = await openPastCard(page);
+    await expect(timeline.getByText(/실제로 무슨 일이 있었나요/)).toBeVisible();
+    await expect(timeline.getByText('이 기기에만 저장됩니다')).toBeVisible();
+  });
+
+  test('★적은 내용이 새로고침 후에도 남는다★', async ({ page }) => {
+    const timeline = await openPastCard(page);
+    const box = timeline.locator('textarea').first();
+    await box.fill('첫 직장에 들어갔다');
+
+    await page.reload();
+    await page.getByRole('button', { name: /^사주 보기/ }).click();
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    const again = page.getByRole('region', { name: '대운 인생 타임라인' });
+    await again.locator('ol > li').first().getByRole('button').first().click();
+    await expect(again.locator('textarea').first()).toHaveValue('첫 직장에 들어갔다');
+  });
+
+  test('★다른 사람 사주에는 남의 기록이 안 보인다★', async ({ page }) => {
+    const timeline = await openPastCard(page);
+    await timeline.locator('textarea').first().fill('첫 직장에 들어갔다');
+
+    await page.getByRole('button', { name: '다른 사람 사주 보기' }).click();
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    const other = page.getByRole('region', { name: '대운 인생 타임라인' });
+    await other.locator('ol > li').first().getByRole('button').first().click();
+    await expect(other.locator('textarea').first()).toHaveValue('');
+  });
+
+  test('적은 내용이 리포트에 실린다', async ({ page }) => {
+    const timeline = await openPastCard(page);
+    await timeline.locator('textarea').first().fill('첫 직장에 들어갔다');
+
+    await page.getByRole('button', { name: '리포트 · 인쇄하기' }).click();
+    await expect(page.getByText('인생 대조표 — 직접 적으신 기록')).toBeVisible();
+    await expect(page.getByText('첫 직장에 들어갔다')).toBeVisible();
+    await expect(page.getByText('본인이 적으신 내용입니다')).toBeVisible();
+  });
+
+  test('아무것도 안 적으면 리포트에 그 칸이 없다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '리포트 · 인쇄하기' }).click();
+    await expect(page.getByText('인생 대조표 — 직접 적으신 기록')).toHaveCount(0);
+  });
+
+  test('지우기는 확인을 한 번 받는다', async ({ page }) => {
+    const timeline = await openPastCard(page);
+    await timeline.locator('textarea').first().fill('첫 직장에 들어갔다');
+
+    await page.getByRole('button', { name: '적어둔 인생 기록 지우기' }).click();
+    await expect(page.getByText('적어두신 내용을 지웁니다')).toBeVisible();
+    await page.getByRole('button', { name: '지우기', exact: true }).click();
+    await expect(timeline.locator('textarea').first()).toHaveValue('');
+  });
+});

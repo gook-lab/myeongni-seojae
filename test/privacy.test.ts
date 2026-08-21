@@ -9,6 +9,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { buildShareUrl, decodeShareToken, encodeShareToken } from '../src/core/share-link';
+import type { RawFormValues } from '../src/core/types';
 import {
   REDACTED,
   beforeBreadcrumb,
@@ -68,6 +70,40 @@ describe('경로 1 — location.href', () => {
 
   it('URL 로 파싱되지 않아도 날짜는 지운다', () => {
     expect(scrubUrl('not-a-url 1957-06-15')).not.toContain('1957-06-15');
+  });
+});
+
+describe('★공유 링크가 Sentry 로 새어나가지 않는다★', () => {
+  // 원래 설계는 URL 해시를 아예 안 쓰기로 했었다. Sentry 가 location.href 를
+  // 담기 때문이다. 지금은 해시에 공유 토큰을 싣는다 — 그래서 이 검사가
+  // 그때보다 더 중요해졌다.
+  const FORM: RawFormValues = {
+    calendar: 'solar', year: 1957, month: 6, day: 15,
+    leapMonth: false, hourKnown: true, hour: 9, minute: 30,
+    gender: '남', longitude: 126.978, yajasi: 'preserve-day', applyEquationOfTime: false,
+  };
+
+  it('토큰이 통째로 지워진다', () => {
+    const url = buildShareUrl('https://saju.app/', FORM);
+    const token = encodeShareToken(FORM);
+    expect(url).toContain(token);
+    const out = scrubUrl(url);
+    expect(out, '프래그먼트가 남았다').not.toContain(token);
+    expect(out).not.toContain('#');
+  });
+
+  it('토큰만으로 생년월일을 되읽을 수 있다는 사실 자체가 이유다', () => {
+    // 토큰은 암호가 아니다. 그러니 로그에 남으면 생년월일이 남는 것과 같다.
+    const token = encodeShareToken(FORM);
+    const back = decodeShareToken(token);
+    expect(back.ok).toBe(true);
+    expect(back.form?.year).toBe(1957);
+  });
+
+  it('브레드크럼의 URL 에서도 지워진다', () => {
+    const url = buildShareUrl('https://saju.app/', FORM);
+    const crumb = beforeBreadcrumb({ category: 'navigation', data: { to: url, from: url } });
+    expect(JSON.stringify(crumb)).not.toContain(encodeShareToken(FORM));
   });
 });
 

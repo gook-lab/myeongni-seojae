@@ -10,10 +10,18 @@
  */
 
 import { create } from 'zustand';
-import type { SajuError } from '../core/errors';
+import { ERROR_MESSAGES, type SajuError } from '../core/errors';
 import type { RawFormValues, YajasiPolicy } from '../core/types';
 import type { SajuReading } from '../engine';
 import { computeWithLoad } from '../engine/load';
+import {
+  SHARE_HASH_KEY,
+  buildShareUrl,
+  chartKey,
+  decodeShareToken,
+  encodeShareToken,
+  readShareToken,
+} from '../core/share-link';
 
 export type TextScale = 'normal' | 'large' | 'xlarge';
 export type Phase = 'idle' | 'loading' | 'ready' | 'error';
@@ -52,6 +60,7 @@ export const DEFAULT_FORM: RawFormValues = {
 };
 
 const STORAGE_KEY = 'myeongri.reading.v1';
+const NOTES_KEY = 'myeongri.notes.v1';
 
 interface SajuState {
   route: Route;
@@ -63,6 +72,13 @@ interface SajuState {
   /** 펼쳐진 대운 칸의 index. null 이면 전부 접힘 */
   openCard: number | null;
   tzdataOk: boolean;
+  /**
+   * 인생 대조표. `차트키:대운시작연도` → 사용자가 적은 글.
+   * 이 기기의 localStorage 에만 있고 서버로 나가지 않는다.
+   */
+  notes: Record<string, string>;
+  /** 링크를 복사한 직후 잠깐 뜨는 안내 */
+  shareState: 'idle' | 'copied' | 'failed';
 
   go: (route: Route) => void;
   setField: <K extends keyof RawFormValues>(key: K, value: RawFormValues[K]) => void;
@@ -75,6 +91,13 @@ interface SajuState {
   retry: () => Promise<void>;
   reset: () => void;
   restoreSaved: () => void;
+
+  /** 주소의 프래그먼트에 토큰이 있으면 그대로 복원한다. 없으면 아무것도 안 한다. */
+  restoreFromLink: () => Promise<boolean>;
+  copyShareLink: () => Promise<void>;
+  setNote: (startYear: number, text: string) => void;
+  clearNotes: () => void;
+  noteFor: (startYear: number) => string;
 }
 
 export const useSajuStore = create<SajuState>((set, get) => ({
@@ -86,6 +109,8 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   textScale: 'normal',
   openCard: null,
   tzdataOk: true,
+  notes: readNotes(),
+  shareState: 'idle',
 
   go: (route) => {
     // 부가 화면은 원국이 있어야 의미가 있다. 없으면 입력부터 받는다.
@@ -144,12 +169,119 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     const saved = readSavedForm();
     if (saved) set({ form: saved });
   },
+
+  restoreFromLink: async () => {
+    const token = readShareToken(window.location.hash);
+    if (!token) return false;
+    const decoded = decodeShareToken(token);
+    // 손상된 링크는 조용히 넘어가지 않는다. 잘린 링크로 엉뚱한 사주를
+    // 보여주느니 입력 화면을 보여주는 편이 낫다.
+    if (!decoded.ok || !decoded.form) {
+      clearHash();
+      // phase 를 error 로 둬야 입력 화면이 실제로 안내를 띄운다.
+      // 조용한 실패를 만들지 않는다 — 잘린 링크로 엉뚱한 사주가 나오는 것보다
+      // 무슨 일이 일어났는지 말해주는 편이 낫다.
+      set({ route: 'saju', phase: 'error', error: LINK_BROKEN });
+      return false;
+    }
+    set({ form: decoded.form, route: 'saju' });
+    await get().submit();
+    return true;
+  },
+
+  copyShareLink: async () => {
+    const url = buildShareUrl(window.location.href.split('#')[0] as string, get().form);
+    try {
+      await navigator.clipboard.writeText(url);
+      set({ shareState: 'copied' });
+    } catch {
+      // 클립보드 권한이 없거나 http 인 경우. 주소창에라도 올려둔다.
+      window.location.hash = `${SHARE_HASH_KEY}=${encodeShareToken(get().form)}`;
+      set({ shareState: 'failed' });
+    }
+    window.setTimeout(() => set({ shareState: 'idle' }), 4000);
+  },
+
+  setNote: (startYear, text) => {
+    const key = noteKey(get().form, startYear);
+    set((s) => {
+      const next = { ...s.notes };
+      if (text.trim()) next[key] = text;
+      else delete next[key];
+      persistNotes(next);
+      return { notes: next };
+    });
+  },
+
+  clearNotes: () => {
+    // 이 사주의 것만 지운다. 다른 사람 사주를 봐준 기록까지 날리지 않는다.
+    const prefix = `${chartKey(get().form)}:`;
+    set((s) => {
+      const next = Object.fromEntries(
+        Object.entries(s.notes).filter(([k]) => !k.startsWith(prefix)),
+      );
+      persistNotes(next);
+      return { notes: next };
+    });
+  },
+
+  noteFor: (startYear) => get().notes[noteKey(get().form, startYear)] ?? '',
 }));
 
+const LINK_BROKEN: SajuError = {
+  code: 'BROKEN_LINK',
+  message: ERROR_MESSAGES.BROKEN_LINK,
+};
+
+function clearHash(): void {
+  try {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  } catch {
+    window.location.hash = '';
+  }
+}
+
+const noteKey = (form: RawFormValues, startYear: number): string =>
+  `${chartKey(form)}:${startYear}`;
+
 /**
- * 다시보기는 localStorage 만 쓴다.
- * URL 해시에 생년월일을 넣지 않기로 했다 — Sentry 가 location.href 를
- * 이벤트에 담기 때문이다 (design rev.2 A3 / Open Question 6).
+ * 인생 대조표는 이 기기에만 남는다.
+ *
+ * 키에 생년월일이 평문으로 들어가지 않도록 차트키(불투명 토큰)를 쓴다.
+ * 남의 기기에서 내 사주를 본 뒤에도 흔적이 남지만, 지우기 버튼이 있다.
+ */
+function persistNotes(notes: Record<string, string>): void {
+  try {
+    localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  } catch {
+    // 저장 실패는 치명적이지 않다
+  }
+}
+
+function readNotes(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(NOTES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return {};
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (typeof v === 'string') out[k] = v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * 다시보기는 localStorage 를 쓴다.
+ *
+ * 원래 설계(rev.2 A3 / Open Question 6)에서는 URL 해시를 아예 쓰지 않기로
+ * 했다. Sentry 가 location.href 를 이벤트에 담기 때문이었다. 그 걱정은
+ * scrubUrl 이 프래그먼트를 통째로 버리는 것으로 해결됐고(privacy.test.ts 가
+ * 지킨다), 그래서 공유 링크는 프래그먼트에 불투명 토큰을 싣는다
+ * (core/share-link.ts). 생년월일이 평문으로 들어가는 일은 여전히 없다.
  */
 function persistForm(form: RawFormValues): void {
   try {

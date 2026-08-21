@@ -14,6 +14,7 @@ import { Suspense, lazy, useState } from 'react';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Home } from './ui/Home';
 import { InputForm } from './ui/InputForm';
+import { ShareLink } from './ui/ShareLink';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
 import { useSajuStore, type TextScale } from './store/saju-store';
@@ -476,6 +477,7 @@ function Result() {
           다른 사람 사주 보기
         </button>
       </div>
+      <ShareLink />
     </>
   );
 }

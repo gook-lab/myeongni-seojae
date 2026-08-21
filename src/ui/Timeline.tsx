@@ -51,6 +51,90 @@ function ShareButton({ card, title }: { card: DaeunCard; title?: string }) {
   );
 }
 
+/**
+ * 인생 대조표 — 이 프로젝트의 태도가 제일 잘 드러나는 칸
+ *
+ * 사주가 맞다고 말해주는 대신, 그 10년에 실제로 무슨 일이 있었는지 직접
+ * 적게 한다. 적어놓고 위의 풀이와 나란히 놓으면 맞는지 아닌지는 본인이
+ * 판단한다. 우리가 판정하지 않는다.
+ *
+ * 지나온 칸에만 권한다. 앞으로 올 10년에 "무슨 일이 있었나요" 를 물으면
+ * 그건 예언을 받아적으라는 뜻이 되어버린다.
+ *
+ * 저장은 이 기기의 localStorage 뿐이다. 서버가 없으므로 나갈 곳도 없다.
+ */
+function LifeNote({ card }: { card: DaeunCard }) {
+  const noteFor = useSajuStore((s) => s.noteFor);
+  const setNote = useSajuStore((s) => s.setNote);
+  // notes 를 구독해야 다른 칸에서 지웠을 때 같이 갱신된다
+  useSajuStore((s) => s.notes);
+  const value = noteFor(card.startYear);
+  const past = !card.isCurrent && card.endYear < new Date().getFullYear();
+
+  return (
+    <div className="mt-3.5 border-t border-dashed border-line-dash pt-3">
+      <label
+        htmlFor={`note-${card.index}`}
+        className="mb-1.5 block text-xs font-bold text-ink-soft"
+      >
+        {past
+          ? `${card.startYear}~${card.endYear}년, 실제로 무슨 일이 있었나요`
+          : '적어두고 싶은 것'}
+      </label>
+      <textarea
+        id={`note-${card.index}`}
+        value={value}
+        onChange={(e) => setNote(card.startYear, e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        rows={2}
+        placeholder={past ? '이직, 이사, 만남, 아팠던 일…' : ''}
+        className="w-full resize-y rounded-md border border-line bg-hanji px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-ink-faint"
+      />
+      <p className="mt-1.5 text-[11px] leading-relaxed text-ink-faint">
+        이 기기에만 저장됩니다. 서버로 보내지 않습니다.
+      </p>
+    </div>
+  );
+}
+
+/** 적어둔 것을 지운다. 적은 게 있을 때만 나타난다. */
+function ClearNotes() {
+  const notes = useSajuStore((s) => s.notes);
+  const clear = useSajuStore((s) => s.clearNotes);
+  const [asked, setAsked] = useState(false);
+  const has = Object.keys(notes).length > 0;
+  if (!has) return null;
+
+  return (
+    <div className="mt-4 text-center">
+      {asked ? (
+        <span className="text-xs text-ink-faint">
+          적어두신 내용을 지웁니다.{' '}
+          <button
+            type="button"
+            onClick={() => { clear(); setAsked(false); }}
+            className="font-bold text-jumuk underline"
+          >
+            지우기
+          </button>{' '}
+          ·{' '}
+          <button type="button" onClick={() => setAsked(false)} className="underline">
+            취소
+          </button>
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAsked(true)}
+          className="text-xs text-ink-faint underline"
+        >
+          적어둔 인생 기록 지우기
+        </button>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   cards: DaeunCard[];
   /** 공유 카드에 넣을 표시 이름 (선택) */
@@ -196,6 +280,7 @@ export function Timeline({
                     {card.stageText}
                   </p>
                   <p className="mt-3 text-xs leading-relaxed text-ink-faint">{card.theme}</p>
+                  <LifeNote card={card} />
                   <ShareButton card={card} {...(name ? { title: name } : {})} />
                 </div>
               )}
@@ -209,6 +294,7 @@ export function Timeline({
         <br />
         지나온 10년이 맞는지부터 확인하시면 나머지가 읽힙니다.
       </p>
+      <ClearNotes />
     </section>
   );
 }

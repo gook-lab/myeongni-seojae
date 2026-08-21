@@ -30,9 +30,56 @@
  * 그래서 화면 공유 카드(생년월일 없음)와 성격이 다르다.
  */
 
+import type { DaeunCard } from '../engine';
 import { useSajuStore } from '../store/saju-store';
 
 /** 인쇄 시 잘리지 않게 묶는 단위 */
+
+/**
+ * 인생 대조표 — 사용자가 직접 적은 것
+ *
+ * 이 리포트에서 유일하게 우리가 쓰지 않은 부분이다. 사주 풀이 옆에 본인이
+ * 겪은 일을 나란히 놓는 것이 이 문서의 목적에 가장 가깝다 — 맞다고
+ * 말해주는 게 아니라 스스로 확인하게 한다.
+ *
+ * 적은 게 없으면 아예 나오지 않는다. 빈 칸을 인쇄해봐야 종이만 쓴다.
+ */
+function LifeNotes({ cards }: { cards: DaeunCard[] }) {
+  const noteFor = useSajuStore((s) => s.noteFor);
+  useSajuStore((s) => s.notes);
+  const written = cards
+    .map((c) => ({ card: c, text: noteFor(c.startYear).trim() }))
+    .filter((x) => x.text.length > 0);
+  if (written.length === 0) return null;
+
+  return (
+    <div className="mt-4">
+      <p className="mb-1.5 text-[11px] font-bold text-jumuk">
+        인생 대조표 — 직접 적으신 기록
+      </p>
+      <table className="w-full border-collapse text-[11px]">
+        <tbody>
+          {written.map(({ card, text }) => (
+            <tr key={card.index}>
+              <td className="border border-line px-2 py-1.5 whitespace-nowrap align-top tabular-nums text-ink-faint">
+                {card.startYear}~{card.endYear}
+                <br />
+                {card.ganji} {card.tenGod}
+              </td>
+              <td className="border border-line px-2 py-1.5 align-top leading-relaxed whitespace-pre-wrap">
+                {text}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mt-1 text-[10px] text-ink-faint">
+        이 칸은 계산 결과가 아니라 본인이 적으신 내용입니다.
+      </p>
+    </div>
+  );
+}
+
 function Block({
   title,
   note,
@@ -220,6 +267,8 @@ export function Report() {
             ))}
           </tbody>
         </table>
+
+        <LifeNotes cards={cards} />
 
         {/* 현재 대운은 문단까지 싣는다 */}
         {cards.filter((c) => c.isCurrent).map((c) => (

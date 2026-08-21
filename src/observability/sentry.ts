@@ -74,9 +74,17 @@ const isPlainObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** 객체 트리를 훑으며 민감 키를 지우고 문자열의 날짜를 마스킹한다. */
+const URL_LIKE = /^https?:\/\//i;
+
 export function scrubDeep<T>(value: T, depth = 0): T {
   if (depth > 8) return REDACTED as unknown as T;
-  if (typeof value === 'string') return scrubDates(value) as unknown as T;
+  if (typeof value === 'string') {
+    // URL 이 값으로 들어오는 자리가 있다 — 특히 navigation 브레드크럼의
+    // to/from. 그냥 날짜만 지우면 프래그먼트에 실린 공유 토큰이 그대로
+    // 남는다. 토큰은 암호가 아니라 되읽히므로, 남으면 생년월일이 남는 것과
+    // 같다. URL 처럼 생긴 문자열은 URL 로 세탁한다.
+    return (URL_LIKE.test(value) ? scrubUrl(value) : scrubDates(value)) as unknown as T;
+  }
   if (Array.isArray(value)) return value.map((v) => scrubDeep(v, depth + 1)) as unknown as T;
   if (isPlainObject(value)) {
     const out: Record<string, unknown> = {};

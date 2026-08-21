@@ -17,7 +17,9 @@ export type SajuErrorCode =
   /** 런타임 tzdata 결손 — 한국 표준시 이력을 모름 */
   | 'TZDATA_UNSUPPORTED'
   /** 계산 엔진 동적 import 실패 */
-  | 'ENGINE_LOAD_FAILED';
+  | 'ENGINE_LOAD_FAILED'
+  /** 공유 링크의 토큰이 손상됨 — 메신저가 URL 뒤를 자른 경우가 대부분이다 */
+  | 'BROKEN_LINK';
 
 export interface SajuError {
   code: SajuErrorCode;
@@ -50,4 +52,7 @@ export const ERROR_MESSAGES: Record<SajuErrorCode, string> = {
   TZDATA_UNSUPPORTED:
     '이 기기의 시간대 정보가 오래되어 1954~1961년 구간을 정확히 계산할 수 없습니다. 브라우저를 업데이트하시면 정확도가 올라갑니다.',
   ENGINE_LOAD_FAILED: '계산에 필요한 자료를 불러오지 못했습니다. 연결을 확인하고 다시 시도해 주세요.',
+  // 고칠 대상이 입력이 아니라 링크다. 그래서 안내도 다르다.
+  BROKEN_LINK:
+    '링크가 손상됐습니다. 메신저에서 주소 뒤가 잘렸을 수 있어요. 링크를 다시 받거나 아래에 직접 입력해 주세요.',
 };
