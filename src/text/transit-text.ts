@@ -13,8 +13,18 @@
  * 그리고 좋고 나쁨으로 줄 세우지 않는다. 공망일을 "나쁜 날" 이라 하지 않고
  * "결실을 재촉하기에 맞지 않는 날" 이라 적는다.
  */
+import { ELEMENT_HANJA } from '../core/constants';
 import type { Element, Palace } from '../core/types';
 import type { BranchRelation } from '../core/fortune';
+import { josa } from './fortune-text';
+
+/**
+ * 오행을 "수(水)" 꼴로.
+ *
+ * 한때 `${need}(${need})` 로 적혀 있어 "수(수)" 가 나왔다. 괄호 안은
+ * 한자여야 뜻이 붙는다.
+ */
+const el = (e: Element): string => `${e}(${ELEMENT_HANJA[e]})`;
 
 export function TRANSIT_YONGSIN_TEXT(
   verdict: '숨통이 트인다' | '무난하다' | '버겁다',
@@ -26,9 +36,9 @@ export function TRANSIT_YONGSIN_TEXT(
   switch (verdict) {
     case '숨통이 트인다':
       return (
-        `${when} 들어오는 기운 중에 ${need}(${need})이 있습니다. 마침 당신에게 ` +
-        `필요한 기운이라, 평소보다 일이 수월하게 풀립니다. 미뤄둔 것을 꺼내기 좋은 ` +
-        `${when === '오늘' ? '날' : '해'}입니다.`
+        `${when} 들어오는 기운 중에 ${el(need)}${josa(need, '이', '가')} 있습니다. ` +
+        `마침 당신에게 필요한 기운이라, 평소보다 일이 수월하게 풀립니다. ` +
+        `미뤄둔 것을 꺼내기 좋은 ${when === '오늘' ? '날' : '해'}입니다.`
       );
     case '버겁다':
       return (
@@ -39,7 +49,7 @@ export function TRANSIT_YONGSIN_TEXT(
     default:
       return (
         `${when}은 필요한 기운도 눌러야 할 기운도 특별히 몰리지 않습니다. ` +
-        `${need}이 필요한 자리인데 ${needed > 0 ? '조금 들어오긴 합니다' : '오늘은 들어오지 않습니다'}. ` +
+        `${el(need)}${josa(need, '이', '가')} 필요한 자리인데 ${needed > 0 ? '조금 들어오긴 합니다' : '들어오지 않습니다'}. ` +
         `평소대로 가면 되는 ${when === '오늘' ? '날' : '해'}입니다.`
       );
   }

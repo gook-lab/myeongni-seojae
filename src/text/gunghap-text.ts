@@ -13,7 +13,11 @@
  */
 import type { Element, Palace, TwelveStage } from '../core/types';
 import type { BranchRelation } from '../core/fortune';
-import { asSubject } from './fortune-text';
+import { asSubject, josa } from './fortune-text';
+import { ELEMENT_HANJA } from '../core/constants';
+
+/** 오행을 "수(水)" 꼴로. 괄호 안은 한자여야 뜻이 붙는다. */
+const el = (e: Element): string => `${e}(${ELEMENT_HANJA[e]})`;
 
 export const BRANCH_RELATION_LABEL: Record<BranchRelation, string> = {
   harmony: '육합',
@@ -57,24 +61,24 @@ export function STEM_HARMONY_TEXT(becomes: string): string {
 export function YONGSIN_CROSS_TEXT(
   verdict: '채워준다' | '보통' | '부딪힌다',
   other: string,
-  need: string,
+  need: Element,
 ): string {
   switch (verdict) {
     case '채워준다':
       return (
-        `${need}의 기운이 필요한 자리인데 ${asSubject(other)} 그걸 넉넉히 갖고 있습니다. ` +
+        `${el(need)}의 기운이 필요한 자리인데 ${asSubject(other)} 그걸 넉넉히 갖고 있습니다. ` +
         `궁합에서 흔히 "없는 오행을 채워준다" 고 하는데, 없는 것보다 **필요한 것**을 ` +
         `갖고 오는 편이 훨씬 큽니다. 곁에 있으면 숨통이 트이는 관계입니다.`
       );
     case '부딪힌다':
       return (
-        `${need}의 기운이 필요한데 ${other}${other === '나' ? '는' : '는'} 오히려 눌러야 할 기운을 많이 갖고 있습니다. ` +
+        `${el(need)}의 기운이 필요한데 ${other}는 오히려 눌러야 할 기운을 많이 갖고 있습니다. ` +
         `맞지 않는다는 말이 아니라, 함께 있으면 지치기 쉬우니 각자의 시간이 ` +
         `필요한 사이라는 뜻입니다.`
       );
     default:
       return (
-        `${need}의 기운이 필요한 자리인데 ${other}에게 그 기운이 특별히 많지도 적지도 ` +
+        `${el(need)}의 기운이 필요한 자리인데 ${other}에게 그 기운이 특별히 많지도 적지도 ` +
         `않습니다. 오행으로는 서로 크게 도와주지도 방해하지도 않습니다.`
       );
   }
@@ -102,13 +106,13 @@ export function COMBINED_TEXT(filled: readonly Element[], missing: readonly Elem
   const parts: string[] = [];
   if (filled.length > 0) {
     parts.push(
-      `혼자일 땐 비어 있던 ${filled.join('·')}이(가) 둘이 되면 채워집니다. ` +
+      `혼자일 땐 비어 있던 ${filled.map(el).join(' · ')}${josa(filled[filled.length - 1] ?? '', '이', '가')} 둘이 되면 채워집니다. ` +
         `함께 있을 때 넓어지는 대목입니다.`,
     );
   }
   if (missing.length > 0) {
     parts.push(
-      `${missing.join('·')}은(는) 둘을 합쳐도 없습니다. 두 분 다 약한 방면이라 ` +
+      `${missing.map(el).join(' · ')}${josa(missing[missing.length - 1] ?? '', '은', '는')} 둘을 합쳐도 없습니다. 두 분 다 약한 방면이라 ` +
         `서로에게 기대기보다 밖에서 채워야 하는 자리입니다.`,
     );
   }
@@ -128,8 +132,54 @@ export const CROSS_SINSAL_TEXT: Record<'원진' | '귀문관', string> = {
     '상대의 예민함까지 그대로 옮아옵니다. 각자 회복하는 시간을 두면 훨씬 편해집니다.',
 };
 
-export const GUNGHAP_INTRO =
-  '점수를 내지 않습니다. 두 분의 여섯 자를 자리별로 나란히 놓고, 어디가 맞물리고 어디가 부딪히는지를 그대로 적습니다.';
+export const GUNGHAP_CLOSING =
+  '점수를 내지 않습니다. 어디가 맞물리고 어디가 부딪히는지를 그대로 적을 뿐, 좋다 나쁘다는 두 분이 판단하실 몫입니다.';
 
 export const GUNGHAP_HOUR_NOTE =
-  '태어난 시각은 쓰지 않습니다. 궁합에서 보는 자리(일간·일지·년지·월지)가 시각과 무관해서, 시각을 모르셔도 결과가 흔들리지 않습니다.';
+  '시각을 모르셔도 됩니다. 궁합에서 크게 보는 자리(일간·일지·년지·월지)는 시각과 무관합니다 — 넣으시면 오행을 두 글자 더 세어 견줍니다.';
+
+/**
+ * 음양의 기울기를 견준다.
+ *
+ * 서로 반대로 기울면 채워지고, 같은 쪽으로 기울면 닮은 만큼 같은 데서
+ * 막힌다. 좋고 나쁨이 아니라 어느 쪽으로 기울었는지를 본다.
+ */
+export function POLARITY_COMPARE_TEXT(aRatio: number, bRatio: number): string {
+  const label = (r: number) =>
+    r >= 0.65 ? '양으로 크게 기움'
+    : r >= 0.55 ? '양으로 기움'
+    : r <= 0.35 ? '음으로 크게 기움'
+    : r <= 0.45 ? '음으로 기움'
+    : '고른 편';
+  const a = label(aRatio);
+  const b = label(bRatio);
+
+  const sameSide =
+    (aRatio > 0.55 && bRatio > 0.55) || (aRatio < 0.45 && bRatio < 0.45);
+  const opposite =
+    (aRatio > 0.55 && bRatio < 0.45) || (aRatio < 0.45 && bRatio > 0.55);
+
+  if (opposite) {
+    return (
+      `나는 ${a}, 상대는 ${b}입니다. 서로 반대쪽으로 기울어 있어 함께 있을 때 ` +
+      `균형이 잡힙니다. 한쪽이 밀고 한쪽이 붙드는 식으로 역할이 자연스럽게 나뉩니다.`
+    );
+  }
+  if (sameSide) {
+    const which = aRatio > 0.5 ? '양' : '음';
+    return (
+      `둘 다 ${which}으로 기울어 있습니다(나 ${a}, 상대 ${b}). 통하는 것이 많은 대신 ` +
+      `막히는 자리도 같습니다. ${which === '양' ? '둘 다 앞으로 나가려 해서 속도가 빠른 만큼 부딪히기도' : '둘 다 안으로 접혀서 편안한 대신 결정이 늦어지기'} 쉽습니다.`
+    );
+  }
+  return `나는 ${a}, 상대는 ${b}입니다. 어느 쪽도 크게 치우치지 않아 음양으로는 무난합니다.`;
+}
+
+export function COMPARE_NOTE(aCount: number, bCount: number): string {
+  const base =
+    '겉으로 드러난 글자와, 지지 안에 숨은 천간(지장간)까지 센 것을 나눠 적었습니다. ' +
+    '겉에 없는 오행이 안에 숨어 있는 경우가 흔해서, 겉만 보고 "없다" 고 말하면 틀립니다.';
+  if (aCount === bCount) return base;
+  const who = aCount < bCount ? '나' : '상대';
+  return `${base} ${who} 쪽은 태어난 시각을 넣지 않아 여섯 자로 셈했습니다 — 시각을 넣으면 여덟 자가 됩니다.`;
+}

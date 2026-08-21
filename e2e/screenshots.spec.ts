@@ -123,7 +123,7 @@ test('09 오늘', async ({ page }) => {
   await toResult(page);
   await page.getByRole('button', { name: /^홈으로/ }).click();
   await page.getByRole('button', { name: '오늘' }).click();
-  await expect(page.getByText('오늘 들어오는 기운')).toBeVisible();
+  await expect(page.getByText('오늘 들어오는 기운', { exact: true })).toBeVisible();
   await page.waitForTimeout(700);
   await shot(page, '09-daily', true);
 });
@@ -143,7 +143,7 @@ test('11 신년', async ({ page }) => {
   await toResult(page);
   await page.getByRole('button', { name: /^홈으로/ }).click();
   await page.getByRole('button', { name: '신년' }).click();
-  await expect(page.getByText('올해 들어오는 기운')).toBeVisible();
+  await expect(page.getByText('올해 들어오는 기운', { exact: true })).toBeVisible();
   await page.waitForTimeout(700);
   await shot(page, '11-year', true);
 });

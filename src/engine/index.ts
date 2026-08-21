@@ -39,6 +39,7 @@ import {
 import {
   branchPairs,
   combinedBalance,
+  figuresOf,
   sinsalCross,
   stageCross,
   stemHarmonyOf,
@@ -47,6 +48,8 @@ import {
 import {
   BRANCH_PAIR_TEXT,
   BRANCH_RELATION_LABEL,
+  COMPARE_NOTE,
+  POLARITY_COMPARE_TEXT,
   COMBINED_TEXT,
   CROSS_SINSAL_TEXT,
   STAGE_CROSS_TEXT,
@@ -627,6 +630,18 @@ export interface GunghapReading {
   sinsal: Array<{ name: string; palace: string; pair: string; text: string }>;
   /** 두 사람의 사주팔자 — 나란히 놓고 본다 */
   charts: { a: GunghapChart; b: GunghapChart };
+  /**
+   * 정량 비교 — 문장 대신 숫자를 그대로 낸다.
+   *
+   * "많다 적다" 는 사람마다 다르게 읽힌다. 나란히 세어 보여주면 읽는 분이
+   * 직접 견줄 수 있다. 점수를 안 내는 대신 하는 일이 이것이다.
+   */
+  compare: {
+    elements: Array<{ element: string; a: number; b: number; aHidden: number; bHidden: number }>;
+    polarity: { a: { yang: number; yin: number }; b: { yang: number; yin: number }; text: string };
+    glyphCount: { a: number; b: number };
+    note: string;
+  };
 }
 
 export interface GunghapChart {
@@ -703,13 +718,13 @@ export function computeGunghap(
           who: '나' as const,
           ...crossA,
           need: String(crossA.need),
-          text: YONGSIN_CROSS_TEXT(crossA.verdict, '상대', String(crossA.need)),
+          text: YONGSIN_CROSS_TEXT(crossA.verdict, '상대', crossA.need),
         },
         {
           who: '상대' as const,
           ...crossB,
           need: String(crossB.need),
-          text: YONGSIN_CROSS_TEXT(crossB.verdict, '나', String(crossB.need)),
+          text: YONGSIN_CROSS_TEXT(crossB.verdict, '나', crossB.need),
         },
       ],
       branchPairs: pairs.map((p) => ({
@@ -733,6 +748,27 @@ export function computeGunghap(
         a: { dayMaster: gz(da), year: gz(ca.pillars.year), month: gz(ca.pillars.month), day: gz(ca.pillars.day) },
         b: { dayMaster: gz(db), year: gz(cb.pillars.year), month: gz(cb.pillars.month), day: gz(cb.pillars.day) },
       },
+      compare: (() => {
+        const fa = figuresOf(ca.pillars);
+        const fb = figuresOf(cb.pillars);
+        const ORDER = ['목', '화', '토', '금', '수'] as const;
+        return {
+          elements: ORDER.map((e) => ({
+            element: e,
+            a: fa.surface[e] ?? 0,
+            b: fb.surface[e] ?? 0,
+            aHidden: fa.withHidden[e] ?? 0,
+            bHidden: fb.withHidden[e] ?? 0,
+          })),
+          polarity: {
+            a: { yang: fa.polarity.yang, yin: fa.polarity.yin },
+            b: { yang: fb.polarity.yang, yin: fb.polarity.yin },
+            text: POLARITY_COMPARE_TEXT(fa.polarity.yangRatio, fb.polarity.yangRatio),
+          },
+          glyphCount: { a: fa.glyphCount, b: fb.glyphCount },
+          note: COMPARE_NOTE(fa.glyphCount, fb.glyphCount),
+        };
+      })(),
       title: t.title,
       body: t.body,
       pairLabel: `${da.stemHanja}${da.stem}${da.stemElement} · ${db.stemHanja}${db.stem}${db.stemElement}`,
@@ -747,6 +783,80 @@ export function computeGunghap(
         aText: MUTUAL_TEN_GOD_TEXT[g.aSeesB] ?? '',
         bText: MUTUAL_TEN_GOD_TEXT[g.bSeesA] ?? '',
       },
+    },
+  };
+}
+
+/**
+ * 특정 해의 세운만 다시 뽑는다.
+ *
+ * 신년운세가 올해로 고정돼 있었다. 그런데 사람들이 신년에 궁금해하는 건
+ * 보통 **다음 해**다 — 12월에 "올해 어땠나" 를 보러 오지 않는다.
+ * 전체를 다시 계산하면 오늘·대운까지 그 해 기준으로 밀려버리므로
+ * 세운만 따로 낸다.
+ */
+export function computeYearOnly(
+  raw: RawFormValues,
+  year: number,
+  opts: ComputeOptions = {},
+): SajuResult<YearReading> {
+  const base = computeReading(raw, opts);
+  if (!base.ok) return base;
+  const chart = base.value.chart;
+  const today = opts.today ?? new Date();
+
+  const res = yearFortune(chart.dayMaster, year, today);
+  if (!res.ok) return res;
+
+  const ya = base.value.yongsin;
+  const needEl = ya.primaryElement as OhaengElement;
+  const avoidEls: OhaengElement[] = ya.avoid.map(
+    (c) => categoryToElement(chart.dayMaster.stemElement as never, c as never),
+  );
+  const p = res.value.pillar;
+  const ty = transitYongsin(p.stem, p.branch, needEl, avoidEls);
+  const cs = natalContacts(chart.pillars, p.branch);
+
+  return {
+    ok: true,
+    value: {
+      year: res.value.year,
+      ganji: res.value.ganji,
+      tenGod: res.value.tenGod,
+      category: res.value.category,
+      lead: yearLead(res.value.year, res.value.ganji, res.value.tenGod),
+      text: INTERPRET[res.value.category].monthly.replace('달', '해'),
+      yongsin: {
+        verdict: ty.verdict,
+        brings: ty.brings.map(String),
+        need: String(needEl),
+        text: TRANSIT_YONGSIN_TEXT(ty.verdict, '올해', needEl, ty.needed.length, ty.unwanted.length),
+      },
+      contacts: cs.map((c) => ({
+        palace: String(c.palace),
+        pair: `${c.natalGlyph} · ${p.branch}`,
+        label: BRANCH_RELATION_LABEL[c.relation],
+        text: NATAL_CONTACT_TEXT(c.palace, c.relation),
+      })),
+      withDaeun: (() => {
+        const cur = base.value.timeline.entries.find((e) => e.isCurrent);
+        if (!cur) return null;
+        const rel = branchRelationBetween(cur.pillar.branch, p.branch);
+        return {
+          daeunGanji: `${cur.pillar.stemHanja}${cur.pillar.branchHanja}`,
+          daeunTenGod: cur.tenGod,
+          relation: rel,
+          text: DAEUN_YEAR_TEXT[rel] ?? '',
+        };
+      })(),
+      months: res.value.months.map((m) => ({
+        label: m.label,
+        ganji: m.ganji,
+        tenGod: m.tenGod,
+        category: m.category,
+        text: INTERPRET[m.category].monthly,
+        color: ELEMENT_COLOR[m.pillar.stemElement],
+      })),
     },
   };
 }

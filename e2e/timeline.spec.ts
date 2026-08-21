@@ -818,7 +818,7 @@ test.describe('오늘·신년 — 운이 내 원국 위를 지나간다', () => 
      */
     await toReading(page);
     await page.getByRole('button', { name: '오늘' }).click();
-    await expect(page.getByText('오늘 들어오는 기운')).toBeVisible();
+    await expect(page.getByText('오늘 들어오는 기운', { exact: true })).toBeVisible();
     await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
     await expect(page.getByText(/숨은 천간까지 세어/)).toBeVisible();
   });
@@ -872,6 +872,176 @@ test.describe('오늘·신년 — 운이 내 원국 위를 지나간다', () => 
         await page.goBack();
       });
       await expect(page.getByRole('button', { name: '신년' })).toBeVisible();
+    }
+  });
+});
+
+test.describe('궁합 입력 — 상대방도 나와 같은 것을 받는다', () => {
+  async function toGunghapForm(page: import('@playwright/test').Page) {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '궁합' }).click();
+  }
+
+  test('★시각·음력·출생지를 모두 받는다★', async ({ page }) => {
+    /*
+     * 예전에는 년·월·일·성별만 받고 양력 고정, 시각 없음, 출생지는 내
+     * 것을 그대로 씌웠다. 궁합이 일지만 볼 때는 그래도 됐지만 지금은
+     * 오행을 합산하고 년지·월지까지 본다.
+     */
+    await toGunghapForm(page);
+    const s = page.getByRole('region', { name: '궁합' });
+    await expect(s.getByRole('button', { name: '음력' })).toBeVisible();
+    await expect(s.getByRole('button', { name: '태어난 시각을 압니다' })).toBeVisible();
+    await expect(s.getByLabel('상대 출생지')).toBeVisible();
+  });
+
+  test('시각을 넣으면 여섯 자가 여덟 자가 된다', async ({ page }) => {
+    await toGunghapForm(page);
+    const s = page.getByRole('region', { name: '궁합' });
+
+    await s.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(page.getByText('숫자로 견주기')).toBeVisible();
+    const without = await page.getByText(/\d+·\d+자/).innerText();
+
+    await s.getByRole('button', { name: '태어난 시각을 압니다' }).click();
+    await s.getByLabel('상대 시').selectOption('9');
+    await s.getByRole('button', { name: '궁합 보기' }).click();
+    const withHour = await page.getByText(/\d+·\d+자/).innerText();
+
+    expect(withHour).not.toBe(without);
+    expect(withHour).toContain('8자');
+  });
+
+  test('상대방 음력도 받는다', async ({ page }) => {
+    await toGunghapForm(page);
+    const s = page.getByRole('region', { name: '궁합' });
+    await s.getByRole('button', { name: '음력' }).click();
+    await expect(s.getByText('상대방이 윤달로 태어났습니다')).toBeVisible();
+    await s.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(page.getByText('두 분의 명식')).toBeVisible();
+  });
+
+  test('★출생지가 다르면 결과가 달라진다★', async ({ page }) => {
+    // 예전에는 내 출생지를 상대에게 씌우고 있었다. 경도가 다르면
+    // 진태양시가 달라져 일주가 갈리기도 한다.
+    await toGunghapForm(page);
+    const s = page.getByRole('region', { name: '궁합' });
+    /*
+     * 서울(126.978°)은 시계보다 32분, 신의주(124.398°)는 42분 늦다.
+     * 그 사이인 00시 35분에 태어나면 서울 기준으로는 그 날이지만
+     * 신의주 기준으로는 아직 전날이라 일주가 갈린다.
+     */
+    await s.getByRole('button', { name: '태어난 시각을 압니다' }).click();
+    await s.getByLabel('상대 시').selectOption('0');
+    await s.getByLabel('상대 분').selectOption('35');
+
+    await s.getByLabel('상대 출생지').selectOption({ label: '서울에서 태어남' });
+    await s.getByRole('button', { name: '궁합 보기' }).click();
+    const seoul = await page.getByText('두 분의 명식').locator('..').innerText();
+
+    await s.getByLabel('상대 출생지').selectOption({ label: '신의주에서 태어남' });
+    await s.getByRole('button', { name: '궁합 보기' }).click();
+    const sinuiju = await page.getByText('두 분의 명식').locator('..').innerText();
+
+    // 자정 무렵이면 경도 차이가 일주를 가른다
+    expect(sinuiju).not.toBe(seoul);
+  });
+});
+
+test.describe('궁합 — 숫자로 견주기', () => {
+  test('★오행 다섯 줄과 음양이 나란히 나온다★', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '궁합' }).click();
+    await page.getByRole('button', { name: '궁합 보기' }).click();
+
+    const table = page.getByText('숫자로 견주기').locator('..').locator('table');
+    await expect(table).toBeVisible();
+    await expect(table.locator('tbody > tr')).toHaveCount(6); // 오행 5 + 음양 1
+    for (const h of ['나', '상대', '둘 합']) {
+      await expect(table.getByText(h, { exact: true })).toBeVisible();
+    }
+    await expect(table.getByText('양 · 음')).toBeVisible();
+  });
+
+  test('겉과 속을 나눠 센다', async ({ page }) => {
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '궁합' }).click();
+    await page.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(page.getByText(/겉에 없는 오행이 안에 숨어 있는 경우가 흔해서/)).toBeVisible();
+    await expect(page.getByText(/속 \d+·\d+/).first()).toBeVisible();
+  });
+});
+
+test.describe('신년 — 어느 해를 볼지 고른다', () => {
+  test('★올해로 고정돼 있지 않다★', async ({ page }) => {
+    /*
+     * 신년에 궁금한 건 보통 다음 해다 — 12월에 "올해 어땠나" 를 보러
+     * 오지 않는다. 그런데 올해로 고정돼 있었다.
+     */
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '신년' }).click();
+
+    const thisYear = new Date().getFullYear();
+    const s = page.getByRole('region', { name: '신년 운세' });
+    const ganji = s.getByTestId('year-ganji');
+    const before = await ganji.innerText();
+
+    await s.getByRole('button', { name: `${thisYear + 1}년` }).click();
+    await expect(s.getByRole('button', { name: `${thisYear + 1}년` })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    // 세운 간지가 실제로 바뀐다 — 해마다 한 칸씩 나아간다
+    await expect(ganji).not.toHaveText(before);
+  });
+
+  test('세 해를 고를 수 있다', async ({ page }) => {
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '신년' }).click();
+    const thisYear = new Date().getFullYear();
+    for (const y of [thisYear, thisYear + 1, thisYear + 2]) {
+      await expect(page.getByRole('button', { name: `${y}년` })).toBeVisible();
+    }
+  });
+
+  test('연도를 바꿔도 용신 관점이 따라온다', async ({ page }) => {
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '신년' }).click();
+    await page.getByRole('button', { name: `${new Date().getFullYear() + 2}년` }).click();
+    await expect(page.getByText('올해 들어오는 기운', { exact: true })).toBeVisible();
+    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
+  });
+
+  test('★오행을 한자와 함께 적고 조사를 맞춘다★', async ({ page }) => {
+    /*
+     * 한때 "수(수)이 있습니다" 가 나왔다. 괄호 안은 한자여야 뜻이 붙고,
+     * 받침에 따라 이/가가 갈린다. 다섯 오행 중 목·금만 받침이 있다.
+     */
+    await fillBirth(page, '1990', '5', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '오늘' }).click();
+    const body = await page.locator('body').innerText();
+    for (const bad of ['목(목)', '화(화)', '토(토)', '금(금)', '수(수)']) {
+      expect(body, bad).not.toContain(bad);
+    }
+    for (const bad of ['화이 ', '토이 ', '수이 ', '목가 ', '금가 ']) {
+      expect(body, bad).not.toContain(bad);
     }
   });
 });

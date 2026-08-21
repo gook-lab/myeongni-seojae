@@ -38,7 +38,3 @@ export const STAGE_TEXT: Record<TwelveStage, string> = {
     '길러지는 자리입니다. 조용히 자라는 때라 드러나는 성과는 적어도 바탕이 두터워집니다.',
 };
 
-/** 대운 칸에 붙는 한 줄 요약 */
-export function stageLead(stage: TwelveStage, hanja: string): string {
-  return `${stage}(${hanja}) — 일간이 이 10년 동안 놓이는 자리입니다.`;
-}

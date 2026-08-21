@@ -255,3 +255,77 @@ export function hiddenElementCounts(pillars: FourPillars): Record<Element, numbe
   }
   return counts;
 }
+
+/* ── 음양 ───────────────────────────────────────────────────────────── */
+
+export interface Polarity {
+  yang: number;
+  yin: number;
+  /** 여덟(또는 여섯) 글자 중 양의 비율 */
+  yangRatio: number;
+}
+
+/**
+ * 음양의 치우침.
+ *
+ * 천간은 갑·병·무·경·임이 양, 을·정·기·신·계가 음이다. 지지는 자·인·진·
+ * 오·신·술이 양, 축·묘·사·미·유·해가 음이다. 둘 다 순서에서 짝수 자리가
+ * 양이라 표를 적을 필요가 없다.
+ *
+ * 한쪽으로 크게 쏠리면 그 결이 강하게 드러난다 — 양이 많으면 밖으로
+ * 뻗고 빠르며, 음이 많으면 안으로 여물고 신중하다. 좋고 나쁨이 아니라
+ * 어느 쪽으로 기울었는지를 본다. 궁합에서는 서로 반대로 기울면 채워지고
+ * 같은 쪽으로 기울면 닮은 만큼 같은 데서 막힌다.
+ */
+export function polarityOf(pillars: FourPillars): Polarity {
+  const list = [pillars.year, pillars.month, pillars.day, pillars.hour].filter(
+    (p): p is NonNullable<typeof p> => p !== null,
+  );
+  let yang = 0;
+  let yin = 0;
+  for (const p of list) {
+    (stemIdx(p.stem) % 2 === 0 ? yang++ : yin++);
+    (branchIdx(p.branch) % 2 === 0 ? yang++ : yin++);
+  }
+  const total = yang + yin;
+  return { yang, yin, yangRatio: total === 0 ? 0.5 : yang / total };
+}
+
+/* ── 정량 비교 ──────────────────────────────────────────────────────── */
+
+export interface SideFigures {
+  /** 여덟(시각 없으면 여섯) 글자 */
+  glyphCount: number;
+  polarity: Polarity;
+  /** 겉으로 드러난 오행 */
+  surface: Record<Element, number>;
+  /** 지장간까지 센 오행 */
+  withHidden: Record<Element, number>;
+}
+
+/**
+ * 두 사람을 나란히 놓고 세는 값들.
+ *
+ * 문장으로만 말하면 "많다 적다" 가 사람마다 다르게 읽힌다. 숫자를 그대로
+ * 보여주면 읽는 분이 직접 견줄 수 있다 — 이 앱이 점수를 안 내는 대신
+ * 하는 일이 그것이다.
+ *
+ * 겉과 속을 나눠 센다. 겉으로 없는 오행이 지지 안에 숨어 있는 경우가
+ * 흔해서, 겉만 보고 "수가 아예 없다" 고 말하면 틀린 말이 된다.
+ */
+export const figuresOf = (pillars: FourPillars): SideFigures => {
+  const list = [pillars.year, pillars.month, pillars.day, pillars.hour].filter(
+    (p): p is NonNullable<typeof p> => p !== null,
+  );
+  const surface = Object.fromEntries(ELEMENTS.map((e) => [e, 0])) as Record<Element, number>;
+  for (const p of list) {
+    surface[p.stemElement] += 1;
+    surface[p.branchElement] += 1;
+  }
+  return {
+    glyphCount: list.length * 2,
+    polarity: polarityOf(pillars),
+    surface,
+    withHidden: hiddenElementCounts(pillars),
+  };
+};

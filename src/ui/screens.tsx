@@ -16,8 +16,15 @@
 import { useState } from 'react';
 // 값 import 는 금지. engine 을 정적으로 끌어오면 lunar-javascript 가
 // 진입 청크에 딸려와 코드 분할이 무너진다 (test/bundle.test.ts 가 지킨다).
-import type { GunghapReading } from '../engine';
-import { computeGunghapWithLoad } from '../engine/load';
+import type { GunghapReading, YearReading } from '../engine';
+import { computeGunghapWithLoad, computeYearOnlyWithLoad } from '../engine/load';
+import { REGIONS, SEOUL } from '../core/regions';
+/*
+ * 문구는 text/ 에서만 갖는다. 같은 말을 화면에 복붙해두면 한쪽만 고쳤을 때
+ * 다른 쪽이 조용히 낡는다 — 실제로 세 곳이 그렇게 되어 있었다.
+ */
+import { MONTH_INTRO } from '../text/fortune-text';
+import { GUNGHAP_CLOSING, GUNGHAP_HOUR_NOTE } from '../text/gunghap-text';
 import { useSajuStore } from '../store/saju-store';
 import type { RawFormValues } from '../core/types';
 
@@ -54,18 +61,27 @@ function Screen({ title, subtitle, children }: {
 
 export function DailyScreen() {
   return (
-    <Screen title="오늘의 운세" subtitle="오늘의 일진이 내 일간에게 어떻게 작용하는지 봅니다.">
+    <Screen
+      title="오늘의 운세"
+      subtitle="오늘 들어오는 기운이 내게 필요한 것인지, 원국의 어느 자리를 건드리는지 봅니다."
+    >
       <DailyPanel />
     </Screen>
   );
 }
 
+/*
+ * 제목에 연도를 박지 않는다.
+ *
+ * 패널 안에서 해를 고를 수 있게 되면서 "2026년 운세" 라고 적어두면
+ * 2027을 골라도 제목은 그대로 남는다. 어느 해를 보고 있는지는 눌린
+ * 버튼이 말한다.
+ */
 export function YearScreen() {
-  const year = useSajuStore((s) => s.reading?.year);
   return (
     <Screen
-      title={`${year?.year ?? ''}년 운세`}
-      subtitle="세운과 절기 기준 열두 달의 흐름입니다."
+      title="신년 운세"
+      subtitle="세운이 내 원국 위를 어떻게 지나가는지, 절기로 나눈 열두 달과 함께 봅니다."
     >
       <YearPanel />
     </Screen>
@@ -74,7 +90,10 @@ export function YearScreen() {
 
 export function GunghapScreen() {
   return (
-    <Screen title="궁합" subtitle="두 사람의 일간 오행 관계와 일지 합·충을 봅니다.">
+    <Screen
+      title="궁합"
+      subtitle="두 분의 여섯 자를 자리별로 나란히 놓고 봅니다. 점수를 내지 않습니다."
+    >
       <GunghapPanel />
     </Screen>
   );
@@ -179,14 +198,52 @@ function DailyPanel() {
 }
 
 function YearPanel() {
-  const year = useSajuStore((s) => s.reading?.year);
+  const base = useSajuStore((s) => s.reading?.year);
+  const myForm = useSajuStore((s) => s.form);
+  /*
+   * 올해로 고정돼 있었다. 그런데 신년에 궁금한 건 보통 **다음 해**다 —
+   * 12월에 "올해 어땠나" 를 보러 오지 않는다.
+   */
+  const [picked, setPicked] = useState<YearReading | null>(null);
+  const [busy, setBusy] = useState(false);
+  const thisYear = new Date().getFullYear();
+  const year = picked ?? base;
   if (!year) return <Empty>신년운세를 계산하지 못했습니다.</Empty>;
+
+  const pick = async (y: number) => {
+    if (y === year.year) return;
+    setBusy(true);
+    const r = await computeYearOnlyWithLoad(myForm, y);
+    setBusy(false);
+    if (r.ok) setPicked(r.value);
+  };
 
   return (
     <div className="space-y-2.5">
+      {/* 어느 해를 볼지 고른다 */}
+      <div className="flex gap-2">
+        {[thisYear, thisYear + 1, thisYear + 2].map((y) => (
+          <button
+            key={y}
+            type="button"
+            aria-pressed={year.year === y}
+            disabled={busy}
+            onClick={() => void pick(y)}
+            className={
+              'flex-1 rounded-md border px-3 py-2 text-sm tabular-nums transition-colors ' +
+              (year.year === y
+                ? 'border-jumuk bg-jumuk text-card'
+                : 'border-line bg-hanji text-ink-soft disabled:opacity-60')
+            }
+          >
+            {y}년
+          </button>
+        ))}
+      </div>
+
       <article className="rounded-lg border border-jumuk bg-card-warm px-4 py-4">
         <p className="flex items-baseline gap-2">
-          <span className="text-2xl text-ink">{year.ganji}</span>
+          <span data-testid="year-ganji" className="text-2xl text-ink">{year.ganji}</span>
           <span className="text-sm text-jumuk">
             {year.tenGod} · {year.category}
           </span>
@@ -234,9 +291,7 @@ function YearPanel() {
         </article>
       )}
 
-      <p className="px-1 text-xs leading-relaxed text-ink-faint">
-        절기를 기준으로 나눈 열두 달입니다. 양력 달과 며칠씩 어긋납니다.
-      </p>
+      <p className="px-1 text-xs leading-relaxed text-ink-faint">{MONTH_INTRO}</p>
 
       <ol className="space-y-1.5">
         {year.months.map((m) => (
@@ -269,7 +324,26 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
 
 function GunghapPanel() {
   const myForm = useSajuStore((s) => s.form);
-  const [other, setOther] = useState({ year: 1990, month: 1, day: 1, gender: '여' as '남' | '여' });
+  /*
+   * 상대방도 나와 같은 것을 받는다.
+   *
+   * 예전에는 년·월·일·성별만 받고 양력 고정, 시각 없음, 출생지는 내 것을
+   * 그대로 씌웠다. 궁합이 일지만 볼 때는 그래도 됐지만 지금은 오행을
+   * 합산하고 년지·월지까지 본다 — 시각이 있으면 두 글자가 더 붙고,
+   * 출생지가 다르면 진태양시가 달라져 일주가 갈리기도 한다.
+   */
+  const [other, setOther] = useState({
+    calendar: 'solar' as 'solar' | 'lunar',
+    leapMonth: false,
+    year: 1990,
+    month: 1,
+    day: 1,
+    hourKnown: false,
+    hour: 12,
+    minute: 0,
+    gender: '여' as '남' | '여',
+    longitude: SEOUL.longitude,
+  });
   const [result, setResult] = useState<GunghapReading | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -279,15 +353,17 @@ function GunghapPanel() {
 
   const run = async () => {
     const partner: RawFormValues = {
-      calendar: 'solar',
+      calendar: other.calendar,
       year: other.year,
       month: other.month,
       day: other.day,
-      leapMonth: false,
-      // 궁합은 일간·일지만 쓰므로 시각이 필요 없다
-      hourKnown: false,
+      leapMonth: other.leapMonth,
+      hourKnown: other.hourKnown,
+      hour: other.hour,
+      minute: other.minute,
       gender: other.gender,
-      longitude: myForm.longitude,
+      longitude: other.longitude,
+      // 야자시·균시차는 판정 규약이라 두 사람에게 같은 잣대를 쓴다
       yajasi: myForm.yajasi,
       applyEquationOfTime: myForm.applyEquationOfTime,
     };
@@ -307,6 +383,36 @@ function GunghapPanel() {
     <div className="space-y-3">
       <div className="rounded-lg border border-line bg-card px-4 py-4">
         <p className="mb-2.5 text-sm text-ink-soft">상대방 생년월일</p>
+
+        <div className="mb-2 grid grid-cols-2 gap-2">
+          {(['solar', 'lunar'] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              aria-pressed={other.calendar === k}
+              onClick={() => setOther((o) => ({ ...o, calendar: k, leapMonth: false }))}
+              className={
+                'rounded-md border px-3 py-2 text-sm transition-colors ' +
+                (other.calendar === k
+                  ? 'border-jumuk bg-jumuk text-card'
+                  : 'border-line bg-hanji text-ink-soft')
+              }
+            >
+              {k === 'solar' ? '양력' : '음력'}
+            </button>
+          ))}
+        </div>
+        {other.calendar === 'lunar' && (
+          <label className="mb-2 flex items-center gap-2 text-sm text-ink-soft">
+            <input
+              type="checkbox"
+              checked={other.leapMonth}
+              onChange={(e) => setOther((o) => ({ ...o, leapMonth: e.target.checked }))}
+            />
+            상대방이 윤달로 태어났습니다
+          </label>
+        )}
+
         <div className="grid grid-cols-3 gap-2">
           <select
             aria-label="상대 년"
@@ -357,9 +463,63 @@ function GunghapPanel() {
             </button>
           ))}
         </div>
-        <p className="mt-2.5 text-xs leading-relaxed text-ink-faint">
-          궁합은 두 사람의 일간·일지만 보므로 태어난 시각이 필요 없습니다.
-        </p>
+        {/* 시각 — 몰라도 되지만 알면 두 글자가 더 붙는다 */}
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          {([false, true] as const).map((known) => (
+            <button
+              key={String(known)}
+              type="button"
+              aria-pressed={other.hourKnown === known}
+              onClick={() => setOther((o) => ({ ...o, hourKnown: known }))}
+              className={
+                'rounded-md border px-3 py-2 text-sm transition-colors ' +
+                (other.hourKnown === known
+                  ? 'border-jumuk bg-jumuk text-card'
+                  : 'border-line bg-hanji text-ink-soft')
+              }
+            >
+              {known ? '태어난 시각을 압니다' : '시각은 모릅니다'}
+            </button>
+          ))}
+        </div>
+        {other.hourKnown && (
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <select
+              aria-label="상대 시"
+              className={FIELD}
+              value={String(other.hour)}
+              onChange={(e) => setOther((o) => ({ ...o, hour: Number(e.target.value) }))}
+            >
+              {range(0, 23).map((h) => (
+                <option key={h} value={h}>{h}시</option>
+              ))}
+            </select>
+            <select
+              aria-label="상대 분"
+              className={FIELD}
+              value={String(other.minute)}
+              onChange={(e) => setOther((o) => ({ ...o, minute: Number(e.target.value) }))}
+            >
+              {range(0, 59).map((m) => (
+                <option key={m} value={m}>{m}분</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* 출생지 — 예전에는 내 출생지를 상대에게 그대로 씌우고 있었다 */}
+        <select
+          aria-label="상대 출생지"
+          className={`${FIELD} mt-2 w-full`}
+          value={String(other.longitude)}
+          onChange={(e) => setOther((o) => ({ ...o, longitude: Number(e.target.value) }))}
+        >
+          {REGIONS.map((r) => (
+            <option key={r.name} value={r.longitude}>{r.name}에서 태어남</option>
+          ))}
+        </select>
+
+        <p className="mt-2.5 text-xs leading-relaxed text-ink-faint">{GUNGHAP_HOUR_NOTE}</p>
         <button
           type="button"
           onClick={() => void run()}
@@ -415,6 +575,69 @@ function GunghapPanel() {
                 {result.stemHarmony.text.replace(/\*\*/g, '')}
               </p>
             )}
+          </article>
+
+          {/*
+            정량 비교 — 문장 대신 숫자를 그대로 낸다.
+            "많다 적다" 는 사람마다 다르게 읽힌다. 나란히 세어 보여주면
+            읽는 분이 직접 견줄 수 있다. 점수를 안 내는 대신 하는 일이다.
+          */}
+          <article className="rounded-lg border border-line bg-card px-4 py-4">
+            <p className="mb-2.5 text-xs text-jumuk">숫자로 견주기</p>
+
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="text-[11px] text-ink-faint">
+                  <th className="pb-1.5 text-left font-normal">오행</th>
+                  <th className="pb-1.5 font-normal">나</th>
+                  <th className="pb-1.5 font-normal">상대</th>
+                  <th className="pb-1.5 font-normal text-ink-faint">둘 합</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.compare.elements.map((e) => {
+                  const sum = e.a + e.b;
+                  return (
+                    <tr key={e.element} className="border-t border-line-soft">
+                      <td className="py-1.5 text-ink">
+                        {e.element}
+                        <span className="ml-1 text-[10px] text-ink-faint">
+                          속 {e.aHidden}·{e.bHidden}
+                        </span>
+                      </td>
+                      <td className={'py-1.5 text-center tabular-nums ' + (e.a === 0 ? 'text-ink-faint' : 'text-ink')}>
+                        {e.a}
+                      </td>
+                      <td className={'py-1.5 text-center tabular-nums ' + (e.b === 0 ? 'text-ink-faint' : 'text-ink')}>
+                        {e.b}
+                      </td>
+                      <td className={'py-1.5 text-center tabular-nums ' + (sum === 0 ? 'text-jumuk' : 'text-ink-soft')}>
+                        {sum}
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr className="border-t border-line">
+                  <td className="py-1.5 text-ink">양 · 음</td>
+                  <td className="py-1.5 text-center tabular-nums text-ink">
+                    {result.compare.polarity.a.yang}·{result.compare.polarity.a.yin}
+                  </td>
+                  <td className="py-1.5 text-center tabular-nums text-ink">
+                    {result.compare.polarity.b.yang}·{result.compare.polarity.b.yin}
+                  </td>
+                  <td className="py-1.5 text-center text-[10px] text-ink-faint">
+                    {result.compare.glyphCount.a}·{result.compare.glyphCount.b}자
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p className="mt-3 text-sm leading-[1.85] text-ink">
+              {result.compare.polarity.text}
+            </p>
+            <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+              {result.compare.note}
+            </p>
           </article>
 
           {/* ★용신 교차★ 없는 오행보다 필요한 오행이 크다 */}
@@ -509,10 +732,7 @@ function GunghapPanel() {
             </Card>
           )}
 
-          <p className="px-1 pt-1 text-xs leading-relaxed text-ink-faint">
-            점수를 내지 않습니다. 어디가 맞물리고 어디가 부딪히는지를 그대로 적을 뿐,
-            좋다 나쁘다는 두 분이 판단하실 몫입니다.
-          </p>
+          <p className="px-1 pt-1 text-xs leading-relaxed text-ink-faint">{GUNGHAP_CLOSING}</p>
         </div>
       )}
     </div>

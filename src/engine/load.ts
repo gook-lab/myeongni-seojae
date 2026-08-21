@@ -12,7 +12,7 @@
  */
 
 import { ERROR_MESSAGES, err, ok, type SajuResult } from '../core/errors';
-import type { ComputeOptions, GunghapReading, SajuReading } from './index';
+import type { ComputeOptions, GunghapReading, SajuReading, YearReading } from './index';
 import type { RawFormValues } from '../core/types';
 
 type EngineModule = typeof import('./index');
@@ -65,6 +65,17 @@ export async function computeWithLoad(
   const engine = await loadEngine();
   if (!engine.ok) return engine;
   return engine.value.computeReading(raw, opts);
+}
+
+/** 특정 해의 세운만. 신년 화면의 연도 선택이 쓴다. */
+export async function computeYearOnlyWithLoad(
+  raw: RawFormValues,
+  year: number,
+  opts: ComputeOptions = {},
+): Promise<SajuResult<YearReading>> {
+  const engine = await loadEngine();
+  if (!engine.ok) return engine;
+  return engine.value.computeYearOnly(raw, year, opts);
 }
 
 /** 테스트 전용 — 캐시 초기화 */
