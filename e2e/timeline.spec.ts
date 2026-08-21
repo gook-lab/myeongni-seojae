@@ -674,3 +674,40 @@ test.describe('인생 대조표 — 맞다고 말해주는 대신 직접 적게 
     await expect(timeline.locator('textarea').first()).toHaveValue('');
   });
 });
+
+test.describe('한국 음력 — 가족관계등록부에 적힌 그 음력', () => {
+  test('★2017년 윤5월이 통한다 (중국 음력에는 없는 달)★', async ({ page }) => {
+    // 중국 음력은 2017년을 윤6월로 본다. 예전 코드는 이 입력을 거절했다.
+    // 한국 달력·가족관계등록부에는 윤5월로 적힌다.
+    await page.getByRole('button', { name: '음력' }).click();
+    await page.getByLabel('윤달로 태어났습니다').check();
+    await fillBirth(page, '2017', '5', '10');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+
+    // 어느 양력 날짜로 옮겼는지 리포트에 밝힌다 — 2017 윤5/10 = 양력 7월 3일
+    await page.getByRole('button', { name: '리포트 · 인쇄하기' }).click();
+    await expect(page.getByText(/음력 2017년 5월 10일 윤달/)).toBeVisible();
+    await expect(page.getByText(/양력 2017년 7월 3일로 계산했습니다/)).toBeVisible();
+    await expect(page.getByText(/한국천문연구원 음양력 기준/)).toBeVisible();
+  });
+
+  test('2012년 윤3월도 통한다', async ({ page }) => {
+    await page.getByRole('button', { name: '음력' }).click();
+    await page.getByLabel('윤달로 태어났습니다').check();
+    await fillBirth(page, '2012', '3', '10');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+  });
+
+  test('없는 윤달은 여전히 거절한다', async ({ page }) => {
+    // 2016년에는 윤달이 없다. 있는 척 만들어내면 안 된다.
+    await page.getByRole('button', { name: '음력' }).click();
+    await page.getByLabel('윤달로 태어났습니다').check();
+    await fillBirth(page, '2016', '5', '10');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toHaveCount(0);
+  });
+});

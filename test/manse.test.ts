@@ -32,7 +32,7 @@ const chart = (raw: Partial<RawFormValues>): SajuChart => {
   if (!s.ok) throw new Error(`resolveSolarYmd: ${s.error.code}`);
   const t = toSolarTime(n.value, { solarYmd: s.value });
   if (!t.ok) throw new Error(`toSolarTime: ${t.error.code}`);
-  const c = computeChart(n.value, t.value);
+  const c = computeChart(n.value, t.value, s.value);
   if (!c.ok) throw new Error(`computeChart: ${c.error.code}`);
   return c.value;
 };

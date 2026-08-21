@@ -158,6 +158,17 @@ export function Report() {
           {' · '}
           {chart.input.gender}자 · {chart.animal}띠
         </p>
+        {chart.input.calendar === 'lunar' && (
+          /*
+           * 음력으로 넣었으면 어느 양력 날짜로 옮겼는지 밝힌다.
+           * 한국 음력과 중국 음력은 달의 3.6% 에서 하루 갈린다. 다른 곳과
+           * 결과가 다를 때 어디서 갈렸는지 짚을 수 있어야 한다.
+           */
+          <p className="mt-1 text-[11px] text-ink-faint">
+            양력 {chart.solarDate.year}년 {chart.solarDate.month}월 {chart.solarDate.day}일로
+            계산했습니다 · 한국천문연구원 음양력 기준
+          </p>
+        )}
       </header>
 
       {/* 1. 명식 + 계산 근거 */}

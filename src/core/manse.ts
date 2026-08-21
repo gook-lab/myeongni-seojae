@@ -95,6 +95,7 @@ const eightCharAt = (f: CalendarFields, sect: 1 | 2) => {
 export function computeChart(
   input: BirthInput,
   solarTime: SolarTimeResult,
+  solarDate: { year: number; month: number; day: number },
 ): SajuResult<SajuChart> {
   const sect: 1 | 2 = input.yajasi === 'advance-day' ? 1 : 2;
 
@@ -154,6 +155,7 @@ export function computeChart(
 
     return ok({
       input,
+      solarDate,
       solarTime,
       pillars,
       dayMaster: dayPillar,

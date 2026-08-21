@@ -12,6 +12,11 @@
 
 import { Lunar, LunarYear } from 'lunar-javascript';
 import {
+  koreanLeapMonthOf,
+  koreanLunarToSolar,
+  supportsKoreanLunar,
+} from './korean-lunar';
+import {
   ERROR_MESSAGES,
   SUPPORTED_YEAR_MAX,
   SUPPORTED_YEAR_MIN,
@@ -39,8 +44,19 @@ export function isRealSolarDate(year: number, month: number, day: number): boole
   );
 }
 
-/** 해당 음력 연도의 윤달. 없으면 0. */
+/**
+ * 해당 음력 연도의 윤달. 없으면 0.
+ *
+ * ★한국 음력 기준이다.★ 중국 음력과 갈리는 해가 있다 — 2017년은
+ * 한국 윤5월, 중국 윤6월이다. 사용자는 가족관계등록부에 적힌 대로
+ * 넣으므로 한국 기준으로 받아야 통과한다. 왜 갈리는지는
+ * core/korean-lunar.ts 에 적어뒀다.
+ *
+ * 2050년을 넘으면 한국 자료가 없어 중국 음력으로 물러난다.
+ */
 export function leapMonthOf(lunarYear: number): number {
+  const korean = koreanLeapMonthOf(lunarYear);
+  if (korean !== null) return korean;
   try {
     return LunarYear.fromYear(lunarYear).getLeapMonth();
   } catch {
@@ -55,8 +71,17 @@ export interface SolarYmd {
 }
 
 /**
- * 음력 → 양력. 윤달은 월을 음수로 표기한다 (lunar-javascript 규약).
- * 없는 윤달·없는 날짜는 라이브러리가 throw 하므로 여기서 결과 타입으로 감싼다.
+ * 음력 → 양력.
+ *
+ * ★한국 음력으로 읽는다.★ 사용자가 넣는 음력은 가족관계등록부에 적힌
+ * 한국 음력이고, 그건 중국 음력과 달의 3.6% 에서 하루 어긋난다. 하루
+ * 어긋나면 일주가 통째로 바뀐다. 근거는 core/korean-lunar.ts.
+ *
+ * 2050년까지는 한국 자료로, 그 뒤로는 lunar-javascript(중국 음력)로
+ * 물러난다. 물러난다는 사실 자체는 숨기지 않는다 — supportsKoreanLunar
+ * 가 그 경계를 알려준다.
+ *
+ * 없는 윤달·없는 날짜는 결과 타입으로 감싼다.
  */
 export function lunarToSolar(
   year: number,
@@ -73,6 +98,17 @@ export function lunarToSolar(
       });
     }
   }
+  const korean = koreanLunarToSolar(year, month, day, leapMonth);
+  if (korean) return ok(korean);
+  if (supportsKoreanLunar(year)) {
+    // 한국 자료 범위 안인데 변환이 안 됐다는 건 그런 날짜가 없다는 뜻이다.
+    // 여기서 중국 음력으로 넘어가면 없는 날짜를 있는 것처럼 만들어낸다.
+    return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
+      reason: '한국 음력에 없는 날짜입니다',
+      year, month, day, leapMonth,
+    });
+  }
+
   try {
     const lunar = Lunar.fromYmd(year, leapMonth ? -month : month, day);
     const solar = lunar.getSolar();

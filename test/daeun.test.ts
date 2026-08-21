@@ -26,7 +26,7 @@ const timeline = (raw: Partial<RawFormValues>): DaeunTimeline => {
   if (!s.ok) throw new Error(`resolve: ${s.error.code}`);
   const t = toSolarTime(n.value, { solarYmd: s.value });
   if (!t.ok) throw new Error(`solarTime: ${t.error.code}`);
-  const c = computeChart(n.value, t.value);
+  const c = computeChart(n.value, t.value, s.value);
   if (!c.ok) throw new Error(`chart: ${c.error.code}`);
   const d = buildTimeline(n.value, t.value, c.value.dayMaster, { today: TODAY });
   if (!d.ok) throw new Error(`daeun: ${d.error.code}`);

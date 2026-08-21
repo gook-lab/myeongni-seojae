@@ -247,7 +247,7 @@ export function computeReading(
   const solarTime = toSolarTime(input, { solarYmd: solarYmd.value });
   if (!solarTime.ok) return solarTime;
 
-  const chartResult = computeChart(input, solarTime.value);
+  const chartResult = computeChart(input, solarTime.value, solarYmd.value);
   if (!chartResult.ok) return chartResult;
   const chart = chartResult.value;
 

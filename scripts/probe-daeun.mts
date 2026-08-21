@@ -9,7 +9,7 @@ const run = (raw: Partial<RawFormValues>, label: string) => {
   if (!n.ok) return console.log(label, 'ERR', n.error.code);
   const s = resolveSolarYmd(n.value); if (!s.ok) return console.log(label,'ERR',s.error.code);
   const t = toSolarTime(n.value, { solarYmd: s.value }); if (!t.ok) return console.log(label,'ERR',t.error.code);
-  const c = computeChart(n.value, t.value); if (!c.ok) return console.log(label,'ERR',c.error.code);
+  const c = computeChart(n.value, t.value, s.value); if (!c.ok) return console.log(label,'ERR',c.error.code);
   const d = buildTimeline(n.value, t.value, c.value.dayMaster, { today: new Date(Date.UTC(2026,7,21)) });
   if (!d.ok) return console.log(label,'ERR',d.error.code, JSON.stringify(d.error.detail));
   const tl = d.value;

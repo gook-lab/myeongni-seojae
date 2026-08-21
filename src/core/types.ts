@@ -162,6 +162,14 @@ export interface DaeunTimeline {
 
 export interface SajuChart {
   input: BirthInput;
+  /**
+   * 실제로 계산에 쓰인 양력 생년월일.
+   *
+   * 음력으로 넣으면 여기가 변환 결과다. 한국 음력과 중국 음력은 달의
+   * 3.6% 에서 하루 갈리므로(core/korean-lunar.ts) 어느 날로 옮겼는지를
+   * 사용자가 볼 수 있어야 한다. 리포트가 이 값을 싣는다.
+   */
+  solarDate: { year: number; month: number; day: number };
   solarTime: SolarTimeResult;
   pillars: FourPillars;
   dayMaster: Pillar;

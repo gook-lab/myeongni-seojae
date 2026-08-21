@@ -28,7 +28,9 @@
  */
 
 import { writeFileSync } from 'node:fs';
+import { Lunar } from 'lunar-javascript';
 import * as M from 'manseryeok';
+import { koreanLunarToSolar } from '../src/core/korean-lunar';
 import { computeReading } from '../src/engine/index';
 import type { RawFormValues } from '../src/core/types';
 
@@ -67,6 +69,16 @@ interface GoldenCase extends CaseSpec {
   agrees: { year: boolean; month: boolean; day: boolean; hour: boolean } | null;
   /** 불일치가 있으면 그 이유. 'unexplained' 가 하나라도 나오면 회귀다. */
   divergences: Divergence[];
+  /**
+   * 음력 케이스에서 실제로 어느 양력 날짜로 옮겨졌는가.
+   * 한국 음력과 중국 음력이 갈리면 여기서 바로 보인다 — 회귀가 나면
+   * 골든 diff 에 하루 차이로 드러난다.
+   */
+  lunar?: {
+    korean: string;
+    chinese: string;
+    differs: boolean;
+  };
   solarTime: {
     standardOffsetMinutes: number;
     offsetMinutes: number;
@@ -138,6 +150,16 @@ const CASES: CaseSpec[] = [
   { label: '음력 1957 윤8/10', group: '윤달', raw: { calendar: 'lunar', year: 1957, month: 8, day: 10, leapMonth: true, hourKnown: false } },
   { label: '음력 1987 윤6/20', group: '윤달', raw: { calendar: 'lunar', year: 1987, month: 6, day: 20, leapMonth: true, hourKnown: false } },
   { label: '음력 1990 5/5 평달', group: '윤달', raw: { calendar: 'lunar', year: 1990, month: 5, day: 5, hourKnown: true, hour: 9, minute: 30 } },
+
+  // ── 한국 음력 ≠ 중국 음력 ──
+  // 삭이 자정 근처에 들면 UTC+8 과 KST 에서 달의 시작이 하루 갈린다.
+  // 中氣도 같은 이유로 갈려 윤달이 통째로 한 달 옮겨가는 해가 있다.
+  // 사용자가 넣는 음력은 가족관계등록부의 한국 음력이므로 그쪽을 따른다.
+  // 근거는 core/korean-lunar.ts · test/korean-lunar.test.ts
+  { label: '음력 2017 윤5/10 (중국은 윤6월)', group: '한국음력', raw: { calendar: 'lunar', year: 2017, month: 5, day: 10, leapMonth: true, hourKnown: false } },
+  { label: '음력 2012 윤3/10 (중국은 윤4월)', group: '한국음력', raw: { calendar: 'lunar', year: 2012, month: 3, day: 10, leapMonth: true, hourKnown: false } },
+  { label: '음력 1914 윤5/1 (삭이 자정을 넘김)', group: '한국음력', raw: { calendar: 'lunar', year: 1914, month: 5, day: 1, leapMonth: true, hourKnown: false } },
+  { label: '음력 1919 윤7/1', group: '한국음력', raw: { calendar: 'lunar', year: 1919, month: 7, day: 1, leapMonth: true, hourKnown: false } },
 
   // ── 야자시 (5) ──────────────────────────────────────────────────
   // KST 23:33 = 진태양시 23:00 → 여기부터 자시
@@ -261,6 +283,7 @@ function build(): GoldenCase[] {
       manseryeok: mrk,
       agrees,
       divergences,
+      ...(raw.calendar === 'lunar' ? { lunar: lunarComparison(raw) } : {}),
       solarTime: {
         standardOffsetMinutes: st.standardOffsetMinutes,
         offsetMinutes: Math.round(st.offsetMinutes * 100) / 100,
@@ -275,6 +298,27 @@ function build(): GoldenCase[] {
     });
   }
   return out;
+}
+
+/** 같은 음력 날짜를 한국 음력과 중국 음력으로 각각 옮겨본다. */
+function lunarComparison(raw: Partial<RawFormValues>): NonNullable<GoldenCase['lunar']> {
+  const y = Number(raw.year);
+  const m = Number(raw.month);
+  const d = Number(raw.day);
+  const leap = raw.leapMonth === true;
+  const fmt = (a: { year: number; month: number; day: number }) =>
+    `${a.year}-${String(a.month).padStart(2, '0')}-${String(a.day).padStart(2, '0')}`;
+
+  const kr = koreanLunarToSolar(y, m, d, leap);
+  let cn: string;
+  try {
+    const s = Lunar.fromYmd(y, leap ? -m : m, d).getSolar();
+    cn = fmt({ year: s.getYear(), month: s.getMonth(), day: s.getDay() });
+  } catch {
+    cn = '--';
+  }
+  const korean = kr ? fmt(kr) : '--';
+  return { korean, chinese: cn, differs: korean !== cn };
 }
 
 const cases = build();

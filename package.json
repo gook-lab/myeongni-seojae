@@ -22,6 +22,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@sentry/react": "^10.70.0",
+    "korean-lunar-calendar": "^0.4.0",
     "lunar-javascript": "^1.7.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -35,7 +36,6 @@
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.3.4",
     "astronomy-engine": "^2.1.19",
-    "korean-lunar-calendar": "^0.4.0",
     "manseryeok": "^2.0.0",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.19.2",

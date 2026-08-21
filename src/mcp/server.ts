@@ -123,10 +123,28 @@ function basis(chart: SajuChart) {
     daylightSaving: st.daylightSaving,
     longitude: chart.input.longitude,
     hourUnknown: chart.hourUnknown,
+    // 음력으로 물어본 경우 어느 양력 날짜로 옮겼는지. 한국 음력과 중국
+    // 음력은 달의 3.6% 에서 하루 갈리므로 이게 없으면 결과가 다를 때
+    // 어디서 갈렸는지 알 방법이 없다.
+    ...(chart.input.calendar === 'lunar'
+      ? {
+          lunarInput: {
+            year: chart.input.year,
+            month: chart.input.month,
+            leapMonth: chart.input.leapMonth,
+            day: chart.input.day,
+          },
+          resolvedSolarDate: `${chart.solarDate.year}-${String(chart.solarDate.month).padStart(2, '0')}-${String(chart.solarDate.day).padStart(2, '0')}`,
+          lunarBasis:
+            '한국천문연구원 음양력 기준(KST). 중국 음력(UTC+8)과는 달의 3.6% 에서 ' +
+            '하루 갈리고, 2017년처럼 윤달이 통째로 한 달 달라지는 해도 있다.',
+        }
+      : {}),
     note:
       '한국은 표준자오선이 네 번 바뀌었고 서머타임도 세 시기 있었다. ' +
       '진태양시 보정량은 상수가 아니라 시대별로 달라진다. ' +
-      '1954~61년생은 다른 구현과 결과가 갈릴 수 있으니 이 값으로 대조할 것.',
+      '1954~61년생은 다른 구현과 결과가 갈릴 수 있으니 이 값으로 대조할 것. ' +
+      '음력 입력은 한국천문연구원 기준으로 옮긴다 — 중국 음력과 다르다.',
   };
 }
 
@@ -139,6 +157,8 @@ const TOOLS = [
     description:
       '생년월일시로 사주팔자를 계산한다. 한국 표준시 이력(1908~현재)과 진태양시 보정을 반영하므로 ' +
       '1954~61년생과 서머타임 구간(1948~60, 1987~88) 출생자도 정확하다. ' +
+      '음력 입력은 가족관계등록부와 같은 한국천문연구원 음양력으로 옮긴다 — ' +
+      '중국 음력을 쓰는 구현과는 달의 3.6% 에서 하루 갈린다. ' +
       '응답에 계산 근거(당시 표준시, 보정량)가 함께 담긴다.',
     inputSchema: { type: 'object', properties: BIRTH_PROPS, required: BIRTH_REQUIRED },
   },

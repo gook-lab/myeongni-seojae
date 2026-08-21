@@ -14,6 +14,9 @@ importers:
       '@sentry/react':
         specifier: ^10.70.0
         version: 10.70.0(react@19.2.8)
+      korean-lunar-calendar:
+        specifier: ^0.4.0
+        version: 0.4.0
       lunar-javascript:
         specifier: ^1.7.7
         version: 1.7.7
@@ -48,9 +51,6 @@ importers:
       astronomy-engine:
         specifier: ^2.1.19
         version: 2.1.19
-      korean-lunar-calendar:
-        specifier: ^0.4.0
-        version: 0.4.0
       manseryeok:
         specifier: ^2.0.0
         version: 2.0.0

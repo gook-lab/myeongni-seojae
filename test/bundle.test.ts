@@ -63,6 +63,17 @@ describeIfBuilt('번들 분할', () => {
     expect(kb, `진입 청크 ${kb.toFixed(0)}KB`).toBeLessThan(250);
   });
 
+  it('한국 음력 자료는 엔진 청크에만 있다', () => {
+    // korean-lunar-calendar 는 음↔양 변환 자료라 18KB 쯤 된다. 입력 화면을
+    // 여는 사람에게 미리 들려 보낼 이유가 없다 — 사주를 눌러야 필요해진다.
+    expect(entry.includes('getLunarIntercalationMonth')).toBe(false);
+    const withKlc = chunkNames.filter((name) =>
+      readFileSync(join(ASSETS, name), 'utf8').includes('getLunarIntercalationMonth'),
+    );
+    expect(withKlc.length, '한국 음력 자료가 아예 없다').toBeGreaterThanOrEqual(1);
+    expect(withKlc).not.toContain(entryName);
+  });
+
   it('astronomy-engine 은 어느 청크에도 없다', () => {
     // 검증 전용 devDependency 다. 절기를 천체력으로 직접 푸는 코드라
     // 무겁고, 브라우저에서는 쓸 일이 없다. 실수로 src/ 에서 import 하면

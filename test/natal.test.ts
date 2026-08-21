@@ -30,7 +30,7 @@ const detail = (over: Partial<RawFormValues> = {}) => {
   if (!s.ok) throw new Error(s.error.code);
   const t = toSolarTime(n.value, { solarYmd: s.value });
   if (!t.ok) throw new Error(t.error.code);
-  const c = computeChart(n.value, t.value);
+  const c = computeChart(n.value, t.value, s.value);
   if (!c.ok) throw new Error(c.error.code);
   return {
     chart: c.value,

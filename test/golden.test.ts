@@ -41,6 +41,7 @@ interface Golden {
     manseryeok: { year: string; month: string; day: string; hour: string } | null;
     agrees: { year: boolean; month: boolean; day: boolean; hour: boolean } | null;
     divergences: Array<{ pillar: string; reason: string; ours: string; theirs: string }>;
+    lunar?: { korean: string; chinese: string; differs: boolean };
     solarTime: { standardOffsetMinutes: number; offsetMinutes: number; daylightSaving: boolean };
     daeun: { startAge: number; direction: string; first: string; ganjis: string[] };
   }>;
@@ -64,8 +65,8 @@ const recompute = (raw: Partial<RawFormValues>) => {
 const gz = (p: { stem: string; branch: string } | null) => (p ? `${p.stem}${p.branch}` : null);
 
 describe('골든 케이스 — 데이터셋 자체', () => {
-  it('50건이 있다', () => {
-    expect(golden.cases).toHaveLength(50);
+  it('54건이 있다', () => {
+    expect(golden.cases).toHaveLength(54);
   });
 
   it('설계 문서가 요구한 분포를 채운다', () => {
@@ -79,6 +80,24 @@ describe('골든 케이스 — 데이터셋 자체', () => {
     expect(byGroup['윤달']).toBeGreaterThanOrEqual(5);
     expect(byGroup['야자시']).toBeGreaterThanOrEqual(5);
     expect(byGroup['평범']).toBeGreaterThanOrEqual(10);
+    expect(byGroup['한국음력']).toBeGreaterThanOrEqual(4);
+  });
+
+  it('★한국 음력 케이스가 실제로 중국 음력과 갈린다★', () => {
+    // 갈리지 않는 케이스만 모아두면 이 그룹은 아무것도 지키지 못한다.
+    const korean = golden.cases.filter((c) => c.group === '한국음력');
+    expect(korean.length).toBeGreaterThan(0);
+    for (const c of korean) {
+      expect(c.lunar, `${c.label}: 변환 기록이 없다`).toBeDefined();
+      expect(c.lunar?.differs, `${c.label}: 중국 음력과 같다`).toBe(true);
+    }
+  });
+
+  it('2017년 윤5월은 중국 음력에는 아예 없다', () => {
+    // 하루 틀리는 것보다 나쁘다 — 예전 코드는 이 입력을 거절했다.
+    const c = golden.cases.find((x) => x.label.includes('2017 윤5/10'));
+    expect(c?.lunar?.korean).toBe('2017-07-03');
+    expect(c?.lunar?.chinese).toBe('--');
   });
 
   it('★설명되지 않는 불일치가 하나도 없다★', () => {

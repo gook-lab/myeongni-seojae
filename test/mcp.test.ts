@@ -116,6 +116,28 @@ describe('만세력 결과가 MCP 응답까지 그대로 나온다', () => {
   });
 });
 
+describe('음력 근거를 같이 낸다', () => {
+  it('★어느 양력 날짜로 옮겼는지 응답에 담긴다★', () => {
+    // 2017 윤5/10 은 한국 달력에만 있는 날짜다. 중국 음력을 쓰는 구현은
+    // 이 입력을 거절하거나 다른 날로 옮긴다 — 그래서 근거가 필요하다.
+    const { ok, body } = call('calculate_saju', {
+      year: 2017, month: 5, day: 10, calendar: 'lunar', leapMonth: true, gender: '여',
+    });
+    expect(ok).toBe(true);
+    const b = body.calculationBasis as Record<string, unknown>;
+    expect(b.resolvedSolarDate).toBe('2017-07-03');
+    expect(b.lunarBasis).toMatch(/한국천문연구원/);
+    expect((b.lunarInput as Record<string, unknown>).leapMonth).toBe(true);
+  });
+
+  it('양력 입력에는 음력 항목이 붙지 않는다', () => {
+    const { body } = call('calculate_saju', BIRTH);
+    const b = body.calculationBasis as Record<string, unknown>;
+    expect(b.resolvedSolarDate).toBeUndefined();
+    expect(b.lunarInput).toBeUndefined();
+  });
+});
+
 describe('시각을 몰라도 쓸 수 있다', () => {
   const noHour = { year: 1990, month: 5, day: 15, gender: '남' };
 

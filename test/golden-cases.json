@@ -1670,6 +1670,11 @@
       "manseryeok": null,
       "agrees": null,
       "divergences": [],
+      "lunar": {
+        "korean": "2023-04-05",
+        "chinese": "2023-04-05",
+        "differs": false
+      },
       "solarTime": {
         "standardOffsetMinutes": 540,
         "offsetMinutes": -32.09,
@@ -1713,6 +1718,11 @@
       "manseryeok": null,
       "agrees": null,
       "divergences": [],
+      "lunar": {
+        "korean": "2023-03-06",
+        "chinese": "2023-03-06",
+        "differs": false
+      },
       "solarTime": {
         "standardOffsetMinutes": 540,
         "offsetMinutes": -32.09,
@@ -1756,6 +1766,11 @@
       "manseryeok": null,
       "agrees": null,
       "divergences": [],
+      "lunar": {
+        "korean": "1957-10-03",
+        "chinese": "1957-10-03",
+        "differs": false
+      },
       "solarTime": {
         "standardOffsetMinutes": 510,
         "offsetMinutes": -2.09,
@@ -1799,6 +1814,11 @@
       "manseryeok": null,
       "agrees": null,
       "divergences": [],
+      "lunar": {
+        "korean": "1987-08-14",
+        "chinese": "1987-08-14",
+        "differs": false
+      },
       "solarTime": {
         "standardOffsetMinutes": 600,
         "offsetMinutes": -92.09,
@@ -1843,6 +1863,11 @@
       "manseryeok": null,
       "agrees": null,
       "divergences": [],
+      "lunar": {
+        "korean": "1990-05-28",
+        "chinese": "1990-05-28",
+        "differs": false
+      },
       "solarTime": {
         "standardOffsetMinutes": 540,
         "offsetMinutes": -32.09,
@@ -1863,6 +1888,198 @@
           "己丑",
           "庚寅",
           "辛卯"
+        ]
+      }
+    },
+    {
+      "label": "음력 2017 윤5/10 (중국은 윤6월)",
+      "group": "한국음력",
+      "raw": {
+        "calendar": "lunar",
+        "year": 2017,
+        "month": 5,
+        "day": 10,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "정유",
+        "month": "병오",
+        "day": "신묘",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "lunar": {
+        "korean": "2017-07-03",
+        "chinese": "--",
+        "differs": true
+      },
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "backward",
+        "first": "을사",
+        "ganjis": [
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌",
+          "丁酉",
+          "丙申"
+        ]
+      }
+    },
+    {
+      "label": "음력 2012 윤3/10 (중국은 윤4월)",
+      "group": "한국음력",
+      "raw": {
+        "calendar": "lunar",
+        "year": 2012,
+        "month": 3,
+        "day": 10,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "임진",
+        "month": "갑진",
+        "day": "신유",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "lunar": {
+        "korean": "2012-04-30",
+        "chinese": "--",
+        "differs": true
+      },
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 2,
+        "direction": "forward",
+        "first": "을사",
+        "ganjis": [
+          "乙巳",
+          "丙午",
+          "丁未",
+          "戊申",
+          "己酉",
+          "庚戌",
+          "辛亥",
+          "壬子",
+          "癸丑",
+          "甲寅"
+        ]
+      }
+    },
+    {
+      "label": "음력 1914 윤5/1 (삭이 자정을 넘김)",
+      "group": "한국음력",
+      "raw": {
+        "calendar": "lunar",
+        "year": 1914,
+        "month": 5,
+        "day": 1,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "갑인",
+        "month": "경오",
+        "day": "신사",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "lunar": {
+        "korean": "1914-06-24",
+        "chinese": "1914-06-23",
+        "differs": true
+      },
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 6,
+        "direction": "forward",
+        "first": "신미",
+        "ganjis": [
+          "辛未",
+          "壬申",
+          "癸酉",
+          "甲戌",
+          "乙亥",
+          "丙子",
+          "丁丑",
+          "戊寅",
+          "己卯",
+          "庚辰"
+        ]
+      }
+    },
+    {
+      "label": "음력 1919 윤7/1",
+      "group": "한국음력",
+      "raw": {
+        "calendar": "lunar",
+        "year": 1919,
+        "month": 7,
+        "day": 1,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "기미",
+        "month": "임신",
+        "day": "경술",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "lunar": {
+        "korean": "1919-08-26",
+        "chinese": "1919-08-25",
+        "differs": true
+      },
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 7,
+        "direction": "backward",
+        "first": "신미",
+        "ganjis": [
+          "辛未",
+          "庚午",
+          "己巳",
+          "戊辰",
+          "丁卯",
+          "丙寅",
+          "乙丑",
+          "甲子",
+          "癸亥",
+          "壬戌"
         ]
       }
     },
