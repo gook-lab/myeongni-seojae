@@ -10,8 +10,6 @@
  */
 
 import { buildTimeline } from '../core/daeun';
-import { dailyFortune, gunghap, yearFortune } from '../core/fortune';
-import type { DailyFortune, Gunghap, YearFortune } from '../core/fortune';
 import type { SajuResult } from '../core/errors';
 import { normalize, resolveSolarYmd } from '../core/input';
 import { toSolarTime } from '../core/korea-time';
@@ -23,9 +21,6 @@ import type {
   TenGodCategory,
 } from '../core/types';
 import { DAEUN_TEXT, daeunPrefix } from '../text/daeun-text';
-import {
-  BRANCH_CLASH_TEXT, BRANCH_HARMONY_TEXT, GUNGHAP_TEXT, dailyLead, yearLead,
-} from '../text/fortune-text';
 import { DAY_MASTER_TEXT, GLOSS, INTERPRET, moneyText } from '../text/interpret';
 
 export interface DaeunCard {
@@ -49,36 +44,8 @@ export interface DaeunCard {
   branchColor: string;
 }
 
-export interface DailyReading {
-  ganji: string;
-  tenGod: string;
-  category: TenGodCategory;
-  date: string;
-  lead: string;
-  text: string;
-}
-
-export interface YearReading {
-  year: number;
-  ganji: string;
-  tenGod: string;
-  category: TenGodCategory;
-  lead: string;
-  text: string;
-  months: Array<{
-    label: string;
-    ganji: string;
-    tenGod: string;
-    category: TenGodCategory;
-    text: string;
-    color: string;
-  }>;
-}
-
 export interface SajuReading {
   chart: SajuChart;
-  daily: DailyReading | null;
-  year: YearReading | null;
   timeline: DaeunTimeline;
   cards: DaeunCard[];
   dayMasterText: string;
@@ -151,47 +118,10 @@ export function computeReading(
 
   const topics = summarizeTopics(chart);
 
-  // ── 부가 운세. 점수 없이 문장만. ──
-  const dm = chart.dayMaster;
-  const dmLabel = `${dm.stemHanja}${dm.stem}`;
-  const dailyRes = dailyFortune(dm, today);
-  const daily: DailyReading | null = dailyRes.ok
-    ? {
-        ganji: dailyRes.value.ganji,
-        tenGod: dailyRes.value.tenGod,
-        category: dailyRes.value.category,
-        date: `${dailyRes.value.date.year}년 ${dailyRes.value.date.month}월 ${dailyRes.value.date.day}일`,
-        lead: dailyLead(dmLabel, dailyRes.value.ganji, dailyRes.value.tenGod),
-        text: INTERPRET[dailyRes.value.category].daily,
-      }
-    : null;
-
-  const yearRes = yearFortune(dm, today.getFullYear(), today);
-  const year: YearReading | null = yearRes.ok
-    ? {
-        year: yearRes.value.year,
-        ganji: yearRes.value.ganji,
-        tenGod: yearRes.value.tenGod,
-        category: yearRes.value.category,
-        lead: yearLead(yearRes.value.year, yearRes.value.ganji, yearRes.value.tenGod),
-        text: INTERPRET[yearRes.value.category].monthly.replace('달', '해'),
-        months: yearRes.value.months.map((m) => ({
-          label: m.label,
-          ganji: m.ganji,
-          tenGod: m.tenGod,
-          category: m.category,
-          text: INTERPRET[m.category].monthly,
-          color: ELEMENT_COLOR[m.pillar.stemElement],
-        })),
-      }
-    : null;
-
   return {
     ok: true,
     value: {
       chart,
-      daily,
-      year,
       timeline,
       cards,
       dayMasterText: DAY_MASTER_TEXT[chart.dayMaster.stem],
@@ -241,47 +171,4 @@ function summarizeTopics(chart: SajuChart): SajuReading['topics'] {
   };
 }
 
-/**
- * 궁합 — 두 사람의 원국을 받아 관계의 결을 본다.
- * 점수를 내지 않는다. "78점"은 아무것도 설명하지 않지만
- * "상생이라 함께 있을수록 힘이 된다"는 읽힌다.
- */
-export interface GunghapReading {
-  title: string;
-  body: string;
-  branchNote: string | null;
-  pairLabel: string;
-}
-
-export function computeGunghap(
-  a: RawFormValues,
-  b: RawFormValues,
-  opts: ComputeOptions = {},
-): SajuResult<GunghapReading> {
-  const ra = computeReading(a, opts);
-  if (!ra.ok) return ra;
-  const rb = computeReading(b, opts);
-  if (!rb.ok) return rb;
-
-  const g: Gunghap = gunghap(ra.value.chart.dayMaster, rb.value.chart.dayMaster);
-  const t = GUNGHAP_TEXT[g.kind];
-  const da = ra.value.chart.dayMaster;
-  const db = rb.value.chart.dayMaster;
-
-  return {
-    ok: true,
-    value: {
-      title: t.title,
-      body: t.body,
-      branchNote: g.branchHarmony
-        ? BRANCH_HARMONY_TEXT
-        : g.branchClash
-          ? BRANCH_CLASH_TEXT
-          : null,
-      pairLabel: `${da.stemHanja}${da.stem}${da.stemElement} · ${db.stemHanja}${db.stem}${db.stemElement}`,
-    },
-  };
-}
-
-export type { DailyFortune, YearFortune };
 export type { SajuChart, DaeunTimeline, RawFormValues } from '../core/types';

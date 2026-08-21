@@ -37,7 +37,7 @@ export function AdvancedOptions() {
     form.applyEquationOfTime !== true;
 
   return (
-    <div className="mb-7">
+    <div>
       <button
         type="button"
         aria-expanded={open}

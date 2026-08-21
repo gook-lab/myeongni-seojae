@@ -13,7 +13,6 @@
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { InputForm } from './ui/InputForm';
 import { Timeline } from './ui/Timeline';
-import { Tabs } from './ui/Tabs';
 import { TzWarning } from './ui/TzWarning';
 import { useSajuStore, type TextScale } from './store/saju-store';
 
@@ -150,7 +149,6 @@ function Result() {
       </div>
       <PillarTable />
       <Topics />
-      <Tabs />
       <div className="mx-auto max-w-md px-5 pb-16">
         <button
           type="button"

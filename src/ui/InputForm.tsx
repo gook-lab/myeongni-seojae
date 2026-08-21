@@ -61,22 +61,6 @@ export function InputForm() {
         </p>
       </header>
 
-      {/* 이름 — 선택. 공유 카드에만 쓰이고 계산에는 안 들어간다 */}
-      <fieldset className="mb-5">
-        <label htmlFor="name" className={LABEL}>
-          이름 <span className="text-ink-faint">· 선택</span>
-        </label>
-        <input
-          id="name"
-          type="text"
-          className={FIELD}
-          value={form.name ?? ''}
-          maxLength={20}
-          placeholder="비워두셔도 됩니다"
-          onChange={(e) => setField('name', e.target.value)}
-        />
-      </fieldset>
-
       {/* 양력 / 음력 */}
       <fieldset className="mb-5">
         <legend className={LABEL}>달력</legend>
@@ -236,8 +220,6 @@ export function InputForm() {
         </div>
       </fieldset>
 
-      <AdvancedOptions />
-
       {/* 에러 — 조용한 실패를 만들지 않는다 */}
       {failed && error && (
         <div
@@ -259,7 +241,16 @@ export function InputForm() {
         {busy ? '펼치는 중…' : loadFailed ? '다시 시도' : '사주 풀어보기'}
       </button>
 
-      <p className="mt-4 text-center text-xs leading-relaxed text-ink-faint">
+      {/*
+        세부 설정은 제출 버튼 "아래"에 둔다.
+        위에 두면 부모님이 "이걸 설정해야 하나" 하고 멈춘다.
+        아래에 있으면 필요한 사람만 내려와서 연다.
+      */}
+      <div className="mt-6">
+        <AdvancedOptions />
+      </div>
+
+      <p className="mt-2 text-center text-xs leading-relaxed text-ink-faint">
         입력한 생년월일은 이 기기를 벗어나지 않습니다.
         <br />
         계산은 전부 브라우저 안에서 이루어집니다.
