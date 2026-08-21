@@ -74,9 +74,9 @@
 | 문서 | 내용 |
 |---|---|
 | [만세력 정확도](docs/accuracy.md) | 한국 표준시 이력 · 절기 · 일주 · 한국 음력 · 파이썬 검증 |
-| [구조와 게이트](docs/architecture.md) | 설계 결정 · 번들 분할 · 배포 게이트 · 개발 방법 |
-| [해석](docs/interpretation.md) | 용신 · 신살 · 궁합 · 리포트 · 인생 대조표 |
-| [화면과 움직임](docs/ux.md) | 첫 화면 · 화면 구조 · 애니메이션 · 공유 링크 |
+| [구조와 게이트](docs/architecture.md) | 설계 결정 · 번들 분할 · **배포 게이트 전 단계** · 손으로 돌리는 검증 |
+| [해석](docs/interpretation.md) | 용신 · 신살 · **궁합** · **오늘/신년** · 리포트 · 대조표 · **용어** |
+| [화면과 움직임](docs/ux.md) | 첫 화면 · 화면 구조 · 애니메이션 · 공유 링크 · **색 대비** · **폰트 자체 호스팅** |
 | [MCP 서버](docs/mcp.md) | 엔진을 다른 AI 에게 도구로 여는 법 |
 
 ## 빠르게 돌려보기
@@ -89,6 +89,9 @@ pnpm test:e2e           # Playwright
 pnpm build:mcp          # MCP 서버 → dist-mcp/server.js
 pnpm verify:python 150  # 파이썬 독립 구현과 대조 (환경 필요)
 pnpm shots              # 문서용 스크린샷 갱신
+pnpm docs:sync          # README 의 테스트 수를 실제와 맞춤
+pnpm fonts              # 웹폰트를 우리 쪽으로 다시 받기
+pnpm gen:terms          # 절기표 다시 생성
 ```
 
 ## 아직 안 한 것
