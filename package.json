@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:all": "pnpm typecheck && pnpm build && vitest run && playwright test",
     "golden:gen": "tsx scripts/gen-golden.ts",
     "gate": "pnpm typecheck && vitest run"
   },
@@ -23,6 +24,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^26.2.0",
     "@types/react": "^19.1.0",

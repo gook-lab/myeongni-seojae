@@ -8,5 +8,6 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    exclude: ['e2e/**'],
   },
 });

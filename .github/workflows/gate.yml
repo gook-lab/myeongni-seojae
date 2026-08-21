@@ -67,6 +67,12 @@ jobs:
       - name: 테스트 — 골든 · 프라이버시 · 번들 게이트 포함
         run: pnpm vitest run
 
+      - name: Playwright 브라우저 설치
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E — 사용자 플로우 (모바일 · 데스크톱)
+        run: pnpm exec playwright test
+
       - name: 골든 정답지가 최신인지 확인
         run: |
           pnpm golden:gen
