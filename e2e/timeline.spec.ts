@@ -255,17 +255,18 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await expect(year.locator('ol > li')).toHaveCount(12);
   });
 
-  test('★어느 부가 화면에도 점수 배지가 없다★', async ({ page }) => {
-    await fillBirth(page, '1957', '6', '15');
-    await page.getByRole('button', { name: '사주 풀어보기' }).click();
-
-    for (const label of ['오늘', '신년']) {
-      await page.getByRole('button', { name: /홈으로|‹ 홈/ }).first().click();
+  // 화면마다 처음부터 다시 들어간다. 결과 화면 버튼이 늘어나도 안 흔들린다.
+  for (const label of ['오늘', '신년']) {
+    test(`★${label} 화면에 점수 배지가 없다★`, async ({ page }) => {
+      await fillBirth(page, '1957', '6', '15');
+      await page.getByRole('button', { name: '사주 풀어보기' }).click();
+      await page.getByRole('button', { name: /^홈으로/ }).click();
       await page.getByRole('button', { name: new RegExp(`^${label}`) }).click();
+
       const text = await page.locator('body').innerText();
       expect(text, `${label} 화면`).not.toMatch(/\d+\s*점/);
-    }
-  });
+    });
+  }
 
   test('결과 화면에 부가 기능이 쌓여 있지 않다', async ({ page }) => {
     await fillBirth(page, '1957', '6', '15');
@@ -438,5 +439,59 @@ test.describe('용신 — 판정만 던지지 않는다', () => {
   test('용신 섹션에도 점수가 없다', async ({ page }) => {
     const text = await page.getByRole('region', { name: '신강 신약과 용신' }).innerText();
     expect(text).not.toMatch(/\d+\s*점(?!수)/);
+  });
+});
+
+test.describe('리포트 — 종이에 남는 물건', () => {
+  test.beforeEach(async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /리포트/ }).click();
+  });
+
+  test('여섯 섹션이 한 문서에 담긴다', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: /인생 리포트/ })).toBeVisible();
+    for (const t of ['사주팔자', '인생 타임라인', '일간의 힘과 용신', '인생의 네 자리', '오행 균형', '풀이']) {
+      await expect(page.getByRole('heading', { name: t, exact: true })).toBeVisible();
+    }
+  });
+
+  test('★계산 근거가 문서에 실린다★', async ({ page }) => {
+    await expect(page.getByText('계산 근거')).toBeVisible();
+    // 1957-06-15 은 서머타임 구간이라 UTC+9:30
+    await expect(page.getByText(/한국 표준시 UTC\+9:30/)).toBeVisible();
+    await expect(page.getByText(/서머타임 적용 중/)).toBeVisible();
+    await expect(page.getByText(/진태양시 보정 −62분 05초/)).toBeVisible();
+  });
+
+  test('시간 미상이면 그 사실과 영향을 적는다', async ({ page }) => {
+    await expect(page.getByText(/태어난 시각 없이 계산했습니다/)).toBeVisible();
+    await expect(page.getByText(/대운 타임라인은 시각과 무관하므로 그대로 정확/)).toBeVisible();
+  });
+
+  test('대운 10칸이 표로 들어간다', async ({ page }) => {
+    const rows = page.locator('table').nth(1).locator('tbody tr');
+    await expect(rows).toHaveCount(10);
+    await expect(page.getByText('지금', { exact: true })).toHaveCount(1);
+  });
+
+  test('용신 자리별 계산이 접히지 않고 전부 실린다', async ({ page }) => {
+    // 화면에서는 details 로 접었지만 문서에는 펼쳐서 넣는다.
+    // "억부용신법" 은 본문과 푸터 두 곳에 있으므로 첫 번째로 좁힌다.
+    await expect(page.getByText(/억부용신법/).first()).toBeVisible();
+    const slotRows = page.locator('table').nth(2).locator('tbody tr');
+    await expect(slotRows).toHaveCount(5); // 시간 미상이라 다섯 자리
+  });
+
+  test('면책 문구가 있다', async ({ page }) => {
+    await expect(page.getByText(/단정적 예언이 아니라 흐름을 읽는 참고 자료/)).toBeVisible();
+    await expect(page.getByText(/의료·법률·투자 판단에/)).toBeVisible();
+  });
+
+  test('인쇄 시 조작부가 숨는다', async ({ page }) => {
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.getByRole('button', { name: /인쇄 · PDF로 저장/ })).toBeHidden();
+    await expect(page.getByRole('heading', { name: /인생 리포트/ })).toBeVisible();
+    await page.emulateMedia({ media: 'screen' });
   });
 });

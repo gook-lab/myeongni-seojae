@@ -14,6 +14,7 @@ import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Home } from './ui/Home';
 import { DailyScreen, GunghapScreen, YearScreen } from './ui/screens';
 import { InputForm } from './ui/InputForm';
+import { Report } from './ui/Report';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
 import { useSajuStore, type TextScale } from './store/saju-store';
@@ -383,6 +384,13 @@ function Result() {
         </button>
         <button
           type="button"
+          onClick={() => go('report')}
+          className="w-full rounded-md border border-jumuk bg-card px-4 py-3 text-jumuk"
+        >
+          리포트 · 인쇄하기
+        </button>
+        <button
+          type="button"
           onClick={() => go('home')}
           className="w-full rounded-md border border-line bg-card px-4 py-3 text-ink-soft"
         >
@@ -446,6 +454,7 @@ export function App() {
       {route === 'home' && <Home />}
       {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
       {route === 'detail' && <DetailScreen />}
+      {route === 'report' && <Report />}
       {route === 'daily' && <DailyScreen />}
       {route === 'gunghap' && <GunghapScreen />}
       {route === 'year' && <YearScreen />}

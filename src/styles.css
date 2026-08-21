@@ -61,3 +61,45 @@ button, select, input, [role='button'] { min-height: 2.75rem; }
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * 리포트 인쇄 (A4)
+ *
+ * 관객이 부모님 세대다. 그 세대는 스크롤 대신 종이를 본다.
+ * 브라우저 인쇄로 PDF 저장까지 되므로 별도 라이브러리를 쓰지 않는다.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  /* 화면 조작부는 종이에 나오면 안 된다 */
+  .report-controls,
+  [role='status'],
+  [aria-label='글씨 크기'] {
+    display: none !important;
+  }
+
+  html, body {
+    background: #fff;
+    font-size: 11pt;
+  }
+
+  .report {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* 섹션이 페이지 경계에서 잘리지 않게 */
+  .report-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* 잉크를 아끼되 오행 색과 주묵 강조는 살린다 */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
