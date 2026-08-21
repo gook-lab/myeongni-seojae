@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+/*
+ * 명리서재 디자인 토큰 — reference/Saju - Hanji.dc.html 에서 그대로 가져왔다.
+ * 라이트 고정. 관객이 부모님 세대라 다크 테마는 가독성에서 불리하다.
+ */
+@theme {
+  --color-hanji: #faf6ea;        /* 한지 바탕 */
+  --color-card: #fffdf6;         /* 카드 */
+  --color-card-warm: #fbf1de;    /* 일주·현재 대운 강조 배경 */
+  --color-ink: #4a4036;          /* 본문 */
+  --color-ink-soft: #6f614f;     /* 보조 */
+  --color-ink-faint: #8a7a63;    /* 약한 글씨 */
+  --color-jumuk: #a63a2b;        /* 주묵 — 강조색 */
+  --color-jumuk-deep: #8e2f22;
+  --color-line: #daccae;         /* 테두리 */
+  --color-line-soft: #e3d8bd;
+  --color-line-dash: #c9b98f;
+
+  /* 오행 */
+  --color-mok: #3e6b4f;
+  --color-hwa: #a63a2b;
+  --color-to: #8c6b2f;
+  --color-geum: #75787e;
+  --color-su: #35506b;
+
+  --font-batang: 'Gowun Batang', 'Nanum Myeongjo', serif;
+}
+
+:root {
+  /* 큰 글씨 모드는 이 값 하나만 바꾼다 (NFR N2) */
+  font-size: 16px;
+  color-scheme: light;
+}
+
+:root[data-scale='large'] { font-size: 19px; }
+:root[data-scale='xlarge'] { font-size: 22px; }
+
+html, body { background: var(--color-hanji); }
+
+body {
+  margin: 0;
+  font-family: var(--font-batang);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 터치 타깃 44px 이상 (NFR N3) */
+button, select, input, [role='button'] { min-height: 2.75rem; }
+
+*:focus-visible {
+  outline: 2px solid var(--color-jumuk);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
