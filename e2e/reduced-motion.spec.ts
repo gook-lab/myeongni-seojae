@@ -10,6 +10,21 @@
  */
 import { expect, test } from './fixtures';
 
+/**
+ * 애니메이션이 다 멎을 때까지 기다린다.
+ *
+ * 엔진 청크가 382KB 에서 100KB 로 줄면서 화면이 빨라지자, 등장 애니메이션이
+ * 도는 도중에 최종 상태를 읽는 경쟁이 드러났다. 앱이 빨라져서 생긴 실패이니
+ * 기다리는 쪽을 고친다.
+ */
+async function settled(page: import('@playwright/test').Page) {
+  await page.waitForFunction(
+    () => document.getAnimations().every((a) => a.playState !== 'running'),
+    undefined,
+    { timeout: 5000 },
+  );
+}
+
 async function toTimeline(page: import('@playwright/test').Page) {
   await page.goto('/');
   await page.getByRole('button', { name: /^사주 보기/ }).click();
@@ -77,6 +92,7 @@ test.describe('움직임을 줄인 설정', () => {
 
   test('모든 칸이 즉시 보인다', async ({ page }) => {
     const timeline = await toTimeline(page);
+    await settled(page);
     const items = timeline.locator('ol > li');
     for (let i = 0; i < 10; i += 1) {
       const opacity = await items.nth(i).evaluate((el) => getComputedStyle(el).opacity);

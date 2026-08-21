@@ -283,7 +283,7 @@ export function computeReading(
   // ── 원국 심화 ──
   // 원본은 십성 카운트 하나(dominant)로 성격·직업을 정했다.
   // 여덟 자를 계산해놓고 뭉갠 것이라 자리(궁위)와 지장간을 되살린다.
-  const detail = natalDetail(chart.pillars, solarTime.value, input.yajasi === 'advance-day' ? 1 : 2);
+  const detail = natalDetail(chart.pillars);
   const palaces: PalaceCard[] = detail.palaces.map((p) => {
     const meaning = PALACE_MEANING[p.palace];
     const cat = p.branchTenGod

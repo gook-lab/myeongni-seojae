@@ -10,7 +10,6 @@
  * 정확도를 간판으로 건 앱에서 조용한 오답이 가장 나쁜 실패다.
  */
 
-import { Lunar, LunarYear } from 'lunar-javascript';
 import {
   koreanLeapMonthOf,
   koreanLunarToSolar,
@@ -52,16 +51,10 @@ export function isRealSolarDate(year: number, month: number, day: number): boole
  * 넣으므로 한국 기준으로 받아야 통과한다. 왜 갈리는지는
  * core/korean-lunar.ts 에 적어뒀다.
  *
- * 2050년을 넘으면 한국 자료가 없어 중국 음력으로 물러난다.
+ * 2050년을 넘으면 한국 자료가 없다. 0을 돌려주므로 윤달 선택이 막힌다.
  */
 export function leapMonthOf(lunarYear: number): number {
-  const korean = koreanLeapMonthOf(lunarYear);
-  if (korean !== null) return korean;
-  try {
-    return LunarYear.fromYear(lunarYear).getLeapMonth();
-  } catch {
-    return 0;
-  }
+  return koreanLeapMonthOf(lunarYear) ?? 0;
 }
 
 export interface SolarYmd {
@@ -77,9 +70,11 @@ export interface SolarYmd {
  * 한국 음력이고, 그건 중국 음력과 달의 3.6% 에서 하루 어긋난다. 하루
  * 어긋나면 일주가 통째로 바뀐다. 근거는 core/korean-lunar.ts.
  *
- * 2050년까지는 한국 자료로, 그 뒤로는 lunar-javascript(중국 음력)로
- * 물러난다. 물러난다는 사실 자체는 숨기지 않는다 — supportsKoreanLunar
- * 가 그 경계를 알려준다.
+ * 한국천문연구원 자료는 2050년까지다. 그 뒤는 **거절한다.**
+ * 예전에는 중국 음력으로 물러났는데, 그건 달의 3.6%에서 하루 어긋나는
+ * 값을 아무 말 없이 내주는 것이라 조용한 오답이 된다. 못 하는 것은
+ * 못 한다고 말하는 편이 낫다. 2051년 이후 음력 생일을 가진 사람은
+ * 아직 태어나지도 않았다.
  *
  * 없는 윤달·없는 날짜는 결과 타입으로 감싼다.
  */
@@ -98,30 +93,21 @@ export function lunarToSolar(
       });
     }
   }
-  const korean = koreanLunarToSolar(year, month, day, leapMonth);
-  if (korean) return ok(korean);
-  if (supportsKoreanLunar(year)) {
-    // 한국 자료 범위 안인데 변환이 안 됐다는 건 그런 날짜가 없다는 뜻이다.
-    // 여기서 중국 음력으로 넘어가면 없는 날짜를 있는 것처럼 만들어낸다.
-    return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
-      reason: '한국 음력에 없는 날짜입니다',
-      year, month, day, leapMonth,
+  if (!supportsKoreanLunar(year)) {
+    return err('OUT_OF_RANGE_YEAR', ERROR_MESSAGES.LUNAR_OUT_OF_RANGE, {
+      reason: '한국천문연구원 음양력 자료 범위 밖',
+      year,
     });
   }
 
-  try {
-    const lunar = Lunar.fromYmd(year, leapMonth ? -month : month, day);
-    const solar = lunar.getSolar();
-    return ok({
-      year: solar.getYear(),
-      month: solar.getMonth(),
-      day: solar.getDay(),
-    });
-  } catch (e) {
-    return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
-      cause: e instanceof Error ? e.message : String(e),
-    });
-  }
+  const korean = koreanLunarToSolar(year, month, day, leapMonth);
+  if (korean) return ok(korean);
+
+  // 범위 안인데 변환이 안 됐다는 건 그런 날짜가 없다는 뜻이다.
+  return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
+    reason: '한국 음력에 없는 날짜입니다',
+    year, month, day, leapMonth,
+  });
 }
 
 /**

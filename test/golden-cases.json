@@ -1397,7 +1397,7 @@
         "daylightSaving": true
       },
       "daeun": {
-        "startAge": 4,
+        "startAge": 3,
         "direction": "backward",
         "first": "병오",
         "ganjis": [

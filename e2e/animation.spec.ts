@@ -19,6 +19,21 @@
  */
 import { expect, test } from '@playwright/test';
 
+/**
+ * 애니메이션이 다 멎을 때까지 기다린다.
+ *
+ * 엔진 청크가 382KB 에서 100KB 로 줄면서 화면이 빨라지자, 등장 애니메이션이
+ * 도는 도중에 최종 상태를 읽는 경쟁이 드러났다. 앱이 빨라져서 생긴 실패이니
+ * 기다리는 쪽을 고친다.
+ */
+async function settled(page: import('@playwright/test').Page) {
+  await page.waitForFunction(
+    () => document.getAnimations().every((a) => a.playState !== 'running'),
+    undefined,
+    { timeout: 5000 },
+  );
+}
+
 async function toTimeline(page: import('@playwright/test').Page) {
   await page.goto('/');
   await page.getByRole('button', { name: /^사주 보기/ }).click();
@@ -61,6 +76,7 @@ test('★칸이 순서대로 들어오되 끝나면 전부 제자리다★', asy
   expect(new Set(delays).size, `지연이 모두 같다: ${delays.join(',')}`).toBeGreaterThan(1);
 
   // 그리고 끝나면 하나도 빠짐없이 보여야 한다
+  await settled(page);
   for (let i = 0; i < 10; i += 1) {
     await expect(items.nth(i)).toBeVisible();
     const opacity = await items.nth(i).evaluate((el) => getComputedStyle(el).opacity);

@@ -1,44 +1,58 @@
 /**
- * 명리서재 — 만세력 계산 (lunar-javascript 래핑)
+ * 명리서재 — 만세력 계산
  *
  * ─────────────────────────────────────────────────────────────────────────
- * 왜 라이브러리를 두 번 호출하는가
+ * 여기는 조립만 한다
  *
- * lunar-javascript 의 절기표는 UTC+8 기준으로 계산돼 있다.
- *   검증: 1957 입춘 = 1957-02-04 09:54:37  (= UTC 01:54:37 + 8h)
+ * 네 기둥을 세우는 규칙 자체는 core/pillars.ts 에 있다. 절기표도 우리가
+ * 만든 것이다(core/data/solar-terms.ts). 이 파일은 그 규칙에 두 타임라인을
+ * 물려주고 결과를 화면이 쓰는 모양으로 옮긴다.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * 두 타임라인
  *
  * 년주·월주는 "출생 순간이 절기 순간보다 앞이냐 뒤냐"로 정해진다.
- * 두 순간의 비교이므로 같은 타임라인에 올려놓기만 하면 되고, 경도
- * 보정분은 양변에서 상쇄된다. 따라서 라이브러리에는 출생시각을 UTC+8 로
- * 읽어서 주면 절기 비교가 정확해진다.        →  cstFields
+ * 순간과 순간의 비교이므로 벽시계가 아니라 **UTC 순간**으로 견준다.
+ * cstFields(UTC+8 벽시계)를 순간으로 되돌려 쓴다.
  *
- * 반면 시주는 "해가 하늘 어디에 있었나"이므로 진태양시여야 하고,
- * 일주도 진태양시 기준 날짜여야 한다.          →  solarFields
+ * 시주는 "해가 하늘 어디에 있었나"이므로 진태양시여야 하고, 일주도
+ * 진태양시 기준 날짜여야 한다.                →  solarFields
  *
- * 두 필드는 27분 55초 차이가 난다. 절기 경계 ±28분에 태어난 사람에게
- * 실제로 다른 결과를 준다. 그래서 한 번 호출로 뭉개지 않는다.
+ * 두 필드는 서울 기준 27분 55초 차이가 난다. 절기 경계 ±28분에 태어난
+ * 사람에게 실제로 다른 결과를 준다. 그래서 한 번에 뭉개지 않는다.
  *
  * ─────────────────────────────────────────────────────────────────────────
  * 야자시
  *
- * 라이브러리 기본(sect 2)은 23:00~24:00 출생 시 시주만 다음날 자시로
- * 넘기고 일주는 당일로 유지한다. sect 1 은 일주까지 넘긴다.
- *   2026-03-10 23:30 → sect 2: 癸未 甲子 / sect 1: 甲申 甲子
- * 유파 차이이므로 정책으로 노출한다.
+ * 자시는 23시에 시작해 다음 날 01시에 끝난다. 그래서 23시대 출생의 자시는
+ * 다음 날에 속한 자시이고, 시주 천간은 다음 날 일간에서 나온다.
+ * 일주까지 다음 날로 넘길지는 유파가 갈려 정책으로 노출한다.
+ *   2026-03-10 23:30 → 야자시: 癸未 甲子 / 조자시: 甲申 甲子
  */
 
-import { Solar } from 'lunar-javascript';
 import {
-  ANIMAL_BY_HANJA,
   BRANCH_ELEMENT,
   BRANCH_KO,
   ELEMENT_ORDER,
   STEM_ELEMENT,
   STEM_KO,
-  TEN_GOD_BY_HANJA,
   branchIndex,
   stemIndex,
 } from './constants';
+import {
+  ANIMALS,
+  BRANCH_HANJA,
+  STEM_HANJA,
+  branchTenGods,
+  dayPillar,
+  fromSexagenary,
+  hourPillar,
+  monthPillar,
+  sexagenaryIndex,
+  tenGodBetween,
+  yearPillar,
+  type GanZhi,
+} from './pillars';
 import { err, ok, type SajuResult } from './errors';
 import { ERROR_MESSAGES } from './errors';
 import type {
@@ -70,21 +84,21 @@ export function pillarFromGanZhi(ganZhi: string): Pillar | null {
   };
 }
 
-const toTenGod = (hanja: string): TenGod | null => TEN_GOD_BY_HANJA[hanja] ?? null;
+/** GanZhi(숫자 쌍) → 화면이 쓰는 Pillar */
+function pillarOf(gz: GanZhi): Pillar {
+  return {
+    stem: STEM_KO[gz.stem] as Pillar['stem'],
+    branch: BRANCH_KO[gz.branch] as Pillar['branch'],
+    stemHanja: STEM_HANJA[gz.stem] as string,
+    branchHanja: BRANCH_HANJA[gz.branch] as string,
+    stemElement: STEM_ELEMENT[gz.stem] as Element,
+    branchElement: BRANCH_ELEMENT[gz.branch] as Element,
+  };
+}
 
-/** 지지 십성은 배열(지장간별)로 오기도 한다. 대표값(정기)만 쓴다. */
-const firstTenGod = (v: string | string[]): TenGod | null => {
-  const raw = Array.isArray(v) ? v[0] : v;
-  return raw ? toTenGod(raw) : null;
-};
-
-const eightCharAt = (f: CalendarFields, sect: 1 | 2) => {
-  const solar = Solar.fromYmdHms(f.year, f.month, f.day, f.hour, f.minute, f.second);
-  const lunar = solar.getLunar();
-  const ec = lunar.getEightChar();
-  ec.setSect(sect);
-  return { lunar, ec };
-};
+/** UTC+8 벽시계 필드를 그 순간(UTC ms)으로 되돌린다. */
+const instantOfCst = (f: CalendarFields): number =>
+  Date.UTC(f.year, f.month - 1, f.day, f.hour, f.minute, f.second) - 8 * 3_600_000;
 
 /**
  * 사주 원국 계산.
@@ -97,54 +111,61 @@ export function computeChart(
   solarTime: SolarTimeResult,
   solarDate: { year: number; month: number; day: number },
 ): SajuResult<SajuChart> {
-  const sect: 1 | 2 = input.yajasi === 'advance-day' ? 1 : 2;
-
   try {
-    // ── 년주·월주: UTC+8 타임라인 (라이브러리 절기표와 같은 기준) ──
-    const cst = eightCharAt(solarTime.cstFields, sect);
-    const yearPillar = pillarFromGanZhi(cst.ec.getYear());
-    const monthPillar = pillarFromGanZhi(cst.ec.getMonth());
-
-    // ── 일주·시주: 진태양시 타임라인 ──
-    const sol = eightCharAt(solarTime.solarFields, sect);
-    const dayPillar = pillarFromGanZhi(sol.ec.getDay());
-    const hourPillar = input.hour.known ? pillarFromGanZhi(sol.ec.getTime()) : null;
-
-    if (!yearPillar || !monthPillar || !dayPillar) {
-      return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
-        year: cst.ec.getYear(),
-        month: cst.ec.getMonth(),
-        day: sol.ec.getDay(),
+    // ── 년주·월주: 절기가 가른다. 순간으로 견준다 ──
+    const instant = instantOfCst(solarTime.cstFields);
+    const yearGz = yearPillar(instant);
+    const monthGz = monthPillar(instant);
+    if (!yearGz || !monthGz) {
+      return err('OUT_OF_RANGE_YEAR', ERROR_MESSAGES.OUT_OF_RANGE_YEAR, {
+        reason: '절기표 범위 밖',
+        year: solarTime.cstFields.year,
       });
     }
 
+    // ── 일주·시주: 진태양시 타임라인 ──
+    const sf = solarTime.solarFields;
+    const solDay = dayPillar(sf.year, sf.month, sf.day);
+
+    /*
+     * 조자시(advance-day)는 23시대 출생의 일주까지 다음 날로 넘긴다.
+     * 야자시(preserve-day, 기본)는 일주를 당일로 두고 시주만 넘긴다.
+     * 시주 쪽 처리는 hourPillar 가 규칙으로 갖고 있다.
+     */
+    const lateZi = input.hour.known && sf.hour >= 23;
+    const dayGz =
+      lateZi && input.yajasi === 'advance-day'
+        ? fromSexagenary(sexagenaryIndex(solDay) + 1)
+        : solDay;
+
+    const hourGz = input.hour.known ? hourPillar(solDay.stem, sf.hour) : null;
+
     const pillars: FourPillars = {
-      year: yearPillar,
-      month: monthPillar,
-      day: dayPillar,
-      hour: hourPillar,
+      year: pillarOf(yearGz),
+      month: pillarOf(monthGz),
+      day: pillarOf(dayGz),
+      hour: hourGz ? pillarOf(hourGz) : null,
     };
 
-    // ── 십성 ──
-    // 십성은 일간 기준 상대값이라 어느 호출에서 읽어도 같아야 하지만,
-    // 년/월은 cst, 시는 sol 에서 읽어 각 기둥과 짝을 맞춘다.
+    // ── 십성 ── 일간이 다른 글자를 어떻게 보는가. 규칙으로 낸다.
+    const dm = dayGz.stem;
     const tenGods: SajuChart['tenGods'] = {
       year: {
-        stem: toTenGod(cst.ec.getYearShiShenGan()) ?? '비견',
-        branch: firstTenGod(cst.ec.getYearShiShenZhi()) ?? '비견',
+        stem: tenGodBetween(dm, yearGz.stem) as TenGod,
+        branch: branchTenGods(dm, yearGz.branch)[0] as TenGod,
       },
       month: {
-        stem: toTenGod(cst.ec.getMonthShiShenGan()) ?? '비견',
-        branch: firstTenGod(cst.ec.getMonthShiShenZhi()) ?? '비견',
+        stem: tenGodBetween(dm, monthGz.stem) as TenGod,
+        branch: branchTenGods(dm, monthGz.branch)[0] as TenGod,
       },
       day: {
         stem: '일간',
-        branch: firstTenGod(sol.ec.getDayShiShenZhi()) ?? '비견',
+        branch: branchTenGods(dm, dayGz.branch)[0] as TenGod,
       },
-      hour: input.hour.known
+      hour: hourGz
         ? {
-            stem: toTenGod(sol.ec.getTimeShiShenGan()) ?? '비견',
-            branch: firstTenGod(sol.ec.getTimeShiShenZhi()) ?? '비견',
+            stem: tenGodBetween(dm, hourGz.stem) as TenGod,
+            branch: branchTenGods(dm, hourGz.branch)[0] as TenGod,
           }
         : null,
     };
@@ -158,10 +179,11 @@ export function computeChart(
       solarDate,
       solarTime,
       pillars,
-      dayMaster: dayPillar,
+      dayMaster: pillars.day,
       elementCounts,
       tenGods,
-      animal: ANIMAL_BY_HANJA[cst.lunar.getYearShengXiao()] ?? '',
+      // 띠는 년지 그대로다 — 자는 쥐, 축은 소.
+      animal: ANIMALS[yearGz.branch] as string,
       hourUnknown: !input.hour.known,
     });
   } catch (e) {

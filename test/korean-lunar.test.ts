@@ -295,8 +295,14 @@ describe('지원 범위를 숨기지 않는다', () => {
     expect(koreanLeapMonthOf(2051)).toBeNull();
   });
 
-  it('범위 밖에서도 계산은 된다 — 중국 음력으로 물러난다', () => {
+  it('★범위 밖은 조용히 물러나지 않고 거절한다★', () => {
+    /*
+     * 예전에는 2051년부터 중국 음력으로 물러났다. 그건 달의 3.6%에서 하루
+     * 어긋난 값을 아무 말 없이 내주는 것이라 조용한 오답이 된다.
+     * 못 하는 것은 못 한다고 말한다.
+     */
     const r = lunarToSolar(2051, 5, 15, false);
-    expect(r.ok).toBe(true);
+    expect(r.ok).toBe(false);
+    expect(r.ok === false && r.error.message).toMatch(/2050년까지/);
   });
 });

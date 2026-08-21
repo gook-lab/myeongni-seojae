@@ -23,8 +23,12 @@
  * 정답지가 없다.
  */
 
-import { Solar } from 'lunar-javascript';
-import { BRANCH_KO, TEN_GOD_BY_HANJA } from './constants';
+import {
+  branchTenGods,
+  tenGodBetween,
+  voidBranches as voidBranchesOf,
+} from './pillars';
+import { BRANCH_KO, STEM_KO } from './constants';
 import { twelveStage } from './twelve-stages';
 import type {
   Branch,
@@ -32,7 +36,6 @@ import type {
   FourPillars,
   Palace,
   Pillar,
-  SolarTimeResult,
   TenGod,
   TwelveStage,
 } from './types';
@@ -78,13 +81,8 @@ export interface NatalDetail {
 
 const ELEMENT_ORDER: readonly Element[] = ['목', '화', '토', '금', '수'];
 
-const toTenGod = (hanja: string): TenGod | null => TEN_GOD_BY_HANJA[hanja] ?? null;
-
-/** 라이브러리는 지장간별 십성을 배열로 준다. 원본은 [0] 만 썼다. */
-const allTenGods = (v: string | string[]): TenGod[] => {
-  const arr = Array.isArray(v) ? v : [v];
-  return arr.map(toTenGod).filter((g): g is TenGod => g !== null);
-};
+const stemIdx = (ko: string): number => STEM_KO.indexOf(ko as never);
+const branchIdx = (ko: string): number => BRANCH_KO.indexOf(ko as never);
 
 export function elementBalance(pillars: FourPillars): ElementBalance {
   const counts = Object.fromEntries(ELEMENT_ORDER.map((e) => [e, 0])) as Record<
@@ -122,57 +120,40 @@ export function elementBalance(pillars: FourPillars): ElementBalance {
 /**
  * 원국 심화 정보를 뽑는다.
  *
- * 라이브러리를 다시 부르는 이유: 지장간별 십성과 공망은 EightChar 에만
- * 있고 우리 Pillar 타입에는 없다. manse.ts 와 같은 타임라인 규칙을 쓴다
- * (년월은 cstFields, 일시는 solarFields).
+ * 지장간별 십성과 공망은 이제 우리 규칙으로 낸다(core/pillars.ts).
+ * 지장간은 정기만 보지 않고 전부 읽는다 — 겉에 없는 오행이 지지 안에
+ * 숨어 있는 경우가 흔해서, 정기만 보면 그 힘을 통째로 놓친다.
  */
-export function natalDetail(
-  pillars: FourPillars,
-  solarTime: SolarTimeResult,
-  yajasiSect: 1 | 2,
-): NatalDetail {
-  const at = (f: typeof solarTime.cstFields) => {
-    const ec = Solar.fromYmdHms(f.year, f.month, f.day, f.hour, f.minute, f.second)
-      .getLunar()
-      .getEightChar();
-    ec.setSect(yajasiSect);
-    return ec;
-  };
-  const cst = at(solarTime.cstFields);
-  const sol = at(solarTime.solarFields);
-
-  // 공망은 일주 순중(旬中)으로 정한다. 예: "戌亥"
-  const voidHanja = sol.getDayXunKong();
-  const voidBranches = [...voidHanja]
-    .map((h) => {
-      const i = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'].indexOf(h);
-      return i >= 0 ? (BRANCH_KO[i] as Branch) : null;
-    })
-    .filter((b): b is Branch => b !== null);
-
+export function natalDetail(pillars: FourPillars): NatalDetail {
   const dayStem = pillars.day.stem;
+  const dayStemIndex = stemIdx(dayStem);
+
+  // 공망은 일주 순중(旬中)으로 정한다.
+  const voidBranches = voidBranchesOf({
+    stem: dayStemIndex,
+    branch: branchIdx(pillars.day.branch),
+  }).map((b) => BRANCH_KO[b] as Branch);
+
   const isVoid = (b: Branch) => voidBranches.includes(b);
 
-  const rows: Array<{
-    palace: Palace;
-    pillar: Pillar | null;
-    stem: string | null;
-    branch: string[] | string;
-  }> = [
-    { palace: '년주', pillar: pillars.year, stem: cst.getYearShiShenGan(), branch: cst.getYearShiShenZhi() },
-    { palace: '월주', pillar: pillars.month, stem: cst.getMonthShiShenGan(), branch: cst.getMonthShiShenZhi() },
-    { palace: '일주', pillar: pillars.day, stem: null, branch: sol.getDayShiShenZhi() },
-    { palace: '시주', pillar: pillars.hour, stem: sol.getTimeShiShenGan(), branch: sol.getTimeShiShenZhi() },
+  const rows: Array<{ palace: Palace; pillar: Pillar | null; hasStemTenGod: boolean }> = [
+    { palace: '년주', pillar: pillars.year, hasStemTenGod: true },
+    { palace: '월주', pillar: pillars.month, hasStemTenGod: true },
+    // 일간은 자기 자신이라 십성이 없다
+    { palace: '일주', pillar: pillars.day, hasStemTenGod: false },
+    { palace: '시주', pillar: pillars.hour, hasStemTenGod: true },
   ];
 
   const palaces: PalaceReading[] = [];
   for (const r of rows) {
     if (!r.pillar) continue;
-    const hidden = allTenGods(r.branch);
+    const hidden = branchTenGods(dayStemIndex, branchIdx(r.pillar.branch)) as TenGod[];
     palaces.push({
       palace: r.palace,
       pillar: r.pillar,
-      stemTenGod: r.stem ? toTenGod(r.stem) : null,
+      stemTenGod: r.hasStemTenGod
+        ? (tenGodBetween(dayStemIndex, stemIdx(r.pillar.stem)) as TenGod)
+        : null,
       branchTenGod: hidden[0] ?? null,
       hiddenTenGods: hidden,
       stage: twelveStage(dayStem, r.pillar.branch),

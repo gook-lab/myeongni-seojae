@@ -19,8 +19,14 @@ const DIST = 'dist';
 const ASSETS = join(DIST, 'assets');
 const hasBuild = existsSync(ASSETS) && existsSync(join(DIST, 'index.html'));
 
-/** lunar-javascript 안에만 있는 문자열들 */
-const ENGINE_MARKERS = ['立春', '雨水', '彭祖'];
+/**
+ * 엔진 청크에만 있는 문자열들.
+ *
+ * 예전에는 lunar-javascript 의 중국어 절기명(立春·雨水)을 찾았다. 이제
+ * 절기표가 우리 것이라 한글 절기명을 찾는다. 달을 여는 절기(節) 이름만
+ * 쓴다 — 중기(中氣) 이름은 런타임에서 안 쓰여 트리셰이킹으로 사라진다.
+ */
+const ENGINE_MARKERS = ['소한', '망종', '백로'];
 /** 해석 텍스트 안에만 있는 문장 조각 */
 const TEXT_MARKERS = ['곧게 뻗는 큰 나무', '이슬비와 샘물'];
 
@@ -37,7 +43,7 @@ describeIfBuilt('번들 분할', () => {
     expect(html.match(/assets\/[A-Za-z0-9._-]+\.js/g) ?? []).toHaveLength(1);
   });
 
-  it('진입 청크에 lunar-javascript 가 없다', () => {
+  it('진입 청크에 절기표가 없다', () => {
     for (const marker of ENGINE_MARKERS) {
       expect(entry.includes(marker), `진입 청크에 "${marker}" 가 있다`).toBe(false);
     }
@@ -49,7 +55,7 @@ describeIfBuilt('번들 분할', () => {
     }
   });
 
-  it('엔진은 별도 청크로 분리돼 있다', () => {
+  it('엔진(절기표 + 해석 텍스트)은 별도 청크로 분리돼 있다', () => {
     const engineChunks = chunkNames.filter((name) => {
       const body = readFileSync(join(ASSETS, name), 'utf8');
       return ENGINE_MARKERS.every((m) => body.includes(m));
@@ -61,6 +67,28 @@ describeIfBuilt('번들 분할', () => {
   it('진입 청크가 250KB 를 넘지 않는다', () => {
     const kb = Buffer.byteLength(entry) / 1024;
     expect(kb, `진입 청크 ${kb.toFixed(0)}KB`).toBeLessThan(250);
+  });
+
+  it('★lunar-javascript 가 번들 어디에도 없다★', () => {
+    // 이제 계산은 우리 알고리즘이 한다(core/pillars.ts). 라이브러리는
+    // 테스트에서 대조 상대로만 쓰이므로 devDependency 다. 다시 새어
+    // 들어오면 엔진 청크가 세 배로 불어난다.
+    for (const name of chunkNames) {
+      const body = readFileSync(join(ASSETS, name), 'utf8');
+      expect(body.includes('彭祖'), `${name} 에 lunar-javascript 가 있다`).toBe(false);
+    }
+  });
+
+  it('엔진 청크가 150KB 를 넘지 않는다', () => {
+    // lunar-javascript 를 걷어내며 382KB → 100KB 가 됐다. 다시 불어나면
+    // 뭔가 정적으로 끌려 들어온 것이다.
+    const engine = chunkNames.find((name) => {
+      const body = readFileSync(join(ASSETS, name), 'utf8');
+      return ENGINE_MARKERS.every((m) => body.includes(m));
+    });
+    expect(engine).toBeDefined();
+    const kb = Buffer.byteLength(readFileSync(join(ASSETS, engine as string), 'utf8')) / 1024;
+    expect(kb, `엔진 청크 ${kb.toFixed(0)}KB`).toBeLessThan(150);
   });
 
   it('한국 음력 자료는 엔진 청크에만 있다', () => {

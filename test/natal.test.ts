@@ -34,7 +34,7 @@ const detail = (over: Partial<RawFormValues> = {}) => {
   if (!c.ok) throw new Error(c.error.code);
   return {
     chart: c.value,
-    natal: natalDetail(c.value.pillars, t.value, 2),
+    natal: natalDetail(c.value.pillars),
   };
 };
 

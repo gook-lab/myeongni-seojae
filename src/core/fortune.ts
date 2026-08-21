@@ -20,8 +20,15 @@
  * 일진(일)은 한국 진태양시로 읽는다 — 원국과 같은 규칙이다.
  */
 
-import { Solar } from 'lunar-javascript';
-import { TEN_GOD_BY_HANJA, TEN_GOD_CATEGORY } from './constants';
+import {
+  STEM_HANJA as STEM_HANJA_LIST,
+  branchTenGods,
+  dayPillar,
+  ganZhiHanja,
+  monthPillar,
+  yearPillar,
+} from './pillars';
+import { TEN_GOD_CATEGORY } from './constants';
 import { tenGodOf } from './daeun';
 import { ERROR_MESSAGES, err, ok, type SajuResult } from './errors';
 import {
@@ -88,17 +95,16 @@ export function dailyFortune(
   // 일진은 원국의 일주와 같은 규칙 — 한국 진태양시로 읽는다
   const f = fieldsAtOffset(now, longitudeOffsetMinutes(SEOUL_LONGITUDE));
   try {
-    const ec = Solar.fromYmdHms(f.year, f.month, f.day, f.hour, f.minute, f.second)
-      .getLunar()
-      .getEightChar();
-    const rel = relate(dayMaster.stemHanja, ec.getDay());
+    const gz = dayPillar(f.year, f.month, f.day);
+    const rel = relate(dayMaster.stemHanja, ganZhiHanja(gz));
     if (!rel) return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE);
 
     // 원본은 천간 십성 하나만 봤다. 지지와 내 일지와의 관계도 본다.
-    const hidden = ec.getDayShiShenZhi();
-    const branchTenGod = hidden.length > 0
-      ? (TEN_GOD_BY_HANJA[hidden[0] as string] ?? null)
-      : null;
+    const dayStemIndex = (STEM_HANJA_LIST as readonly string[]).indexOf(dayMaster.stemHanja);
+    const branchTenGod =
+      dayStemIndex >= 0
+        ? ((branchTenGods(dayStemIndex, gz.branch)[0] ?? null) as TenGod | null)
+        : null;
 
     return ok({
       ...rel,
@@ -133,10 +139,11 @@ export function yearFortune(
       new Date(Date.UTC(year, 5, 15, 3, 0, 0)),
       LIBRARY_TZ_OFFSET_MINUTES,
     );
-    const yearEc = Solar.fromYmdHms(mid.year, mid.month, mid.day, mid.hour, mid.minute, 0)
-      .getLunar()
-      .getEightChar();
-    const yearRel = relate(dayMaster.stemHanja, yearEc.getYear());
+    const midInstant =
+      Date.UTC(mid.year, mid.month - 1, mid.day, mid.hour, mid.minute, 0) - 8 * 3_600_000;
+    const yearGz = yearPillar(midInstant);
+    if (!yearGz) return err('OUT_OF_RANGE_YEAR', ERROR_MESSAGES.OUT_OF_RANGE_YEAR, { year });
+    const yearRel = relate(dayMaster.stemHanja, ganZhiHanja(yearGz));
     if (!yearRel) return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE);
 
     const months: MonthFortune[] = [];
@@ -149,10 +156,10 @@ export function yearFortune(
         new Date(Date.UTC(calYear, calMonth - 1, 15, 3, 0, 0)),
         LIBRARY_TZ_OFFSET_MINUTES,
       );
-      const ec = Solar.fromYmdHms(f.year, f.month, f.day, f.hour, f.minute, 0)
-        .getLunar()
-        .getEightChar();
-      const rel = relate(dayMaster.stemHanja, ec.getMonth());
+      const at = Date.UTC(f.year, f.month - 1, f.day, f.hour, f.minute, 0) - 8 * 3_600_000;
+      const monthGz = monthPillar(at);
+      if (!monthGz) continue;
+      const rel = relate(dayMaster.stemHanja, ganZhiHanja(monthGz));
       if (!rel) continue;
       months.push({ ...rel, label: `${calMonth}월` });
     }

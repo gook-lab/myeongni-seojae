@@ -24,7 +24,14 @@
  * 이점이지만 계약으로 못박아 둔다 — 테스트가 이걸 지킨다.
  */
 
-import { Solar } from 'lunar-javascript';
+import {
+  daeunPillars,
+  daeunStart,
+  ganZhiHanja,
+  monthPillar,
+  yearPillar,
+  type GanZhi,
+} from './pillars';
 import { TEN_GOD_BY_HANJA, TEN_GOD_CATEGORY } from './constants';
 import { ERROR_MESSAGES, err, ok, type SajuResult } from './errors';
 import { pillarFromGanZhi } from './manse';
@@ -87,15 +94,36 @@ export function buildTimeline(
   const today = opts.today ?? new Date();
 
   try {
-    // 대운은 절기(절입)까지의 일수로 정해진다. 절기표와 같은 타임라인을 쓴다.
+    /*
+     * 대운은 절기(절입)까지의 일수로 정해진다. 절기는 순간이므로 벽시계가
+     * 아니라 UTC 순간으로 견준다 — cstFields 를 순간으로 되돌려 쓴다.
+     * 시작 나이만은 달력 위에서 세므로 벽시계도 함께 넘긴다.
+     */
     const f = solarTime.cstFields;
-    const ec = Solar.fromYmdHms(f.year, f.month, f.day, f.hour, f.minute, f.second)
-      .getLunar()
-      .getEightChar();
-    ec.setSect(input.yajasi === 'advance-day' ? 1 : 2);
+    const instant = Date.UTC(f.year, f.month - 1, f.day, f.hour, f.minute, f.second)
+      - 8 * 3_600_000;
 
-    const yun = ec.getYun(input.gender === '남' ? 1 : 0);
-    const raw = yun.getDaYun(DAEUN_COUNT + 1);
+    const yearGz = yearPillar(instant);
+    const monthGz = monthPillar(instant);
+    if (!yearGz || !monthGz) {
+      return err('OUT_OF_RANGE_YEAR', ERROR_MESSAGES.OUT_OF_RANGE_YEAR, {
+        reason: '절기표 범위 밖',
+        year: f.year,
+      });
+    }
+
+    const start = daeunStart(
+      instant,
+      { year: f.year, month: f.month, day: f.day, hour: f.hour, minute: f.minute },
+      yearGz.stem,
+      input.gender,
+    );
+    if (!start) {
+      return err('OUT_OF_RANGE_YEAR', ERROR_MESSAGES.OUT_OF_RANGE_YEAR, {
+        reason: '절입을 찾지 못함',
+        year: f.year,
+      });
+    }
 
     const dayStemIndex = STEM_HANJA_ORDER.indexOf(dayMaster.stemHanja);
     if (dayStemIndex < 0) {
@@ -106,19 +134,21 @@ export function buildTimeline(
     }
 
     const currentYear = today.getUTCFullYear();
+    const list = daeunPillars(monthGz, start.forward, DAEUN_COUNT);
 
     const entries: DaeunEntry[] = [];
-    for (const d of raw) {
-      const ganZhi = d.getGanZhi();
-      // 첫 원소는 대운 이전 구간이라 간지가 비어 있다. 건너뛴다.
-      if (!ganZhi) continue;
-      const pillar = pillarFromGanZhi(ganZhi);
+    for (let i = 0; i < list.length; i += 1) {
+      const gz = list[i] as GanZhi;
+      const pillar = pillarFromGanZhi(ganZhiHanja(gz));
       if (!pillar) continue;
 
-      const stemIdx = STEM_HANJA_ORDER.indexOf(pillar.stemHanja);
+      const stemIdx = gz.stem;
       const tenGod = tenGodOf(dayStemIndex, stemIdx);
-      const startYear = d.getStartYear();
-      const endYear = d.getEndYear();
+      // 대운은 열 해씩 이어진다. 첫 칸이 start.startYear 에서 시작한다.
+      const startYear = start.startYear + i * 10;
+      const endYear = startYear + 9;
+      const startAge = start.startAge + i * 10;
+      const endAge = startAge + 9;
 
       // 십이운성은 일간이 그 대운 지지에서 어떤 상태인가를 본다.
       // 십성이 "무슨 일이 있나"라면 이건 "그때 힘이 있나"다.
@@ -126,8 +156,8 @@ export function buildTimeline(
 
       entries.push({
         index: entries.length,
-        startAge: d.getStartAge(),
-        endAge: d.getEndAge(),
+        startAge,
+        endAge,
         startYear,
         endYear,
         pillar,
@@ -137,7 +167,6 @@ export function buildTimeline(
         outwardness: STAGE_OUTWARDNESS[stage],
         isCurrent: currentYear >= startYear && currentYear <= endYear,
       });
-      if (entries.length >= DAEUN_COUNT) break;
     }
 
     if (entries.length === 0) {
@@ -152,7 +181,7 @@ export function buildTimeline(
 
     return ok({
       startAge: first.startAge,
-      direction: yun.isForward() ? 'forward' : 'backward',
+      direction: start.forward ? 'forward' : 'backward',
       entries,
       monthsToNextTransition,
     });

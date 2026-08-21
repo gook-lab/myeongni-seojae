@@ -446,3 +446,52 @@ export function daeunPillars(monthGz: GanZhi, forward: boolean, count: number): 
     fromSexagenary(base + (forward ? i + 1 : -(i + 1))),
   );
 }
+
+
+/* ────────────────────────────────────────────────────────────────────────
+ * 십성 (十星)
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/**
+ * 십성 — 일간이 다른 천간을 어떻게 보는가.
+ *
+ * 표가 아니라 규칙이다. 오행의 상생·상극과 음양이 같은지만 보면 열 가지가
+ * 그대로 나온다. 표를 적으면 백 칸을 손으로 채워야 하고 그중 하나만
+ * 틀려도 조용히 어긋난다.
+ *
+ *   같은 오행   음양 같으면 비견, 다르면 겁재
+ *   내가 낳음   식신 / 상관
+ *   내가 이김   편재 / 정재
+ *   나를 이김   편관 / 정관
+ *   나를 낳음   편인 / 정인
+ */
+export type TenGodName =
+  | '비견' | '겁재' | '식신' | '상관' | '편재'
+  | '정재' | '편관' | '정관' | '편인' | '정인';
+
+export function tenGodBetween(dayStem: number, other: number): TenGodName {
+  const el = (i: number) => Math.floor(i / 2);   // 0목 1화 2토 3금 4수
+  const yin = (i: number) => i % 2;
+  const de = el(dayStem);
+  const oe = el(other);
+  const same = yin(dayStem) === yin(other);
+
+  const generates = (a: number) => (a + 1) % 5;  // 내가 낳는 것
+  const controls = (a: number) => (a + 2) % 5;   // 내가 이기는 것
+
+  if (oe === de) return same ? '비견' : '겁재';
+  if (oe === generates(de)) return same ? '식신' : '상관';
+  if (oe === controls(de)) return same ? '편재' : '정재';
+  if (controls(oe) === de) return same ? '편관' : '정관';
+  return same ? '편인' : '정인';
+}
+
+/**
+ * 지지의 십성. 지장간 전부를 정기·중기·여기 순으로 낸다.
+ *
+ * 지지는 겉으로 한 글자지만 안에 천간이 두셋 들어 있다. 정기만 보면
+ * 놓치는 힘이 있어 전부 낸다 — 화면은 첫 번째를 대표로 쓰고, 심화
+ * 분석은 전부를 읽는다.
+ */
+export const branchTenGods = (dayStem: number, branch: number): TenGodName[] =>
+  (HIDDEN_STEMS[branch] as number[]).map((hidden) => tenGodBetween(dayStem, hidden));
