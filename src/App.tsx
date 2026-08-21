@@ -16,7 +16,6 @@ import { Home } from './ui/Home';
 import { InputForm } from './ui/InputForm';
 import { Calculating } from './ui/Calculating';
 import { Intro } from './ui/Intro';
-import { Privacy } from './ui/Privacy';
 import { ShareLink } from './ui/ShareLink';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
@@ -496,9 +495,20 @@ function DetailScreen() {
   const go = useSajuStore((s) => s.go);
   return (
     <div className="pt-8">
-      <div className="mx-auto max-w-md px-5">
+      <div className="mx-auto flex max-w-md items-center justify-between px-5">
         <button type="button" onClick={() => go('saju')} className="text-sm text-ink-soft">
           ‹ 타임라인
+        </button>
+        {/*
+          여기부터 편관·장생·공망 같은 말이 쏟아진다. 모르는 말은 물어볼
+          데가 없어서 그냥 넘기게 되고, 그러면 화면 절반이 그림이 된다.
+        */}
+        <button
+          type="button"
+          onClick={() => go('glossary')}
+          className="rounded-md border border-line bg-card px-3 py-1.5 text-xs text-ink-soft"
+        >
+          모르는 말이 나오면
         </button>
       </div>
       <Yongsin />
@@ -528,6 +538,14 @@ function DetailScreen() {
  * 지키라고 있는 것이다.
  */
 const Report = lazy(() => import('./ui/Report').then((m) => ({ default: m.Report })));
+/*
+ * 용어 화면은 십성·십이운성 설명을 통째로 들고 있다. 그건 해석 텍스트라
+ * 엔진 쪽 덩치인데, 정적으로 부르면 첫 화면을 여는 사람이 그걸 다 받게
+ * 된다. 실제로 진입 청크가 250KB 예산을 넘어 게이트에 걸렸다.
+ */
+const Glossary = lazy(() => import('./ui/Glossary').then((m) => ({ default: m.Glossary })));
+/* 처리방침도 본문 덩어리다. 링크로만 닿으므로 첫 화면에 실을 이유가 없다. */
+const Privacy = lazy(() => import('./ui/Privacy').then((m) => ({ default: m.Privacy })));
 const DailyScreen = lazy(() => import('./ui/screens').then((m) => ({ default: m.DailyScreen })));
 const GunghapScreen = lazy(() =>
   import('./ui/screens').then((m) => ({ default: m.GunghapScreen })),
@@ -568,13 +586,14 @@ export function App() {
       <div key={`${route}:${phase}`} className="screen-enter">
         {route === 'intro' && <Intro />}
         {route === 'home' && <Home />}
-        {route === 'privacy' && <Privacy />}
         {route === 'saju' &&
           (phase === 'ready' ? <Result />
           : phase === 'loading' ? <Calculating />
           : <InputForm />)}
         {route === 'detail' && <DetailScreen />}
         <Suspense fallback={<ScreenFallback />}>
+          {route === 'privacy' && <Privacy />}
+          {route === 'glossary' && <Glossary />}
           {route === 'report' && <Report />}
           {route === 'daily' && <DailyScreen />}
           {route === 'gunghap' && <GunghapScreen />}

@@ -42,7 +42,7 @@
 | **도메인 엔진** | 직접 구현 (`core/pillars.ts`) + 직접 생성한 절기표 (23.6KB) |
 | **음력** | `korean-lunar-calendar` — 한국천문연구원 자료 |
 | **관측** | `@sentry/react` — 생년월일 세탁 게이트를 통과해야만 나간다 |
-| **테스트** | Vitest 3 (**514**) · Playwright 1.62 (**161**, 모바일·데스크톱·움직임 3프로젝트) |
+| **테스트** | Vitest 3 (**556**) · Playwright 1.62 (**218**, 모바일·데스크톱·움직임 3프로젝트) |
 | **검증 도구** | astronomy-engine (천체력) · lunar-javascript · manseryeok · **Python + skyfield/JPL DE421** |
 | **통합** | Model Context Protocol SDK — 엔진을 MCP 도구 6개로 노출 |
 | **CI** | GitHub Actions — tzdata 자가진단 → 타입 → 빌드 → 테스트 → E2E → 골든 재생성 diff |
@@ -54,7 +54,7 @@
 - **데이터 인코딩** — 절기 4,824개를 델타 + 36진수로 23.6KB
 - **번들 예산 관리** — 진입 청크 250KB 를 CI 가 지킨다
 - **프라이버시 엔지니어링** — 개인정보가 샐 수 있는 네 경로를 막고, 막혔는지를 테스트가 확인
-- **접근성** — WCAG AA 색 대비를 **토큰에서 직접 계산해 테스트**, `prefers-reduced-motion`, 큰 글씨 모드, 44px 터치 타깃
+- **접근성** — 용어를 설명하는 화면(관객이 사주 용어를 모른다), WCAG AA 색 대비를 **토큰에서 직접 계산해 테스트**, `prefers-reduced-motion`, 큰 글씨 모드, 44px 터치 타깃
 - **검증 설계** — 정답지가 없는 대상(용신·신살)을 어떻게 검증하는가
 
 ## 한눈에

@@ -189,3 +189,63 @@ test('그래도 글꼴은 제대로 나온다', async ({ page }) => {
   });
   expect(loaded).toBe(true);
 });
+
+test.describe('용어 — 모르는 말이 나오면', () => {
+  async function toDetail(page: import('@playwright/test').Page) {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '시작하기' }).click();
+    await page.getByRole('button', { name: /^사주 보기/ }).click();
+    await page.getByLabel('년', { exact: true }).selectOption('1957');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '상세 풀이 보기' }).click();
+  }
+
+  test('★상세 풀이에서 바로 닿는다★', async ({ page }) => {
+    // 편관·장생·공망이 쏟아지는 화면이 바로 여기다.
+    await toDetail(page);
+    await page.getByRole('button', { name: '모르는 말이 나오면' }).click();
+    await expect(page.getByRole('heading', { name: '모르는 말이 나오면' })).toBeVisible();
+  });
+
+  test('★한자 풀이가 아니라 어디서 만나는 말인지부터 적는다★', async ({ page }) => {
+    await toDetail(page);
+    await page.getByRole('button', { name: '모르는 말이 나오면' }).click();
+    await expect(page.getByText('인생 타임라인의 열 칸')).toBeVisible();
+    await expect(page.getByText('표에서 굵은 테두리가 쳐진 글자')).toBeVisible();
+  });
+
+  test('십성 열 가지와 십이운성 열두 자리가 다 있다', async ({ page }) => {
+    await toDetail(page);
+    await page.getByRole('button', { name: '모르는 말이 나오면' }).click();
+    for (const t of ['편관', '정인', '식신']) {
+      await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
+    }
+    for (const t of ['장생', '제왕', '묘']) {
+      await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
+    }
+  });
+
+  test('유파 차이를 밝힌다', async ({ page }) => {
+    await toDetail(page);
+    await page.getByRole('button', { name: '모르는 말이 나오면' }).click();
+    await expect(page.getByText(/유파마다 조금씩 다르게 씁니다/)).toBeVisible();
+  });
+
+  test('읽고 나면 왔던 자리로 돌아온다', async ({ page }) => {
+    await toDetail(page);
+    await page.getByRole('button', { name: '모르는 말이 나오면' }).click();
+    await page.getByRole('button', { name: '‹ 돌아가기' }).click();
+    await expect(page.getByRole('button', { name: '‹ 타임라인' })).toBeVisible();
+  });
+
+  test('★인쇄물에도 용어가 실린다 — 종이는 누를 데가 없다★', async ({ page }) => {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '시작하기' }).click();
+    await page.getByRole('button', { name: /^사주 보기/ }).click();
+    await page.getByLabel('년', { exact: true }).selectOption('1957');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '리포트 · 인쇄하기' }).click();
+    await expect(page.getByRole('heading', { name: '용어' })).toBeVisible();
+    await expect(page.getByText(/이 문서의 뜻입니다/)).toBeVisible();
+  });
+});

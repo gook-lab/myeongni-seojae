@@ -95,6 +95,16 @@ jobs:
       - name: E2E — 사용자 플로우 (모바일 · 데스크톱)
         run: pnpm exec playwright test
 
+      - name: 문서의 숫자가 실제와 맞는지 확인
+        run: |
+          # 손으로 적은 숫자는 반드시 낡는다. 세어서 다시 적고, 파일이
+          # 바뀌면 문서가 낡았다는 뜻이므로 실패시킨다.
+          pnpm docs:sync
+          git diff --exit-code README.md || {
+            echo "README 의 테스트 수가 실제와 다릅니다. pnpm docs:sync 를 돌리고 커밋하세요."
+            exit 1
+          }
+
       - name: 골든 정답지가 최신인지 확인
         run: |
           pnpm golden:gen

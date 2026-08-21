@@ -31,6 +31,7 @@
  */
 
 import type { DaeunCard } from '../engine';
+import { GLOSSARY } from '../text/glossary';
 import { useSajuStore } from '../store/saju-store';
 
 /** 인쇄 시 잘리지 않게 묶는 단위 */
@@ -437,6 +438,24 @@ export function Report() {
               <p className="text-[11px] font-bold text-jumuk">{k}</p>
               <p className="mt-0.5 text-xs leading-relaxed text-ink">{v}</p>
             </div>
+          ))}
+        </div>
+      </Block>
+
+      {/*
+        용어를 종이에도 싣는다.
+
+        화면에서는 「모르는 말이 나오면」을 눌러 볼 수 있지만, 인쇄물은
+        눌 데가 없다. 이 문서를 받는 분이 편관·장생·공망을 모르면 표가
+        그림이 되므로, 문서가 혼자 설 수 있게 뒤에 붙인다.
+      */}
+      <Block title="용어" note="화면과 이 문서에 나오는 말입니다. 유파마다 조금씩 다르게 쓰지만 여기 적은 것이 이 문서의 뜻입니다.">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+          {GLOSSARY.flatMap((sec) => sec.entries).map((e) => (
+            <p key={e.term} className="text-[10px] leading-relaxed">
+              <b className="text-jumuk">{e.term}</b>{' '}
+              <span className="text-ink-soft">{e.body}</span>
+            </p>
           ))}
         </div>
       </Block>

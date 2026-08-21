@@ -40,7 +40,7 @@ export type Phase = 'idle' | 'loading' | 'ready' | 'error';
  * 결과 화면이 3.8화면 길이가 됐고, 대운 타임라인이 주인공 자리를 잃었다.
  * 별도 화면으로 두면 기능을 잃지 않으면서 타임라인이 깨끗하게 유지된다.
  */
-export type Route = 'intro' | 'home' | 'privacy' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
+export type Route = 'intro' | 'home' | 'privacy' | 'glossary' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
 
 const currentYear = new Date().getFullYear();
 
@@ -159,7 +159,7 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     }
     // 처리방침은 읽고 나면 왔던 자리로 돌아가야 한다. 인트로에서 열었는데
     // 홈으로 떨어지면 아직 「시작하기」를 누르지도 않았는데 지나쳐버린다.
-    if (route === 'privacy') set({ returnTo: get().route });
+    if (route === 'privacy' || route === 'glossary') set({ returnTo: get().route });
     set({ route });
     window.scrollTo(0, 0);
   },
