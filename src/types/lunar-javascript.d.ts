@@ -55,6 +55,9 @@ declare module 'lunar-javascript' {
     getTimeDiShi(): string;
     /** 공망(旬空). 일주 순중 기준. 예: "戌亥" */
     getDayXunKong(): string;
+    /** 지지에 숨은 천간 (정기·중기·여기 순) */
+    getDayHideGan(): string[];
+    getMonthHideGan(): string[];
     getYearXunKong(): string;
     /** @param gender 1 = 남, 0 = 여 */
     getYun(gender: 0 | 1, sect?: 1 | 2): YunLike;
