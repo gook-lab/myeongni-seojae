@@ -10,12 +10,10 @@
  * 전체 신뢰가 무너진다. 숫자를 버리고 문장만 남겼다.
  */
 
-import { useState } from 'react';
+import { Suspense, lazy, useState } from 'react';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Home } from './ui/Home';
-import { DailyScreen, GunghapScreen, YearScreen } from './ui/screens';
 import { InputForm } from './ui/InputForm';
-import { Report } from './ui/Report';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
 import { useSajuStore, type TextScale } from './store/saju-store';
@@ -516,6 +514,30 @@ function DetailScreen() {
   );
 }
 
+/**
+ * 홈·입력 이후에만 닿는 화면들은 나눠 받는다.
+ *
+ * 리포트와 오늘·궁합·신년은 사주를 한 번 뽑은 다음에야 열린다. 그때는
+ * 이미 엔진 청크를 받느라 한 번 기다린 뒤이므로, 처음 화면을 여는 사람에게
+ * 이 코드를 미리 들려 보낼 이유가 없다. 진입 청크 예산(250KB)은 이걸
+ * 지키라고 있는 것이다.
+ */
+const Report = lazy(() => import('./ui/Report').then((m) => ({ default: m.Report })));
+const DailyScreen = lazy(() => import('./ui/screens').then((m) => ({ default: m.DailyScreen })));
+const GunghapScreen = lazy(() =>
+  import('./ui/screens').then((m) => ({ default: m.GunghapScreen })),
+);
+const YearScreen = lazy(() => import('./ui/screens').then((m) => ({ default: m.YearScreen })));
+
+/** 나눠 받는 동안 보이는 것. 화면이 깜빡이지 않게 자리만 잡아둔다. */
+function ScreenFallback() {
+  return (
+    <div className="px-5 py-16 text-center text-sm text-meok/50" role="status" aria-live="polite">
+      불러오는 중…
+    </div>
+  );
+}
+
 export function App() {
   const route = useSajuStore((s) => s.route);
   const phase = useSajuStore((s) => s.phase);
@@ -529,10 +551,12 @@ export function App() {
       {route === 'home' && <Home />}
       {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
       {route === 'detail' && <DetailScreen />}
-      {route === 'report' && <Report />}
-      {route === 'daily' && <DailyScreen />}
-      {route === 'gunghap' && <GunghapScreen />}
-      {route === 'year' && <YearScreen />}
+      <Suspense fallback={<ScreenFallback />}>
+        {route === 'report' && <Report />}
+        {route === 'daily' && <DailyScreen />}
+        {route === 'gunghap' && <GunghapScreen />}
+        {route === 'year' && <YearScreen />}
+      </Suspense>
     </ErrorBoundary>
   );
 }

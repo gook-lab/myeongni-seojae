@@ -14,7 +14,6 @@
 import { useState } from 'react';
 import type { DaeunCard } from '../engine';
 import { useSajuStore } from '../store/saju-store';
-import { shareCard } from './share-card';
 
 /**
  * 공유 버튼. 대운 칸 하나가 공유 단위다.
@@ -37,6 +36,9 @@ function ShareButton({ card, title }: { card: DaeunCard; title?: string }) {
         // 카드 펼침 토글이 같이 눌리지 않게 막는다
         e.stopPropagation();
         setState('busy');
+        // 카드 렌더러는 캔버스 그리기 코드가 통째로 들어 있다. 공유를
+        // 누르는 사람만 받으면 되므로 이 시점에 가져온다.
+        const { shareCard } = await import('./share-card');
         const r = await shareCard({ card, ...(title ? { title } : {}) });
         if (r.method === 'failed' && r.reason !== 'cancelled') setState('failed');
         else if (r.method === 'download') setState('done');

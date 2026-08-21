@@ -64,8 +64,30 @@ jobs:
       - name: 빌드 (번들 게이트가 dist 를 본다)
         run: pnpm build
 
-      - name: 테스트 — 골든 · 프라이버시 · 번들 게이트 포함
+      - name: MCP 서버 빌드 (번들이 깨지면 여기서 걸린다)
+        run: pnpm build:mcp
+
+      - name: 테스트 — 골든 · 프라이버시 · 번들 · MCP 게이트 포함
         run: pnpm vitest run
+
+      - name: MCP 서버가 stdio 로 실제로 뜨는지
+        run: |
+          # 단위 테스트는 handleTool 만 부른다. 전송 계층까지 살아 있는지는
+          # 프로세스를 띄워봐야 안다.
+          node --input-type=module -e "
+          import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+          import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+          const c = new Client({ name: 'gate', version: '0' }, { capabilities: {} });
+          await c.connect(new StdioClientTransport({ command: 'node', args: ['dist-mcp/server.js'] }));
+          const { tools } = await c.listTools();
+          if (tools.length !== 6) throw new Error('도구 수가 다릅니다: ' + tools.length);
+          const r = await c.callTool({ name: 'calculate_saju', arguments: { year: 1957, month: 2, day: 4, hour: 10, minute: 20, gender: '남' } });
+          const b = JSON.parse(r.content[0].text);
+          if (b.pillars.year.korean !== '병신') throw new Error('년주가 다릅니다: ' + b.pillars.year.korean);
+          if (b.calculationBasis.standardOffsetMinutes !== 510) throw new Error('근거가 빠졌습니다');
+          console.log('MCP stdio OK');
+          await c.close();
+          "
 
       - name: Playwright 브라우저 설치
         run: pnpm exec playwright install --with-deps chromium

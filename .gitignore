@@ -11,3 +11,4 @@ test-results/
 .gstack/
 .claude/
 /playwright/.cache/
+dist-mcp/
