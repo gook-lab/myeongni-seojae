@@ -63,6 +63,19 @@ describeIfBuilt('번들 분할', () => {
     expect(kb, `진입 청크 ${kb.toFixed(0)}KB`).toBeLessThan(250);
   });
 
+  it('astronomy-engine 은 어느 청크에도 없다', () => {
+    // 검증 전용 devDependency 다. 절기를 천체력으로 직접 푸는 코드라
+    // 무겁고, 브라우저에서는 쓸 일이 없다. 실수로 src/ 에서 import 하면
+    // 여기서 걸린다.
+    for (const name of chunkNames) {
+      const body = readFileSync(join(ASSETS, name), 'utf8');
+      expect(
+        body.includes('SearchSunLongitude') || body.includes('astronomy-engine'),
+        `${name} 에 astronomy-engine 이 들어갔다`,
+      ).toBe(false);
+    }
+  });
+
   it('Sentry 는 진입 청크에 들어가지 않는다', () => {
     // DSN 이 없으면 아예 받지 않아야 한다
     expect(entry.includes('sentry.io')).toBe(false);

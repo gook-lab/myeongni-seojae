@@ -67,7 +67,7 @@ jobs:
       - name: MCP 서버 빌드 (번들이 깨지면 여기서 걸린다)
         run: pnpm build:mcp
 
-      - name: 테스트 — 골든 · 프라이버시 · 번들 · MCP 게이트 포함
+      - name: 테스트 — 골든 · 절기 천체력 대조 · 프라이버시 · 번들 · MCP 게이트 포함
         run: pnpm vitest run
 
       - name: MCP 서버가 stdio 로 실제로 뜨는지

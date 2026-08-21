@@ -16,7 +16,8 @@
     "golden:gen": "tsx scripts/gen-golden.ts",
     "gate": "pnpm typecheck && pnpm build:mcp && vitest run",
     "mcp": "tsx src/mcp/index.ts",
-    "build:mcp": "vite build -c vite.mcp.config.ts"
+    "build:mcp": "vite build -c vite.mcp.config.ts",
+    "verify:kasi": "tsx scripts/verify-kasi.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -33,6 +34,7 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "astronomy-engine": "^2.1.19",
     "korean-lunar-calendar": "^0.4.0",
     "manseryeok": "^2.0.0",
     "tailwindcss": "^4.0.0",
