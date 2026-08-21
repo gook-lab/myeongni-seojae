@@ -130,7 +130,7 @@ const BRANCH_MAIN_STEM: Record<string, string> = {
  *   관성  +3  나를 극하는 것      (금극목 — 금은 목에서 +3)
  *   인성  +4  나를 생하는 것      (수생목 — 수는 목에서 +4)
  */
-function categoryToElement(dayElement: Element, cat: TenGodCategory): Element {
+export function categoryToElement(dayElement: Element, cat: TenGodCategory): Element {
   const ORDER: readonly Element[] = ['목', '화', '토', '금', '수'];
   const OFFSET: Record<TenGodCategory, number> = {
     비겁: 0, 식상: 1, 재성: 2, 관성: 3, 인성: 4,

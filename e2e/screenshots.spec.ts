@@ -131,8 +131,11 @@ test('10 궁합', async ({ page }) => {
   await toResult(page);
   await page.getByRole('button', { name: /^홈으로/ }).click();
   await page.getByRole('button', { name: '궁합' }).click();
-  await page.waitForTimeout(700);
-  await shot(page, '10-gunghap');
+  // 입력만 찍으면 궁합이 무엇을 보는지가 안 보인다. 결과까지 간다.
+  await page.getByRole('button', { name: '궁합 보기' }).click();
+  await expect(page.getByText('두 분의 명식')).toBeVisible();
+  await page.waitForTimeout(900);
+  await shot(page, '10-gunghap', true);
 });
 
 test('11 신년', async ({ page }) => {

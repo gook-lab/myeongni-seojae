@@ -18,7 +18,24 @@ import { toSolarTime } from '../core/korea-time';
 import { computeChart } from '../core/manse';
 import { natalDetail } from '../core/natal';
 import { findSinsal, groupSinsal } from '../core/sinsal';
-import { yongsin } from '../core/yongsin';
+import { categoryToElement, yongsin } from '../core/yongsin';
+import {
+  branchPairs,
+  combinedBalance,
+  sinsalCross,
+  stageCross,
+  stemHarmonyOf,
+  yongsinCross,
+} from '../core/compat';
+import {
+  BRANCH_PAIR_TEXT,
+  BRANCH_RELATION_LABEL,
+  COMBINED_TEXT,
+  CROSS_SINSAL_TEXT,
+  STAGE_CROSS_TEXT,
+  STEM_HARMONY_TEXT,
+  YONGSIN_CROSS_TEXT,
+} from '../text/gunghap-text';
 import type {
   DaeunTimeline,
   RawFormValues,
@@ -494,6 +511,35 @@ export interface GunghapReading {
   complement: { a: string; b: string };
   /** 상호 십성 — 상대가 나에게 어떤 역할로 오는가 */
   mutual: { aSeesB: string; bSeesA: string; aText: string; bText: string };
+
+  /** 두 일간이 합을 이루는가 (갑기합토 …) */
+  stemHarmony: { label: string; text: string } | null;
+  /** ★용신 교차★ 상대가 내게 필요한 오행을 갖고 있는가 */
+  yongsin: Array<{
+    who: '나' | '상대';
+    need: string;
+    partnerHas: number;
+    partnerAvoid: number;
+    verdict: string;
+    text: string;
+  }>;
+  /** 년지·월지·일지를 각각 본 관계 */
+  branchPairs: Array<{ palace: string; pair: string; label: string; text: string }>;
+  /** 상대 곁에서 내가 어떤 상태가 되는가 (십이운성) */
+  stages: Array<{ who: '나' | '상대'; stage: string; outwardness: number; text: string }>;
+  /** 둘을 합치면 오행이 고루 차는가 */
+  combined: { counts: Record<string, number>; filledTogether: string[]; stillMissing: string[]; text: string };
+  /** 두 사람 사이에 걸리는 원진·귀문관 */
+  sinsal: Array<{ name: string; palace: string; pair: string; text: string }>;
+  /** 두 사람의 사주팔자 — 나란히 놓고 본다 */
+  charts: { a: GunghapChart; b: GunghapChart };
+}
+
+export interface GunghapChart {
+  dayMaster: string;
+  year: string;
+  month: string;
+  day: string;
 }
 
 /**
@@ -525,9 +571,74 @@ export function computeGunghap(
   const da = ca.dayMaster;
   const db = cb.dayMaster;
 
+  // ── 여기부터가 심화 ── 이미 계산해둔 것을 궁합에도 쓴다
+  const ya = ra.value.yongsin;
+  const yb = rb.value.yongsin;
+  const harmony = stemHarmonyOf(da.stem, db.stem);
+  const pairs = branchPairs(ca.pillars, cb.pillars);
+  /*
+   * 용신 판정은 십성 갈래(비겁·식상…)로 나오는데 궁합에서는 오행으로
+   * 세야 한다. 같은 표로 옮긴다 — 일간 오행을 기준으로 한 칸씩이다.
+   */
+  const avoidElements = (r: typeof ya, dayElement: string) =>
+    r.avoid.map((c) => categoryToElement(dayElement as never, c as never));
+  const crossA = yongsinCross(
+    ya.primaryElement as never,
+    avoidElements(ya, ca.dayMaster.stemElement),
+    cb.elementCounts,
+  );
+  const crossB = yongsinCross(
+    yb.primaryElement as never,
+    avoidElements(yb, cb.dayMaster.stemElement),
+    ca.elementCounts,
+  );
+  const stageA = stageCross(da.stem, cb.pillars.day.branch);
+  const stageB = stageCross(db.stem, ca.pillars.day.branch);
+  const combined = combinedBalance(ca.elementCounts, cb.elementCounts);
+  const crossSinsal = sinsalCross(ca.pillars, cb.pillars);
+  const gz = (p: { stem: string; branch: string }) => `${p.stem}${p.branch}`;
+
   return {
     ok: true,
     value: {
+      stemHarmony: harmony.present && harmony.label
+        ? { label: harmony.label, text: STEM_HARMONY_TEXT(harmony.becomes as string) }
+        : null,
+      yongsin: [
+        {
+          who: '나' as const,
+          ...crossA,
+          need: String(crossA.need),
+          text: YONGSIN_CROSS_TEXT(crossA.verdict, '상대', String(crossA.need)),
+        },
+        {
+          who: '상대' as const,
+          ...crossB,
+          need: String(crossB.need),
+          text: YONGSIN_CROSS_TEXT(crossB.verdict, '나', String(crossB.need)),
+        },
+      ],
+      branchPairs: pairs.map((p) => ({
+        palace: p.palace,
+        pair: `${p.aGlyph} · ${p.bGlyph}`,
+        label: BRANCH_RELATION_LABEL[p.relation],
+        text: BRANCH_PAIR_TEXT(p.palace, p.relation),
+      })),
+      stages: [
+        { who: '나' as const, stage: stageA.stage, outwardness: stageA.outwardness, text: STAGE_CROSS_TEXT('상대', stageA.stage) },
+        { who: '상대' as const, stage: stageB.stage, outwardness: stageB.outwardness, text: STAGE_CROSS_TEXT('나', stageB.stage) },
+      ],
+      combined: { ...combined, text: COMBINED_TEXT(combined.filledTogether, combined.stillMissing) },
+      sinsal: crossSinsal.map((x) => ({
+        name: x.name,
+        palace: x.palace,
+        pair: `${x.aGlyph} · ${x.bGlyph}`,
+        text: CROSS_SINSAL_TEXT[x.name],
+      })),
+      charts: {
+        a: { dayMaster: gz(da), year: gz(ca.pillars.year), month: gz(ca.pillars.month), day: gz(ca.pillars.day) },
+        b: { dayMaster: gz(db), year: gz(cb.pillars.year), month: gz(cb.pillars.month), day: gz(cb.pillars.day) },
+      },
       title: t.title,
       body: t.body,
       pairLabel: `${da.stemHanja}${da.stem}${da.stemElement} · ${db.stemHanja}${db.stem}${db.stemElement}`,

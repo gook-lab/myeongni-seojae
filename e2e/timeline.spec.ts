@@ -247,7 +247,8 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await screen.getByLabel('상대 월').selectOption('3');
     await screen.getByLabel('상대 일').selectOption('12');
     await screen.getByRole('button', { name: '궁합 보기' }).click();
-    await expect(screen.locator('article')).toContainText('일간');
+    // 결과가 여러 덩이로 나온다 — 일간 관계 덩이만 짚는다
+    await expect(screen.getByText(/^일간 /).first()).toBeVisible();
   });
 
   test('오늘·신년도 독립 화면이다', async ({ page }) => {
@@ -719,5 +720,77 @@ test.describe('한국 음력 — 가족관계등록부에 적힌 그 음력', ()
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
     await expect(page.getByRole('alert')).toBeVisible();
     await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toHaveCount(0);
+  });
+});
+
+test.describe('궁합 — 여섯 자를 자리별로 본다', () => {
+  async function toGunghap(page: import('@playwright/test').Page) {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '궁합' }).click();
+    await page.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(page.getByText('두 분의 명식')).toBeVisible();
+  }
+
+  test('★무엇을 보고 말하는지부터 보여준다★', async ({ page }) => {
+    // 결론만 던지면 어디서 나온 말인지 알 수 없다.
+    await toGunghap(page);
+    const table = page.locator('table').first();
+    await expect(table).toBeVisible();
+    for (const head of ['년주', '월주', '일주']) {
+      await expect(table.getByText(head, { exact: true })).toBeVisible();
+    }
+  });
+
+  test('★없는 오행이 아니라 필요한 오행으로 본다★', async ({ page }) => {
+    /*
+     * 궁합에서 흔히 "없는 오행을 채워준다" 고 하는데, 없는 오행이 늘
+     * 필요한 것은 아니다. 신강한 사람에게 자기 오행이 하나 더 오면
+     * 도움이 아니라 부담이다. 용신은 그 차이를 아는 잣대다.
+     */
+    await toGunghap(page);
+    await expect(page.getByText('서로에게 필요한 기운을 갖고 있는가')).toBeVisible();
+    await expect(page.getByText(/에게 필요한 기운/).first()).toBeVisible();
+    await expect(page.getByText(/억부용신법으로 판정한 기운입니다/)).toBeVisible();
+  });
+
+  test('자리마다 따로 본다 — 일지만 보지 않는다', async ({ page }) => {
+    await toGunghap(page);
+    const section = page.getByText('자리별로 본 관계').locator('..');
+    for (const palace of ['년주', '월주', '일주']) {
+      await expect(section.getByText(new RegExp(palace)).first()).toBeVisible();
+    }
+  });
+
+  test('둘을 합친 오행이 다섯 칸으로 나온다', async ({ page }) => {
+    await toGunghap(page);
+    const section = page.getByText('둘을 합친 오행').locator('..');
+    for (const el of ['목', '화', '토', '금', '수']) {
+      await expect(section.getByText(el, { exact: false }).first()).toBeVisible();
+    }
+  });
+
+  test('십이운성으로 곁에 있을 때의 상태를 본다', async ({ page }) => {
+    await toGunghap(page);
+    await expect(page.getByText('곁에 있을 때 나는 어떤 상태가 되나')).toBeVisible();
+    await expect(page.getByText(/곁에서 나는 .*의 자리입니다/).first()).toBeVisible();
+  });
+
+  test('★점수를 내지 않는다★', async ({ page }) => {
+    await toGunghap(page);
+    const body = await page.locator('body').innerText();
+    expect(body).not.toMatch(/\d+\s*점/);
+    expect(body).toContain('점수를 내지 않습니다');
+  });
+
+  test('★겁주는 말로 끝내지 않는다★', async ({ page }) => {
+    // 원진·충이 걸려도 "헤어진다" 로 끝내지 않는다.
+    await toGunghap(page);
+    const body = await page.locator('body').innerText();
+    for (const scary of ['이별', '파탄', '흉합', '최악', '피하세요']) {
+      expect(body, `"${scary}" 가 있다`).not.toContain(scary);
+    }
   });
 });

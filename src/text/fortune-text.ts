@@ -54,6 +54,19 @@ export function josa(word: string, withBatchim: string, withoutBatchim: string):
 }
 
 /**
+ * 주격조사를 붙인다.
+ *
+ * "나" 와 "너" 는 이/가 앞에서 모양이 바뀐다 — 나+가는 "나가" 가 아니라
+ * "내가" 다. 규칙으로는 안 나오고 예외로 적어야 한다. 실제로 궁합 문장에
+ * "상대에게 없던 화의 기운을 나가 갖고 있습니다" 가 나왔다.
+ */
+export function asSubject(word: string): string {
+  if (word === '나') return '내가';
+  if (word === '너') return '네가';
+  return `${word}${josa(word, '이', '가')}`;
+}
+
+/**
  * 오행 보완 — 궁합에서 실제로 크게 보는 대목.
  *
  * @param side  이 문장의 주어 ("나" / "상대")
@@ -73,7 +86,7 @@ export function complementText(
     const list = stillMissing.join('·');
     return `${side}에게 없는 ${list}${josa(list, '을', '를')} ${other}도 갖고 있지 않습니다. 둘 다 그 방면은 밖에서 구해야 합니다.`;
   }
-  const base = `${side}에게 없던 ${filled.join('·')}의 기운을 ${other}가 갖고 있습니다. 함께 있을 때 그 방면이 채워집니다.`;
+  const base = `${side}에게 없던 ${filled.join('·')}의 기운을 ${asSubject(other)} 갖고 있습니다. 함께 있을 때 그 방면이 채워집니다.`;
   if (stillMissing.length === 0) return base;
   const rest = stillMissing.join('·');
   return `${base} 다만 ${rest}${josa(rest, '은', '는')} 둘 다 없습니다.`;

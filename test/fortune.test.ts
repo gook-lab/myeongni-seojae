@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { dailyFortune, gunghap, yearFortune } from '../src/core/fortune';
 import { computeGunghap, computeReading } from '../src/engine/index';
-import { josa } from '../src/text/fortune-text';
+import { asSubject, complementText, josa } from '../src/text/fortune-text';
 import type { RawFormValues } from '../src/core/types';
 
 const TODAY = new Date(Date.UTC(2026, 7, 21, 3, 0, 0));
@@ -329,5 +329,26 @@ describe('한국어 조사 처리', () => {
       expect(g.value.complement.b).not.toMatch(/상대에게 없는 .+ 상대도/);
       expect(g.value.complement.a).not.toMatch(/나에게 없는 .+ 나도/);
     }
+  });
+});
+
+describe('한국어 조사 — 나/너는 예외다', () => {
+  it('★"나가" 가 아니라 "내가" 다★', () => {
+    // 실제로 궁합 문장에 "…기운을 나가 갖고 있습니다" 가 나왔다.
+    // 규칙으로는 안 나오고 예외로 적어야 하는 자리다.
+    expect(asSubject('나')).toBe('내가');
+    expect(asSubject('너')).toBe('네가');
+  });
+
+  it('나머지는 받침으로 가른다', () => {
+    expect(asSubject('상대')).toBe('상대가');
+    expect(asSubject('사람')).toBe('사람이');
+    expect(asSubject('친구')).toBe('친구가');
+  });
+
+  it('궁합 오행 보완 문장에 "나가" 가 없다', () => {
+    const t = complementText('상대', '나', ['화'], []);
+    expect(t).toContain('내가');
+    expect(t).not.toContain('나가');
   });
 });

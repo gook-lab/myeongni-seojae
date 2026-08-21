@@ -165,6 +165,16 @@ function YearPanel() {
   );
 }
 
+/** 궁합 결과의 한 덩이. 라벨과 본문 */
+function Card({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <article className="rounded-lg border border-line bg-card px-4 py-4">
+      <p className="mb-2 text-xs text-jumuk">{label}</p>
+      {children}
+    </article>
+  );
+}
+
 function GunghapPanel() {
   const myForm = useSajuStore((s) => s.form);
   const [other, setOther] = useState({ year: 1990, month: 1, day: 1, gender: '여' as '남' | '여' });
@@ -275,41 +285,149 @@ function GunghapPanel() {
       )}
 
       {result && (
-        <article className="space-y-4 rounded-lg border border-line bg-card px-4 py-4">
-          <div>
+        <div className="space-y-2.5">
+          {/* 두 명식을 나란히 — 무엇을 보고 말하는지부터 보여준다 */}
+          <article className="rounded-lg border border-line bg-card px-4 py-3.5">
+            <p className="mb-2 text-xs text-ink-faint">두 분의 명식</p>
+            <table className="w-full table-fixed border-collapse text-center text-sm">
+              <thead>
+                <tr className="text-[11px] text-ink-faint">
+                  <th className="pb-1 font-normal" />
+                  <th className="pb-1 font-normal">년주</th>
+                  <th className="pb-1 font-normal">월주</th>
+                  <th className="pb-1 font-normal">일주</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([['나', result.charts.a], ['상대', result.charts.b]] as const).map(
+                  ([who, c]) => (
+                    <tr key={who}>
+                      <td className="py-1 text-xs text-ink-faint">{who}</td>
+                      <td className="py-1 text-ink">{c.year}</td>
+                      <td className="py-1 text-ink">{c.month}</td>
+                      <td className="py-1 font-bold text-jumuk">{c.day}</td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </article>
+
+          <article className="rounded-lg border border-jumuk bg-card-warm px-4 py-4">
             <p className="text-xs text-ink-faint">일간 {result.pairLabel}</p>
             <h3 className="mt-1.5 text-base font-bold text-jumuk">{result.title}</h3>
             <p className="mt-2 text-sm leading-[1.85] text-ink">{result.body}</p>
-          </div>
+            {result.stemHarmony && (
+              <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-sm leading-[1.85] text-ink">
+                <b className="text-jumuk">{result.stemHarmony.label}</b> —{' '}
+                {result.stemHarmony.text.replace(/\*\*/g, '')}
+              </p>
+            )}
+          </article>
 
-          <Row label="일지 관계">{result.branchNote}</Row>
+          {/* ★용신 교차★ 없는 오행보다 필요한 오행이 크다 */}
+          <article className="rounded-lg border border-line bg-card px-4 py-4">
+            <p className="mb-2.5 text-xs text-jumuk">서로에게 필요한 기운을 갖고 있는가</p>
+            <div className="space-y-3">
+              {result.yongsin.map((y) => (
+                <div key={y.who}>
+                  <p className="text-sm text-ink-soft">
+                    <b className="text-ink">{y.who}</b>에게 필요한 기운{' '}
+                    <b className="text-jumuk">{y.need}</b>
+                    <span className="text-ink-faint">
+                      {' '}
+                      · 상대가 {y.partnerHas}자 · {y.verdict}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-sm leading-[1.85] text-ink">
+                    {y.text.replace(/\*\*/g, '')}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
+              억부용신법으로 판정한 기운입니다. 없는 오행이 늘 필요한 것은 아니라서,
+              &ldquo;채워준다&rdquo;는 말을 이 기준으로만 씁니다.
+            </p>
+          </article>
 
-          <Row label="오행 보완">
-            {result.complement.a}
-            <br />
-            {result.complement.b}
-          </Row>
+          {/* 자리별 지지 관계 */}
+          <article className="rounded-lg border border-line bg-card px-4 py-4">
+            <p className="mb-2.5 text-xs text-jumuk">자리별로 본 관계</p>
+            <div className="space-y-3">
+              {result.branchPairs.map((p) => (
+                <div key={p.palace}>
+                  <p className="text-sm text-ink-soft">
+                    <b className="text-ink">{p.palace}</b> {p.pair}
+                    <span className="ml-1.5 text-jumuk">{p.label}</span>
+                  </p>
+                  <p className="mt-1 text-sm leading-[1.85] text-ink">{p.text}</p>
+                </div>
+              ))}
+            </div>
+          </article>
 
-          <Row label="서로에게 어떤 자리인가">
-            <b className="text-ink">상대는 나에게 {result.mutual.aSeesB}</b> — {result.mutual.aText}
-            <br />
-            <b className="text-ink">나는 상대에게 {result.mutual.bSeesA}</b> — {result.mutual.bText}
-          </Row>
-        </article>
+          <Card label="곁에 있을 때 나는 어떤 상태가 되나">
+            {result.stages.map((st) => (
+              <p key={st.who} className="mt-1 text-sm leading-[1.85] text-ink">
+                {st.text.replace(/\*\*/g, '')}
+              </p>
+            ))}
+          </Card>
+
+          <Card label="둘을 합친 오행">
+            <div className="mb-2 flex gap-1.5">
+              {Object.entries(result.combined.counts).map(([el, n]) => (
+                <span
+                  key={el}
+                  className="flex-1 rounded-md border border-line bg-hanji py-1.5 text-center text-xs"
+                >
+                  <b className="text-ink">{el}</b>
+                  <span className="ml-1 tabular-nums text-ink-faint">{n}</span>
+                </span>
+              ))}
+            </div>
+            <p className="text-sm leading-[1.85] text-ink">{result.combined.text}</p>
+          </Card>
+
+          <Card label="오행 보완">
+            <p className="text-sm leading-[1.85] text-ink">{result.complement.a}</p>
+            <p className="mt-1 text-sm leading-[1.85] text-ink">{result.complement.b}</p>
+          </Card>
+
+          <Card label="서로에게 어떤 자리인가">
+            <p className="text-sm leading-[1.85] text-ink">
+              <b>상대는 나에게 {result.mutual.aSeesB}</b> — {result.mutual.aText}
+            </p>
+            <p className="mt-1 text-sm leading-[1.85] text-ink">
+              <b>나는 상대에게 {result.mutual.bSeesA}</b> — {result.mutual.bText}
+            </p>
+          </Card>
+
+          {result.sinsal.length > 0 && (
+            <Card label="두 분 사이에 걸리는 자리">
+              {result.sinsal.map((x) => (
+                <div key={`${x.name}${x.palace}`} className="mt-1">
+                  <p className="text-sm text-ink-soft">
+                    <b className="text-jumuk">{x.name}</b> · {x.palace} {x.pair}
+                  </p>
+                  <p className="mt-0.5 text-sm leading-[1.85] text-ink">{x.text}</p>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          <p className="px-1 pt-1 text-xs leading-relaxed text-ink-faint">
+            점수를 내지 않습니다. 어디가 맞물리고 어디가 부딪히는지를 그대로 적을 뿐,
+            좋다 나쁘다는 두 분이 판단하실 몫입니다.
+          </p>
+        </div>
       )}
     </div>
   );
 }
 
 /** 궁합 결과의 한 항목 */
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="border-t border-dashed border-line-dash pt-3.5">
-      <p className="mb-1.5 text-xs text-jumuk">{label}</p>
-      <p className="text-sm leading-[1.85] text-ink-soft">{children}</p>
-    </div>
-  );
-}
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
