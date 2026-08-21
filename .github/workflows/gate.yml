@@ -1,0 +1,77 @@
+# 명리서재 — 배포 게이트
+#
+# 두 가지가 통과해야만 배포한다.
+#   1. 골든 테스트   만세력이 조용히 틀리는 것을 막는다
+#   2. 프라이버시    생년월일이 Sentry 로 새는 것을 막는다
+#
+# 둘 다 사람이 눈으로 못 잡는 종류의 실패라서 CI 가 본다.
+
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # tzdata 가 한국 표준시 이력을 아는지부터 확인한다.
+      # 러너의 ICU 가 빈약하면 골든이 통째로 거짓 통과할 수 있다.
+      - name: tzdata 자가진단
+        run: |
+          node -e '
+          const probes = [
+            [510, "1957-12-15T00:00:00Z", "1954~61 겨울 UTC+8:30"],
+            [570, "1957-06-15T00:00:00Z", "1954~61 서머타임 UTC+9:30"],
+            [600, "1988-08-15T00:00:00Z", "1988 서머타임 UTC+10"],
+            [540, "1990-08-15T00:00:00Z", "현재 UTC+9"],
+          ];
+          const off = (d) => {
+            const p = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Seoul", hour12: false,
+              year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit" })
+              .formatToParts(d);
+            const n = (t) => Number(p.find((x) => x.type === t).value);
+            return Math.round((Date.UTC(n("year"), n("month")-1, n("day"), n("hour")%24, n("minute"), n("second")) - d.getTime())/60000);
+          };
+          let bad = 0;
+          for (const [exp, iso, label] of probes) {
+            const got = off(new Date(iso));
+            const ok = got === exp;
+            if (!ok) bad++;
+            console.log(`${ok ? "OK  " : "FAIL"} ${label}: expected ${exp}, got ${got}`);
+          }
+          if (bad) { console.error("이 러너의 tzdata 가 한국 표준시 이력을 모른다. 골든 테스트를 신뢰할 수 없다."); process.exit(1); }
+          '
+
+      - name: 타입체크
+        run: pnpm typecheck
+
+      - name: 빌드 (번들 게이트가 dist 를 본다)
+        run: pnpm build
+
+      - name: 테스트 — 골든 · 프라이버시 · 번들 게이트 포함
+        run: pnpm vitest run
+
+      - name: 골든 정답지가 최신인지 확인
+        run: |
+          pnpm golden:gen
+          if ! git diff --quiet test/golden-cases.json; then
+            echo "::error::골든 정답지가 코드와 어긋난다. 로컬에서 'pnpm golden:gen' 후 diff 를 확인하고 커밋할 것."
+            git diff --stat test/golden-cases.json
+            exit 1
+          fi

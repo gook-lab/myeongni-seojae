@@ -1,0 +1,122 @@
+/**
+ * 공유 카드 테스트
+ *
+ * 캔버스 렌더링 자체는 브라우저 API 라 여기서 못 돈다 (E2E 가 본다).
+ * 여기서는 카드에 실리는 **데이터**를 검사한다 — 그게 프라이버시가
+ * 걸린 부분이다.
+ *
+ * 규칙: 공유 이미지와 파일명에 생년월일이 들어가면 안 된다.
+ * 나이 구간과 연도 구간만으로는 생일을 역산할 수 없다.
+ */
+
+import { describe, expect, it } from 'vitest';
+import { computeReading } from '../src/engine/index';
+import type { RawFormValues } from '../src/core/types';
+import { CARD_HEIGHT, CARD_WIDTH, shareFileName } from '../src/ui/share-card';
+
+const TODAY = new Date(Date.UTC(2026, 7, 21));
+
+const reading = (over: Partial<RawFormValues> = {}) => {
+  const r = computeReading(
+    {
+      calendar: 'solar', year: 1957, month: 6, day: 15, leapMonth: false,
+      hourKnown: false, gender: '여', yajasi: 'preserve-day',
+      applyEquationOfTime: false, ...over,
+    } as RawFormValues,
+    { today: TODAY },
+  );
+  if (!r.ok) throw new Error(r.error.code);
+  return r.value;
+};
+
+describe('공유 카드 데이터 — 생년월일이 없다', () => {
+  const cards = reading().cards;
+
+  it('카드 필드에 생년월일이 하나도 없다', () => {
+    const serialized = JSON.stringify(cards);
+    // 출생 연도(1957)와 월일이 그대로 실리면 안 된다
+    expect(serialized).not.toContain('1957-06-15');
+    expect(serialized).not.toContain('19570615');
+    // 카드는 이런 필드만 갖는다
+    for (const c of cards) {
+      expect(Object.keys(c).sort()).toEqual(
+        [
+          'branchColor', 'category', 'endAge', 'endYear', 'ganji', 'ganjiKo',
+          'index', 'isCurrent', 'prefix', 'startAge', 'startYear', 'stemColor',
+          'tenGod', 'text', 'theme',
+        ].sort(),
+      );
+    }
+  });
+
+  it('연도 구간은 10년 단위라 생일을 역산할 수 없다', () => {
+    for (const c of cards) {
+      expect(c.endYear - c.startYear).toBe(9);
+    }
+  });
+
+  it('파일명에 생년월일이 없다', () => {
+    for (const c of cards) {
+      const name = shareFileName(c);
+      expect(name).not.toMatch(/19\d{2}[-/.]?\d{2}[-/.]?\d{2}/);
+      expect(name).toContain(`${c.startAge}-${c.endAge}세`);
+      expect(name).toMatch(/\.png$/);
+    }
+  });
+
+  it('파일명이 파일시스템에 안전하다', () => {
+    for (const c of cards) {
+      expect(shareFileName(c)).not.toMatch(/[/\\:*?"<>|]/);
+    }
+  });
+});
+
+describe('공유 카드 규격', () => {
+  it('인스타·카톡에 무난한 4:5 비율이다', () => {
+    expect(CARD_WIDTH).toBe(1080);
+    expect(CARD_HEIGHT).toBe(1350);
+    expect(CARD_HEIGHT / CARD_WIDTH).toBeCloseTo(1.25, 2);
+  });
+});
+
+describe('카드 내용', () => {
+  const { cards } = reading();
+
+  it('열 장 전부 본문이 채워져 있다', () => {
+    expect(cards).toHaveLength(10);
+    for (const c of cards) {
+      expect(c.text.length).toBeGreaterThan(100);
+      expect(c.theme.length).toBeGreaterThan(80);
+      expect(c.prefix).toBeTruthy();
+    }
+  });
+
+  it('시점 안내가 과거·현재·미래로 나뉜다', () => {
+    const prefixes = new Set(cards.map((c) => c.prefix));
+    expect(prefixes.size).toBeGreaterThanOrEqual(2);
+    const current = cards.find((c) => c.isCurrent);
+    expect(current?.prefix).toContain('지금 지나고');
+  });
+
+  it('오행 색이 유효한 hex 다', () => {
+    for (const c of cards) {
+      expect(c.stemColor).toMatch(/^#[0-9A-F]{6}$/i);
+      expect(c.branchColor).toMatch(/^#[0-9A-F]{6}$/i);
+    }
+  });
+
+  it('간지가 한자 두 글자다', () => {
+    for (const c of cards) {
+      expect(c.ganji).toHaveLength(2);
+      expect(c.ganjiKo).toHaveLength(2);
+    }
+  });
+});
+
+describe('이름을 넣어도 생년월일은 안 들어간다', () => {
+  it('name 은 입력에만 남고 카드에는 없다', () => {
+    const r = reading({ name: '홍길동' });
+    expect(r.chart.input.name).toBe('홍길동');
+    expect(JSON.stringify(r.cards)).not.toContain('홍길동');
+  });
+});

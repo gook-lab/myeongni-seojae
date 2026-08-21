@@ -11,11 +11,48 @@
  * 라는 문구가 그걸 대놓고 권한다.
  */
 
+import { useState } from 'react';
 import type { DaeunCard } from '../engine';
 import { useSajuStore } from '../store/saju-store';
+import { shareCard } from './share-card';
+
+/**
+ * 공유 버튼. 대운 칸 하나가 공유 단위다.
+ * 카드에는 생년월일이 들어가지 않는다 — 나이·연도 구간만 담는다.
+ */
+function ShareButton({ card, title }: { card: DaeunCard; title?: string }) {
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'failed'>('idle');
+
+  const label =
+    state === 'busy' ? '만드는 중…'
+    : state === 'done' ? '저장했습니다'
+    : state === 'failed' ? '다시 시도'
+    : '이 10년 공유하기';
+
+  return (
+    <button
+      type="button"
+      disabled={state === 'busy'}
+      onClick={async (e) => {
+        // 카드 펼침 토글이 같이 눌리지 않게 막는다
+        e.stopPropagation();
+        setState('busy');
+        const r = await shareCard({ card, ...(title ? { title } : {}) });
+        if (r.method === 'failed' && r.reason !== 'cancelled') setState('failed');
+        else if (r.method === 'download') setState('done');
+        else setState('idle');
+      }}
+      className="mt-3.5 w-full rounded-md border border-line bg-hanji px-3 py-2.5 text-sm text-ink-soft disabled:opacity-60"
+    >
+      {label}
+    </button>
+  );
+}
 
 interface Props {
   cards: DaeunCard[];
+  /** 공유 카드에 넣을 표시 이름 (선택) */
+  name?: string;
   startAge: number;
   direction: 'forward' | 'backward';
   monthsToNextTransition: number | null;
@@ -24,6 +61,7 @@ interface Props {
 
 export function Timeline({
   cards,
+  name,
   startAge,
   direction,
   monthsToNextTransition,
@@ -80,7 +118,8 @@ export function Timeline({
                 aria-expanded={isOpen}
                 onClick={() => toggleCard(card.index)}
                 className={
-                  'w-full rounded-lg border px-4 py-3.5 text-left transition-colors ' +
+                  'w-full border px-4 py-3.5 text-left transition-colors ' +
+                  (isOpen ? 'rounded-t-lg border-b-0 ' : 'rounded-lg ') +
                   (card.isCurrent
                     ? 'border-jumuk bg-card-warm'
                     : 'border-line bg-card ' +
@@ -119,16 +158,21 @@ export function Timeline({
                   </span>
                 </div>
 
-                {isOpen && (
-                  <div className="mt-3.5 border-t border-dashed border-line-dash pt-3.5">
-                    <p className="mb-2 text-xs text-jumuk">{card.prefix}</p>
-                    <p className="text-sm leading-[1.85] text-ink">{card.text}</p>
-                    <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-                      {card.theme}
-                    </p>
-                  </div>
-                )}
               </button>
+
+              {isOpen && (
+                <div
+                  className={
+                    'mt-[-1px] rounded-b-lg border border-t-0 px-4 pb-4 pt-3.5 ' +
+                    (card.isCurrent ? 'border-jumuk bg-card-warm' : 'border-line bg-card')
+                  }
+                >
+                  <p className="mb-2 text-xs text-jumuk">{card.prefix}</p>
+                  <p className="text-sm leading-[1.85] text-ink">{card.text}</p>
+                  <p className="mt-3 text-xs leading-relaxed text-ink-faint">{card.theme}</p>
+                  <ShareButton card={card} {...(name ? { title: name } : {})} />
+                </div>
+              )}
             </li>
           );
         })}

@@ -133,12 +133,14 @@ function Result() {
   const reset = useSajuStore((s) => s.reset);
   if (!reading) return null;
   const { timeline, cards, hourUnknown } = reading;
+  const displayName = reading.chart.input.name?.trim();
 
   return (
     <>
       <div className="pt-8">
         <Timeline
           cards={cards}
+          {...(displayName ? { name: displayName } : {})}
           startAge={timeline.startAge}
           direction={timeline.direction}
           monthsToNextTransition={timeline.monthsToNextTransition}
