@@ -11,8 +11,10 @@
  */
 
 import { useState } from 'react';
+// 값 import 는 금지. engine 을 정적으로 끌어오면 lunar-javascript 가
+// 진입 청크에 딸려와 코드 분할이 무너진다 (test/bundle.test.ts 가 지킨다).
 import type { GunghapReading } from '../engine';
-import { computeGunghap } from '../engine';
+import { computeGunghapWithLoad } from '../engine/load';
 import { useSajuStore } from '../store/saju-store';
 import type { RawFormValues } from '../core/types';
 
@@ -136,7 +138,9 @@ function GunghapPanel() {
 
   const thisYear = new Date().getFullYear();
 
-  const run = () => {
+  const [busy, setBusy] = useState(false);
+
+  const run = async () => {
     const partner: RawFormValues = {
       calendar: 'solar',
       year: other.year,
@@ -150,7 +154,9 @@ function GunghapPanel() {
       yajasi: myForm.yajasi,
       applyEquationOfTime: myForm.applyEquationOfTime,
     };
-    const r = computeGunghap(myForm, partner);
+    setBusy(true);
+    const r = await computeGunghapWithLoad(myForm, partner);
+    setBusy(false);
     if (r.ok) {
       setResult(r.value);
       setError(null);
@@ -219,10 +225,11 @@ function GunghapPanel() {
         </p>
         <button
           type="button"
-          onClick={run}
-          className="mt-3 w-full rounded-md bg-jumuk px-4 py-2.5 text-sm font-bold text-card"
+          onClick={() => void run()}
+          disabled={busy}
+          className="mt-3 w-full rounded-md bg-jumuk px-4 py-2.5 text-sm font-bold text-card disabled:opacity-60"
         >
-          궁합 보기
+          {busy ? '보는 중…' : '궁합 보기'}
         </button>
       </div>
 

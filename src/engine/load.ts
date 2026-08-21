@@ -12,7 +12,7 @@
  */
 
 import { ERROR_MESSAGES, err, ok, type SajuResult } from '../core/errors';
-import type { ComputeOptions, SajuReading } from './index';
+import type { ComputeOptions, GunghapReading, SajuReading } from './index';
 import type { RawFormValues } from '../core/types';
 
 type EngineModule = typeof import('./index');
@@ -38,6 +38,23 @@ export async function loadEngine(): Promise<SajuResult<EngineModule>> {
       cause: e instanceof Error ? e.message : String(e),
     });
   }
+}
+
+/**
+ * 궁합도 같은 청크에 있으므로 같은 로더를 탄다.
+ *
+ * UI 에서 engine 을 정적 import 하면 lunar-javascript 가 진입 청크로
+ * 딸려와 코드 분할이 통째로 무너진다. 실제로 한 번 그렇게 깨졌고
+ * test/bundle.test.ts 가 잡았다. UI 는 반드시 이 파일만 거쳐야 한다.
+ */
+export async function computeGunghapWithLoad(
+  a: RawFormValues,
+  b: RawFormValues,
+  opts: ComputeOptions = {},
+): Promise<SajuResult<GunghapReading>> {
+  const engine = await loadEngine();
+  if (!engine.ok) return engine;
+  return engine.value.computeGunghap(a, b, opts);
 }
 
 /** 로드 + 계산을 한 번에. UI 는 이것만 부르면 된다. */
