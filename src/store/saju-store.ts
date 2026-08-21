@@ -24,12 +24,14 @@ export type Phase = 'idle' | 'loading' | 'ready' | 'error';
  *   home  [사주 보기] [오늘] [궁합] [신년]
  *           ↓          ↓      ↓      ↓
  *         saju       daily  gunghap year
+ *           ↓
+ *         detail  (상세 풀이 — 궁위 · 오행 균형 · 풀이)
  *
  * 부가 기능을 결과 페이지 하단에 쌓지 않는다. 한 번 그렇게 만들었다가
  * 결과 화면이 3.8화면 길이가 됐고, 대운 타임라인이 주인공 자리를 잃었다.
  * 별도 화면으로 두면 기능을 잃지 않으면서 타임라인이 깨끗하게 유지된다.
  */
-export type Route = 'home' | 'saju' | 'daily' | 'gunghap' | 'year';
+export type Route = 'home' | 'saju' | 'detail' | 'daily' | 'gunghap' | 'year';
 
 const currentYear = new Date().getFullYear();
 
@@ -87,7 +89,8 @@ export const useSajuStore = create<SajuState>((set, get) => ({
 
   go: (route) => {
     // 부가 화면은 원국이 있어야 의미가 있다. 없으면 입력부터 받는다.
-    const needsChart = route === 'daily' || route === 'gunghap' || route === 'year';
+    const needsChart =
+      route === 'detail' || route === 'daily' || route === 'gunghap' || route === 'year';
     if (needsChart && !get().reading) {
       set({ route: 'saju', phase: 'idle' });
       return;

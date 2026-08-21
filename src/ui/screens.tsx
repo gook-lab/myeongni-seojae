@@ -96,6 +96,19 @@ function DailyPanel() {
       </p>
       <p className="mt-3 text-xs leading-relaxed text-ink-faint">{daily.lead}</p>
       <p className="mt-2.5 text-sm leading-[1.85] text-ink">{daily.text}</p>
+
+      <div className="mt-3.5 space-y-3 border-t border-dashed border-line-dash pt-3.5">
+        {daily.branchTenGod && (
+          <p className="text-xs leading-relaxed text-ink-soft">
+            <b className="text-jumuk">지지 {daily.branchTenGod}</b> — 겉으로 드러난 천간
+            아래 숨은 기운입니다.
+          </p>
+        )}
+        <p className="text-xs leading-relaxed text-ink-soft">
+          <b className="text-jumuk">{daily.stage}</b> {daily.stageText}
+        </p>
+        <p className="text-xs leading-relaxed text-ink-soft">{daily.branchNote}</p>
+      </div>
     </article>
   );
 }

@@ -271,8 +271,11 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await fillBirth(page, '1957', '6', '15');
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
 
-    // 섹션은 셋뿐이다
-    await expect(page.locator('h2')).toHaveCount(3);
+    // 결과 화면에는 타임라인과 사주팔자만. 상세 풀이는 별도 화면이다.
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+    await expect(page.getByRole('region', { name: '사주팔자' })).toBeVisible();
+    await expect(page.getByRole('region', { name: '궁위' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: '오행 균형' })).toHaveCount(0);
     await expect(page.getByRole('region', { name: '부가 운세' })).toHaveCount(0);
   });
 });
@@ -327,5 +330,61 @@ test.describe('십이운성 — 그 10년의 힘', () => {
     const year = page.getByRole('region', { name: /년 운세/ });
     await expect(year.getByText('지금 대운과의 관계')).toBeVisible();
     await expect(year.getByText(/대운 .{2} .+ · 세운 .{2}/)).toBeVisible();
+  });
+});
+
+test.describe('원국 심화 — 궁위 · 오행 균형', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.getByRole('button', { name: '압니다' }).click();
+    await fillBirth(page, '1990', '5', '5');
+    await page.getByLabel('시', { exact: true }).selectOption('9');
+    await page.getByLabel('분', { exact: true }).selectOption('30');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '상세 풀이 보기' }).click();
+  });
+
+  test('네 자리가 각각 다른 해석을 낸다', async ({ page }) => {
+    const p = page.getByRole('region', { name: '궁위' });
+    await expect(p).toBeVisible();
+    const cards = p.locator('article');
+    await expect(cards).toHaveCount(4);
+
+    for (const label of ['년주', '월주', '일주', '시주']) {
+      await expect(cards.filter({ hasText: label })).toHaveCount(1);
+    }
+    // 자리별 시기 안내가 있다
+    await expect(p.getByText('초년 (0~20세 무렵)')).toBeVisible();
+    await expect(p.getByText('말년 (60세 이후)')).toBeVisible();
+  });
+
+  test('★지장간이 표시된다 — 원본은 안 썼다★', async ({ page }) => {
+    const p = page.getByRole('region', { name: '궁위' });
+    await expect(p.getByText(/지장간 .+ · .+/).first()).toBeVisible();
+  });
+
+  test('오행 균형이 막대와 결손 안내를 낸다', async ({ page }) => {
+    const b = page.getByRole('region', { name: '오행 균형' });
+    await expect(b).toBeVisible();
+    await expect(b.getByText(/여덟 자 중 8자를 셌습니다/)).toBeVisible();
+    // 1990-05-05 09:30 은 목·수가 없다
+    await expect(b.getByText(/목·수가 하나도 없습니다/)).toBeVisible();
+
+    // 다섯 오행 막대가 다 있다
+    const bars = b.locator('div[style*="width"]');
+    await expect(bars).toHaveCount(5);
+  });
+
+  test('조사가 "이(가)" 같은 표기로 남지 않는다', async ({ page }) => {
+    const text = await page.getByRole('region', { name: '오행 균형' }).innerText();
+    expect(text).not.toMatch(/이\(가\)|은\(는\)|을\(를\)/);
+  });
+
+  test('오늘 화면이 지지 십성과 합충까지 보여준다', async ({ page }) => {
+    await page.getByRole('button', { name: /홈으로/ }).click();
+    await page.getByRole('button', { name: /^오늘/ }).click();
+
+    const s = page.getByRole('region', { name: '오늘의 운세' });
+    await expect(s.getByText(/지지 (비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/)).toBeVisible();
+    await expect(s.getByText(/오늘 일진(이|과) 내 일지/)).toBeVisible();
   });
 });

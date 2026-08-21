@@ -53,6 +53,9 @@ declare module 'lunar-javascript' {
     getMonthDiShi(): string;
     getDayDiShi(): string;
     getTimeDiShi(): string;
+    /** 공망(旬空). 일주 순중 기준. 예: "戌亥" */
+    getDayXunKong(): string;
+    getYearXunKong(): string;
     /** @param gender 1 = 남, 0 = 여 */
     getYun(gender: 0 | 1, sect?: 1 | 2): YunLike;
   }

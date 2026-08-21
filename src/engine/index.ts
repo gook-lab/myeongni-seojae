@@ -16,6 +16,7 @@ import type { SajuResult } from '../core/errors';
 import { normalize, resolveSolarYmd } from '../core/input';
 import { toSolarTime } from '../core/korea-time';
 import { computeChart } from '../core/manse';
+import { natalDetail } from '../core/natal';
 import type {
   DaeunTimeline,
   RawFormValues,
@@ -26,8 +27,13 @@ import { STAGE_HANJA } from '../core/twelve-stages';
 import { DAEUN_TEXT, daeunPrefix } from '../text/daeun-text';
 import { STAGE_TEXT } from '../text/stage-text';
 import {
+  EXCESSIVE_ELEMENT_TEXT, HIDDEN_INTRO, MISSING_ELEMENT_TEXT,
+  PALACE_CATEGORY_TEXT, PALACE_MEANING, VOID_TEXT,
+  balanceLead, missingLead,
+} from '../text/natal-text';
+import {
   BRANCH_RELATION_TEXT, GUNGHAP_TEXT, MUTUAL_TEN_GOD_TEXT,
-  DAEUN_YEAR_TEXT, complementText, dailyLead, yearLead,
+  DAEUN_YEAR_TEXT, DAILY_BRANCH_TEXT, complementText, dailyLead, yearLead,
 } from '../text/fortune-text';
 import { DAY_MASTER_TEXT, GLOSS, INTERPRET, moneyText } from '../text/interpret';
 
@@ -65,6 +71,13 @@ export interface DailyReading {
   date: string;
   lead: string;
   text: string;
+  /** 지지 십성 — 원본은 천간만 봤다 */
+  branchTenGod: string | null;
+  /** 오늘 일진 지지에서 내 일간이 놓이는 자리 */
+  stage: string;
+  stageText: string;
+  /** 내 일지와의 합충 */
+  branchNote: string;
 }
 
 export interface YearReading {
@@ -94,8 +107,35 @@ export interface YearReading {
   }>;
 }
 
+export interface PalaceCard {
+  palace: string;
+  span: string;
+  domain: string;
+  ganji: string;
+  stemTenGod: string;
+  /** 지장간 십성 — 지지에 숨은 힘 */
+  hidden: string[];
+  stage: string;
+  isVoid: boolean;
+  text: string;
+  voidText: string | null;
+}
+
+export interface BalanceReading {
+  counts: Record<string, number>;
+  lead: string;
+  /** 없는 오행에 대한 안내. 없으면 null */
+  missing: { lead: string; notes: string[] } | null;
+  /** 넘치는 오행에 대한 안내 */
+  excessive: string[];
+  hiddenIntro: string;
+}
+
 export interface SajuReading {
   chart: SajuChart;
+  /** 궁위 — 십성이 인생의 어느 자리에 있는가 */
+  palaces: PalaceCard[];
+  balance: BalanceReading;
   daily: DailyReading | null;
   year: YearReading | null;
   timeline: DaeunTimeline;
@@ -174,6 +214,46 @@ export function computeReading(
 
   const topics = summarizeTopics(chart);
 
+  // ── 원국 심화 ──
+  // 원본은 십성 카운트 하나(dominant)로 성격·직업을 정했다.
+  // 여덟 자를 계산해놓고 뭉갠 것이라 자리(궁위)와 지장간을 되살린다.
+  const detail = natalDetail(chart.pillars, solarTime.value, input.yajasi === 'advance-day' ? 1 : 2);
+  const palaces: PalaceCard[] = detail.palaces.map((p) => {
+    const meaning = PALACE_MEANING[p.palace];
+    const cat = p.branchTenGod
+      ? TEN_GOD_CATEGORY[p.branchTenGod]
+      : p.stemTenGod
+        ? TEN_GOD_CATEGORY[p.stemTenGod]
+        : '비겁';
+    return {
+      palace: p.palace,
+      span: meaning.span,
+      domain: meaning.domain,
+      ganji: `${p.pillar.stemHanja}${p.pillar.branchHanja}`,
+      stemTenGod: p.stemTenGod ?? '일간',
+      hidden: p.hiddenTenGods,
+      stage: p.stage,
+      isVoid: p.isVoid,
+      text: PALACE_CATEGORY_TEXT[p.palace][cat],
+      voidText: p.isVoid ? VOID_TEXT[p.palace] : null,
+    };
+  });
+
+  const bal = detail.balance;
+  const balance: BalanceReading = {
+    counts: bal.counts,
+    lead: balanceLead(bal.total, bal.strongest, bal.counts[bal.strongest]),
+    missing:
+      bal.missing.length > 0
+        ? {
+            lead: missingLead(bal.missing),
+            notes: bal.missing.map((e) => MISSING_ELEMENT_TEXT[e]),
+          }
+        : null,
+    excessive: bal.excessive.map((e) => EXCESSIVE_ELEMENT_TEXT[e]),
+    hiddenIntro: HIDDEN_INTRO,
+  };
+
   // ── 부가 운세. 점수 없이 문장만. ──
   const dm = chart.dayMaster;
   const dmLabel = `${dm.stemHanja}${dm.stem}`;
@@ -186,6 +266,10 @@ export function computeReading(
         date: `${dailyRes.value.date.year}년 ${dailyRes.value.date.month}월 ${dailyRes.value.date.day}일`,
         lead: dailyLead(dmLabel, dailyRes.value.ganji, dailyRes.value.tenGod),
         text: INTERPRET[dailyRes.value.category].daily,
+        branchTenGod: dailyRes.value.branchTenGod,
+        stage: dailyRes.value.stage,
+        stageText: STAGE_TEXT[dailyRes.value.stage],
+        branchNote: DAILY_BRANCH_TEXT[dailyRes.value.withMyBranch] ?? '',
       }
     : null;
 
@@ -224,6 +308,8 @@ export function computeReading(
     ok: true,
     value: {
       chart,
+      palaces,
+      balance,
       daily,
       year,
       timeline,

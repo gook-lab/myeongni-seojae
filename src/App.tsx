@@ -101,6 +101,112 @@ function PillarTable() {
   );
 }
 
+/**
+ * 궁위 — 십성이 인생의 어느 자리에 있는가.
+ * 원본은 십성 카운트 하나로 뭉갰다. 같은 관성도 년주면 집안의 규율이고
+ * 시주면 자식·말년의 책임이다.
+ */
+function Palaces() {
+  const reading = useSajuStore((s) => s.reading);
+  if (!reading) return null;
+  return (
+    <section aria-label="궁위" className="mx-auto w-full max-w-md px-5 pt-12">
+      <h2 className="mb-1.5 text-lg font-bold text-ink">인생의 네 자리</h2>
+      <p className="mb-3.5 text-xs leading-relaxed text-ink-faint">
+        사주 네 기둥은 각각 인생의 한 시기를 맡습니다. 같은 기운도 어느 자리에
+        있느냐에 따라 뜻이 달라집니다.
+      </p>
+      <div className="space-y-2.5">
+        {reading.palaces.map((p) => (
+          <article
+            key={p.palace}
+            className={
+              'rounded-lg border px-4 py-3.5 ' +
+              (p.isVoid ? 'border-dashed border-line-dash bg-transparent' : 'border-line bg-card')
+            }
+          >
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-bold text-ink">
+                {p.palace}
+                <span className="ml-2 text-xs font-normal text-ink-faint">{p.span}</span>
+              </span>
+              <span className="text-lg text-ink">{p.ganji}</span>
+            </div>
+            <p className="mt-1 text-xs text-ink-faint">
+              {p.domain} · {p.stemTenGod} · {p.stage}
+              {p.isVoid && <span className="ml-1.5 text-jumuk">· 공망</span>}
+            </p>
+            <p className="mt-2.5 text-sm leading-[1.85] text-ink">{p.text}</p>
+            {p.hidden.length > 0 && (
+              <p className="mt-2 text-xs text-ink-faint">
+                지장간 {p.hidden.join(' · ')}
+              </p>
+            )}
+            {p.voidText && (
+              <p className="mt-2 text-xs leading-relaxed text-jumuk">{p.voidText}</p>
+            )}
+          </article>
+        ))}
+      </div>
+      <p className="mt-2.5 px-1 text-xs leading-relaxed text-ink-faint">
+        {reading.balance.hiddenIntro}
+      </p>
+    </section>
+  );
+}
+
+/** 오행 균형 — 없는 것과 넘치는 것 */
+function Balance() {
+  const reading = useSajuStore((s) => s.reading);
+  if (!reading) return null;
+  const b = reading.balance;
+  const max = Math.max(1, ...Object.values(b.counts));
+  const COLORS: Record<string, string> = {
+    목: '#3E6B4F', 화: '#A63A2B', 토: '#8C6B2F', 금: '#75787E', 수: '#35506B',
+  };
+  return (
+    <section aria-label="오행 균형" className="mx-auto w-full max-w-md px-5 pt-12">
+      <h2 className="mb-1.5 text-lg font-bold text-ink">오행 균형</h2>
+      <p className="mb-3.5 text-xs leading-relaxed text-ink-faint">{b.lead}</p>
+
+      <div className="space-y-2 rounded-lg border border-line bg-card px-4 py-4">
+        {(['목', '화', '토', '금', '수'] as const).map((e) => (
+          <div key={e} className="flex items-center gap-2.5">
+            <span className="w-5 shrink-0 text-sm" style={{ color: COLORS[e] }}>{e}</span>
+            <span className="w-4 shrink-0 text-xs tabular-nums text-ink-faint">
+              {b.counts[e]}
+            </span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-line-soft">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.round(((b.counts[e] ?? 0) / max) * 100)}%`,
+                  backgroundColor: COLORS[e],
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {b.missing && (
+        <div className="mt-2.5 rounded-lg border border-jumuk bg-card-warm px-4 py-3.5">
+          <p className="mb-1.5 text-sm font-bold text-jumuk">{b.missing.lead}</p>
+          {b.missing.notes.map((n) => (
+            <p key={n} className="text-sm leading-[1.85] text-ink">{n}</p>
+          ))}
+        </div>
+      )}
+
+      {b.excessive.map((t) => (
+        <p key={t} className="mt-2.5 rounded-lg border border-line bg-card px-4 py-3.5 text-sm leading-[1.85] text-ink">
+          {t}
+        </p>
+      ))}
+    </section>
+  );
+}
+
 function Topics() {
   const reading = useSajuStore((s) => s.reading);
   if (!reading) return null;
@@ -151,8 +257,14 @@ function Result() {
         />
       </div>
       <PillarTable />
-      <Topics />
-      <div className="mx-auto max-w-md space-y-2 px-5 pb-16">
+      <div className="mx-auto max-w-md space-y-2 px-5 pb-16 pt-10">
+        <button
+          type="button"
+          onClick={() => go('detail')}
+          className="w-full rounded-md bg-jumuk px-4 py-3.5 font-bold text-card"
+        >
+          상세 풀이 보기
+        </button>
         <button
           type="button"
           onClick={() => go('home')}
@@ -172,6 +284,38 @@ function Result() {
   );
 }
 
+/**
+ * 상세 풀이 — 원안 와이어플로우의 별도 화면이다.
+ *   사주팔자 결과 → [상세 풀이 보기] → 상세 풀이
+ *
+ * 궁위·오행 균형·풀이를 결과 화면에 쌓았더니 5.2화면이 됐다.
+ * 원안대로 갈라놓으면 타임라인 화면이 짧게 유지된다.
+ */
+function DetailScreen() {
+  const go = useSajuStore((s) => s.go);
+  return (
+    <div className="pt-8">
+      <div className="mx-auto max-w-md px-5">
+        <button type="button" onClick={() => go('saju')} className="text-sm text-ink-soft">
+          ‹ 타임라인
+        </button>
+      </div>
+      <Palaces />
+      <Balance />
+      <Topics />
+      <div className="mx-auto max-w-md px-5 pb-16 pt-10">
+        <button
+          type="button"
+          onClick={() => go('home')}
+          className="w-full rounded-md border border-line bg-card px-4 py-3 text-ink-soft"
+        >
+          홈으로 — 오늘 · 궁합 · 신년 보기
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
   const route = useSajuStore((s) => s.route);
   const phase = useSajuStore((s) => s.phase);
@@ -184,6 +328,7 @@ export function App() {
       </div>
       {route === 'home' && <Home />}
       {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
+      {route === 'detail' && <DetailScreen />}
       {route === 'daily' && <DailyScreen />}
       {route === 'gunghap' && <GunghapScreen />}
       {route === 'year' && <YearScreen />}

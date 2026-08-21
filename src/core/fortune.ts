@@ -21,7 +21,7 @@
  */
 
 import { Solar } from 'lunar-javascript';
-import { TEN_GOD_CATEGORY } from './constants';
+import { TEN_GOD_BY_HANJA, TEN_GOD_CATEGORY } from './constants';
 import { tenGodOf } from './daeun';
 import { ERROR_MESSAGES, err, ok, type SajuResult } from './errors';
 import {
@@ -31,7 +31,8 @@ import {
   longitudeOffsetMinutes,
 } from './korea-time';
 import { pillarFromGanZhi } from './manse';
-import type { Element, Pillar, TenGod, TenGodCategory } from './types';
+import { twelveStage } from './twelve-stages';
+import type { Element, Pillar, TenGod, TenGodCategory, TwelveStage } from './types';
 
 const STEM_HANJA_ORDER = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 
@@ -46,6 +47,12 @@ export interface FortuneRelation {
 
 export interface DailyFortune extends FortuneRelation {
   date: { year: number; month: number; day: number };
+  /** 오늘 일진의 지지가 내 일간에게 어떤 십성인가 (지장간 정기 기준) */
+  branchTenGod: TenGod | null;
+  /** 오늘 일진 지지에서 내 일간이 놓이는 자리 */
+  stage: TwelveStage;
+  /** 내 일지와 오늘 일지의 관계 — 합·충·형이면 몸으로 느껴지는 날이다 */
+  withMyBranch: BranchRelation;
 }
 
 export interface MonthFortune extends FortuneRelation {
@@ -86,7 +93,20 @@ export function dailyFortune(
       .getEightChar();
     const rel = relate(dayMaster.stemHanja, ec.getDay());
     if (!rel) return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE);
-    return ok({ ...rel, date: { year: f.year, month: f.month, day: f.day } });
+
+    // 원본은 천간 십성 하나만 봤다. 지지와 내 일지와의 관계도 본다.
+    const hidden = ec.getDayShiShenZhi();
+    const branchTenGod = hidden.length > 0
+      ? (TEN_GOD_BY_HANJA[hidden[0] as string] ?? null)
+      : null;
+
+    return ok({
+      ...rel,
+      date: { year: f.year, month: f.month, day: f.day },
+      branchTenGod,
+      stage: twelveStage(dayMaster.stem, rel.pillar.branch),
+      withMyBranch: branchRelationBetween(dayMaster.branch, rel.pillar.branch),
+    });
   } catch (e) {
     return err('INVALID_DATE', ERROR_MESSAGES.INVALID_DATE, {
       cause: e instanceof Error ? e.message : String(e),

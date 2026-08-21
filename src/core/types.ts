@@ -17,6 +17,8 @@ export type TenGod =
 
 export type TenGodCategory = '비겁' | '식상' | '재성' | '관성' | '인성';
 
+export type Palace = '년주' | '월주' | '일주' | '시주';
+
 export type TwelveStage =
   | '장생' | '목욕' | '관대' | '건록' | '제왕' | '쇠'
   | '병' | '사' | '묘' | '절' | '태' | '양';
