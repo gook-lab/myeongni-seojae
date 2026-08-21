@@ -1,0 +1,2719 @@
+{
+  "generatedBy": "scripts/gen-golden.ts",
+  "today": "2026-08-21T00:00:00.000Z",
+  "sources": {
+    "primary": "lunar-javascript (6tail)",
+    "crossCheck": "manseryeok v2",
+    "note": "년·월·일주는 두 구현이 100% 일치해야 한다. 시주는 진태양시 보정·야자시 유파 차이로 갈린다."
+  },
+  "cases": [
+    {
+      "label": "1957 입춘 직전 (KST 10:20)",
+      "group": "절기경계",
+      "raw": {
+        "year": 1957,
+        "month": 2,
+        "day": 4,
+        "hour": 10,
+        "minute": 20
+      },
+      "ours": {
+        "year": "병신",
+        "month": "신축",
+        "day": "정미",
+        "hour": "을사"
+      },
+      "manseryeok": {
+        "year": "병신",
+        "month": "신축",
+        "day": "정미",
+        "hour": "을사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "임인",
+        "ganjis": [
+          "壬寅",
+          "癸卯",
+          "甲辰",
+          "乙巳",
+          "丙午",
+          "丁未",
+          "戊申",
+          "己酉",
+          "庚戌",
+          "辛亥"
+        ]
+      }
+    },
+    {
+      "label": "1957 입춘 직후 (KST 10:30)",
+      "group": "절기경계",
+      "raw": {
+        "year": 1957,
+        "month": 2,
+        "day": 4,
+        "hour": 10,
+        "minute": 30
+      },
+      "ours": {
+        "year": "정유",
+        "month": "임인",
+        "day": "정미",
+        "hour": "을사"
+      },
+      "manseryeok": {
+        "year": "병신",
+        "month": "신축",
+        "day": "정미",
+        "hour": "을사"
+      },
+      "agrees": {
+        "year": false,
+        "month": false,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [
+        {
+          "pillar": "year",
+          "reason": "standard-time-history",
+          "ours": "정유",
+          "theirs": "병신"
+        },
+        {
+          "pillar": "month",
+          "reason": "standard-time-history",
+          "ours": "임인",
+          "theirs": "신축"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "backward",
+        "first": "신축",
+        "ganjis": [
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌",
+          "丁酉",
+          "丙申",
+          "乙未",
+          "甲午",
+          "癸巳",
+          "壬辰"
+        ]
+      }
+    },
+    {
+      "label": "2026 입춘 직전",
+      "group": "절기경계",
+      "raw": {
+        "year": 2026,
+        "month": 2,
+        "day": 4,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "병오",
+        "month": "경인",
+        "day": "기유",
+        "hour": "경오"
+      },
+      "manseryeok": {
+        "year": "병오",
+        "month": "경인",
+        "day": "기유",
+        "hour": "경오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "forward",
+        "first": "신묘",
+        "ganjis": [
+          "辛卯",
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌",
+          "己亥",
+          "庚子"
+        ]
+      }
+    },
+    {
+      "label": "2026 입춘 직후",
+      "group": "절기경계",
+      "raw": {
+        "year": 2026,
+        "month": 2,
+        "day": 4,
+        "hour": 14,
+        "minute": 0
+      },
+      "ours": {
+        "year": "병오",
+        "month": "경인",
+        "day": "기유",
+        "hour": "신미"
+      },
+      "manseryeok": {
+        "year": "병오",
+        "month": "경인",
+        "day": "기유",
+        "hour": "신미"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "forward",
+        "first": "신묘",
+        "ganjis": [
+          "辛卯",
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌",
+          "己亥",
+          "庚子"
+        ]
+      }
+    },
+    {
+      "label": "1990 입하 직전",
+      "group": "절기경계",
+      "raw": {
+        "year": 1990,
+        "month": 5,
+        "day": 5,
+        "hour": 20,
+        "minute": 0
+      },
+      "ours": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "병술"
+      },
+      "manseryeok": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "병술"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "신사",
+        "ganjis": [
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅"
+        ]
+      }
+    },
+    {
+      "label": "1990 입하 직후",
+      "group": "절기경계",
+      "raw": {
+        "year": 1990,
+        "month": 5,
+        "day": 6,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "경오",
+        "month": "신사",
+        "day": "신미",
+        "hour": "갑오"
+      },
+      "manseryeok": {
+        "year": "경오",
+        "month": "신사",
+        "day": "신미",
+        "hour": "갑오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 11,
+        "direction": "forward",
+        "first": "임오",
+        "ganjis": [
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅",
+          "辛卯"
+        ]
+      }
+    },
+    {
+      "label": "2000 경칩 경계",
+      "group": "절기경계",
+      "raw": {
+        "year": 2000,
+        "month": 3,
+        "day": 5,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "경진",
+        "month": "무인",
+        "day": "임술",
+        "hour": "병오"
+      },
+      "manseryeok": {
+        "year": "경진",
+        "month": "무인",
+        "day": "임술",
+        "hour": "병오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "기묘",
+        "ganjis": [
+          "己卯",
+          "庚辰",
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子"
+        ]
+      }
+    },
+    {
+      "label": "1975 대설 경계",
+      "group": "절기경계",
+      "raw": {
+        "year": 1975,
+        "month": 12,
+        "day": 7,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "을묘",
+        "month": "정해",
+        "day": "정해",
+        "hour": "병오"
+      },
+      "manseryeok": {
+        "year": "을묘",
+        "month": "정해",
+        "day": "정해",
+        "hour": "병오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 11,
+        "direction": "backward",
+        "first": "병술",
+        "ganjis": [
+          "丙戌",
+          "乙酉",
+          "甲申",
+          "癸未",
+          "壬午",
+          "辛巳",
+          "庚辰",
+          "己卯",
+          "戊寅",
+          "丁丑"
+        ]
+      }
+    },
+    {
+      "label": "1965 소한 경계 (연초)",
+      "group": "절기경계",
+      "raw": {
+        "year": 1965,
+        "month": 1,
+        "day": 5,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "갑진",
+        "month": "병자",
+        "day": "기미",
+        "hour": "경오"
+      },
+      "manseryeok": {
+        "year": "갑진",
+        "month": "병자",
+        "day": "기미",
+        "hour": "경오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "정축",
+        "ganjis": [
+          "丁丑",
+          "戊寅",
+          "己卯",
+          "庚辰",
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌"
+        ]
+      }
+    },
+    {
+      "label": "1983 망종 경계",
+      "group": "절기경계",
+      "raw": {
+        "year": 1983,
+        "month": 6,
+        "day": 6,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "계해",
+        "month": "정사",
+        "day": "을축",
+        "hour": "임오"
+      },
+      "manseryeok": {
+        "year": "계해",
+        "month": "정사",
+        "day": "을축",
+        "hour": "임오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 11,
+        "direction": "backward",
+        "first": "병진",
+        "ganjis": [
+          "丙辰",
+          "乙卯",
+          "甲寅",
+          "癸丑",
+          "壬子",
+          "辛亥",
+          "庚戌",
+          "己酉",
+          "戊申",
+          "丁未"
+        ]
+      }
+    },
+    {
+      "label": "1954-04-01 (개정 직후)",
+      "group": "1954-61",
+      "raw": {
+        "year": 1954,
+        "month": 4,
+        "day": 1,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "갑오",
+        "month": "정묘",
+        "day": "정해",
+        "hour": "을사"
+      },
+      "manseryeok": {
+        "year": "갑오",
+        "month": "정묘",
+        "day": "정해",
+        "hour": "을사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 2,
+        "direction": "forward",
+        "first": "무진",
+        "ganjis": [
+          "戊辰",
+          "己巳",
+          "庚午",
+          "辛未",
+          "壬申",
+          "癸酉",
+          "甲戌",
+          "乙亥",
+          "丙子",
+          "丁丑"
+        ]
+      }
+    },
+    {
+      "label": "1955-01-15",
+      "group": "1954-61",
+      "raw": {
+        "year": 1955,
+        "month": 1,
+        "day": 15,
+        "hour": 6,
+        "minute": 0
+      },
+      "ours": {
+        "year": "갑오",
+        "month": "정축",
+        "day": "병자",
+        "hour": "신묘"
+      },
+      "manseryeok": {
+        "year": "갑오",
+        "month": "정축",
+        "day": "병자",
+        "hour": "신묘"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 7,
+        "direction": "forward",
+        "first": "무인",
+        "ganjis": [
+          "戊寅",
+          "己卯",
+          "庚辰",
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥"
+        ]
+      }
+    },
+    {
+      "label": "1956-11-03",
+      "group": "1954-61",
+      "raw": {
+        "year": 1956,
+        "month": 11,
+        "day": 3,
+        "hour": 15,
+        "minute": 45
+      },
+      "ours": {
+        "year": "병신",
+        "month": "무술",
+        "day": "갑술",
+        "hour": "임신"
+      },
+      "manseryeok": {
+        "year": "병신",
+        "month": "무술",
+        "day": "갑술",
+        "hour": "임신"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 3,
+        "direction": "forward",
+        "first": "기해",
+        "ganjis": [
+          "己亥",
+          "庚子",
+          "辛丑",
+          "壬寅",
+          "癸卯",
+          "甲辰",
+          "乙巳",
+          "丙午",
+          "丁未",
+          "戊申"
+        ]
+      }
+    },
+    {
+      "label": "1957-12-15",
+      "group": "1954-61",
+      "raw": {
+        "year": 1957,
+        "month": 12,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "정유",
+        "month": "임자",
+        "day": "신유",
+        "hour": "계사"
+      },
+      "manseryeok": {
+        "year": "정유",
+        "month": "임자",
+        "day": "신유",
+        "hour": "계사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "backward",
+        "first": "신해",
+        "ganjis": [
+          "辛亥",
+          "庚戌",
+          "己酉",
+          "戊申",
+          "丁未",
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅"
+        ]
+      }
+    },
+    {
+      "label": "1958-02-20",
+      "group": "1954-61",
+      "raw": {
+        "year": 1958,
+        "month": 2,
+        "day": 20,
+        "hour": 22,
+        "minute": 10
+      },
+      "ours": {
+        "year": "무술",
+        "month": "갑인",
+        "day": "무진",
+        "hour": "계해"
+      },
+      "manseryeok": {
+        "year": "무술",
+        "month": "갑인",
+        "day": "무진",
+        "hour": "계해"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 5,
+        "direction": "forward",
+        "first": "을묘",
+        "ganjis": [
+          "乙卯",
+          "丙辰",
+          "丁巳",
+          "戊午",
+          "己未",
+          "庚申",
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子"
+        ]
+      }
+    },
+    {
+      "label": "1959-03-08",
+      "group": "1954-61",
+      "raw": {
+        "year": 1959,
+        "month": 3,
+        "day": 8,
+        "hour": 4,
+        "minute": 20
+      },
+      "ours": {
+        "year": "기해",
+        "month": "정묘",
+        "day": "기축",
+        "hour": "병인"
+      },
+      "manseryeok": {
+        "year": "기해",
+        "month": "정묘",
+        "day": "기축",
+        "hour": "병인"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "backward",
+        "first": "병인",
+        "ganjis": [
+          "丙寅",
+          "乙丑",
+          "甲子",
+          "癸亥",
+          "壬戌",
+          "辛酉",
+          "庚申",
+          "己未",
+          "戊午",
+          "丁巳"
+        ]
+      }
+    },
+    {
+      "label": "1960-01-30",
+      "group": "1954-61",
+      "raw": {
+        "year": 1960,
+        "month": 1,
+        "day": 30,
+        "hour": 11,
+        "minute": 0
+      },
+      "ours": {
+        "year": "기해",
+        "month": "정축",
+        "day": "정사",
+        "hour": "을사"
+      },
+      "manseryeok": {
+        "year": "기해",
+        "month": "정축",
+        "day": "정사",
+        "hour": "병오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "을사",
+          "theirs": "병오"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 8,
+        "direction": "backward",
+        "first": "병자",
+        "ganjis": [
+          "丙子",
+          "乙亥",
+          "甲戌",
+          "癸酉",
+          "壬申",
+          "辛未",
+          "庚午",
+          "己巳",
+          "戊辰",
+          "丁卯"
+        ]
+      }
+    },
+    {
+      "label": "1960-12-25",
+      "group": "1954-61",
+      "raw": {
+        "year": 1960,
+        "month": 12,
+        "day": 25,
+        "hour": 18,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경자",
+        "month": "무자",
+        "day": "정해",
+        "hour": "기유"
+      },
+      "manseryeok": {
+        "year": "경자",
+        "month": "무자",
+        "day": "정해",
+        "hour": "기유"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 5,
+        "direction": "forward",
+        "first": "기축",
+        "ganjis": [
+          "己丑",
+          "庚寅",
+          "辛卯",
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌"
+        ]
+      }
+    },
+    {
+      "label": "1961-03-15",
+      "group": "1954-61",
+      "raw": {
+        "year": 1961,
+        "month": 3,
+        "day": 15,
+        "hour": 7,
+        "minute": 15
+      },
+      "ours": {
+        "year": "신축",
+        "month": "신묘",
+        "day": "정미",
+        "hour": "갑진"
+      },
+      "manseryeok": {
+        "year": "신축",
+        "month": "신묘",
+        "day": "정미",
+        "hour": "갑진"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "backward",
+        "first": "경인",
+        "ganjis": [
+          "庚寅",
+          "己丑",
+          "戊子",
+          "丁亥",
+          "丙戌",
+          "乙酉",
+          "甲申",
+          "癸未",
+          "壬午",
+          "辛巳"
+        ]
+      }
+    },
+    {
+      "label": "1961-08-09 (개정 직전)",
+      "group": "1954-61",
+      "raw": {
+        "year": 1961,
+        "month": 8,
+        "day": 9,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "신축",
+        "month": "병신",
+        "day": "갑술",
+        "hour": "경오"
+      },
+      "manseryeok": {
+        "year": "신축",
+        "month": "병신",
+        "day": "갑술",
+        "hour": "경오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 2,
+        "direction": "backward",
+        "first": "을미",
+        "ganjis": [
+          "乙未",
+          "甲午",
+          "癸巳",
+          "壬辰",
+          "辛卯",
+          "庚寅",
+          "己丑",
+          "戊子",
+          "丁亥",
+          "丙戌"
+        ]
+      }
+    },
+    {
+      "label": "1955-07-15 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1955,
+        "month": 7,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "을미",
+        "month": "계미",
+        "day": "정축",
+        "hour": "갑진"
+      },
+      "manseryeok": {
+        "year": "을미",
+        "month": "계미",
+        "day": "정축",
+        "hour": "을사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "갑진",
+          "theirs": "을사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 570,
+        "offsetMinutes": -62.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 3,
+        "direction": "backward",
+        "first": "임오",
+        "ganjis": [
+          "壬午",
+          "辛巳",
+          "庚辰",
+          "己卯",
+          "戊寅",
+          "丁丑",
+          "丙子",
+          "乙亥",
+          "甲戌",
+          "癸酉"
+        ]
+      }
+    },
+    {
+      "label": "1957-06-15 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1957,
+        "month": 6,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "정유",
+        "month": "병오",
+        "day": "무오",
+        "hour": "병진"
+      },
+      "manseryeok": {
+        "year": "정유",
+        "month": "병오",
+        "day": "무오",
+        "hour": "정사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "병진",
+          "theirs": "정사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 570,
+        "offsetMinutes": -62.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "backward",
+        "first": "을사",
+        "ganjis": [
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌",
+          "丁酉",
+          "丙申"
+        ]
+      }
+    },
+    {
+      "label": "1958-08-01 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1958,
+        "month": 8,
+        "day": 1,
+        "hour": 14,
+        "minute": 0
+      },
+      "ours": {
+        "year": "무술",
+        "month": "기미",
+        "day": "경술",
+        "hour": "임오"
+      },
+      "manseryeok": {
+        "year": "무술",
+        "month": "기미",
+        "day": "경술",
+        "hour": "계미"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "임오",
+          "theirs": "계미"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 570,
+        "offsetMinutes": -62.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 3,
+        "direction": "forward",
+        "first": "경신",
+        "ganjis": [
+          "庚申",
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子",
+          "乙丑",
+          "丙寅",
+          "丁卯",
+          "戊辰",
+          "己巳"
+        ]
+      }
+    },
+    {
+      "label": "1959-07-04 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1959,
+        "month": 7,
+        "day": 4,
+        "hour": 5,
+        "minute": 45
+      },
+      "ours": {
+        "year": "기해",
+        "month": "경오",
+        "day": "정해",
+        "hour": "임인"
+      },
+      "manseryeok": {
+        "year": "기해",
+        "month": "경오",
+        "day": "정해",
+        "hour": "계묘"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "임인",
+          "theirs": "계묘"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 570,
+        "offsetMinutes": -62.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "backward",
+        "first": "기사",
+        "ganjis": [
+          "己巳",
+          "戊辰",
+          "丁卯",
+          "丙寅",
+          "乙丑",
+          "甲子",
+          "癸亥",
+          "壬戌",
+          "辛酉",
+          "庚申"
+        ]
+      }
+    },
+    {
+      "label": "1960-06-20 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1960,
+        "month": 6,
+        "day": 20,
+        "hour": 20,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경자",
+        "month": "임오",
+        "day": "기묘",
+        "hour": "갑술"
+      },
+      "manseryeok": {
+        "year": "경자",
+        "month": "임오",
+        "day": "기묘",
+        "hour": "갑술"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 570,
+        "offsetMinutes": -62.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 7,
+        "direction": "forward",
+        "first": "계미",
+        "ganjis": [
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅",
+          "辛卯",
+          "壬辰"
+        ]
+      }
+    },
+    {
+      "label": "1987-07-15 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1987,
+        "month": 7,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "정묘",
+        "month": "정미",
+        "day": "을축",
+        "hour": "경진"
+      },
+      "manseryeok": {
+        "year": "정묘",
+        "month": "정미",
+        "day": "을축",
+        "hour": "신사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경진",
+          "theirs": "신사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "backward",
+        "first": "병오",
+        "ganjis": [
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌",
+          "丁酉"
+        ]
+      }
+    },
+    {
+      "label": "1987-09-01 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1987,
+        "month": 9,
+        "day": 1,
+        "hour": 16,
+        "minute": 0
+      },
+      "ours": {
+        "year": "정묘",
+        "month": "무신",
+        "day": "계축",
+        "hour": "기미"
+      },
+      "manseryeok": {
+        "year": "정묘",
+        "month": "무신",
+        "day": "계축",
+        "hour": "경신"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "기미",
+          "theirs": "경신"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "backward",
+        "first": "정미",
+        "ganjis": [
+          "丁未",
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌"
+        ]
+      }
+    },
+    {
+      "label": "1988-08-15 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1988,
+        "month": 8,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "무진",
+        "month": "경신",
+        "day": "임인",
+        "hour": "갑진"
+      },
+      "manseryeok": {
+        "year": "무진",
+        "month": "경신",
+        "day": "임인",
+        "hour": "을사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "갑진",
+          "theirs": "을사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "신유",
+        "ganjis": [
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子",
+          "乙丑",
+          "丙寅",
+          "丁卯",
+          "戊辰",
+          "己巳",
+          "庚午"
+        ]
+      }
+    },
+    {
+      "label": "1988-06-01 서머타임",
+      "group": "서머타임",
+      "raw": {
+        "year": 1988,
+        "month": 6,
+        "day": 1,
+        "hour": 2,
+        "minute": 30
+      },
+      "ours": {
+        "year": "무진",
+        "month": "정사",
+        "day": "정해",
+        "hour": "경자"
+      },
+      "manseryeok": {
+        "year": "무진",
+        "month": "정사",
+        "day": "정해",
+        "hour": "신축"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경자",
+          "theirs": "신축"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 3,
+        "direction": "forward",
+        "first": "무오",
+        "ganjis": [
+          "戊午",
+          "己未",
+          "庚申",
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子",
+          "乙丑",
+          "丙寅",
+          "丁卯"
+        ]
+      }
+    },
+    {
+      "label": "1988-02-15 (겨울, 대조군)",
+      "group": "서머타임",
+      "raw": {
+        "year": 1988,
+        "month": 2,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "무진",
+        "month": "갑인",
+        "day": "경자",
+        "hour": "경진"
+      },
+      "manseryeok": {
+        "year": "무진",
+        "month": "갑인",
+        "day": "경자",
+        "hour": "신사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경진",
+          "theirs": "신사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 7,
+        "direction": "forward",
+        "first": "을묘",
+        "ganjis": [
+          "乙卯",
+          "丙辰",
+          "丁巳",
+          "戊午",
+          "己未",
+          "庚申",
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子"
+        ]
+      }
+    },
+    {
+      "label": "음력 2023 윤2/15",
+      "group": "윤달",
+      "raw": {
+        "calendar": "lunar",
+        "year": 2023,
+        "month": 2,
+        "day": 15,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "계묘",
+        "month": "병진",
+        "day": "계사",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "backward",
+        "first": "을묘",
+        "ganjis": [
+          "乙卯",
+          "甲寅",
+          "癸丑",
+          "壬子",
+          "辛亥",
+          "庚戌",
+          "己酉",
+          "戊申",
+          "丁未",
+          "丙午"
+        ]
+      }
+    },
+    {
+      "label": "음력 2023 평2/15",
+      "group": "윤달",
+      "raw": {
+        "calendar": "lunar",
+        "year": 2023,
+        "month": 2,
+        "day": 15,
+        "leapMonth": false,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "계묘",
+        "month": "을묘",
+        "day": "계해",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "backward",
+        "first": "갑인",
+        "ganjis": [
+          "甲寅",
+          "癸丑",
+          "壬子",
+          "辛亥",
+          "庚戌",
+          "己酉",
+          "戊申",
+          "丁未",
+          "丙午",
+          "乙巳"
+        ]
+      }
+    },
+    {
+      "label": "음력 1957 윤8/10",
+      "group": "윤달",
+      "raw": {
+        "calendar": "lunar",
+        "year": 1957,
+        "month": 8,
+        "day": 10,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "정유",
+        "month": "기유",
+        "day": "무신",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "backward",
+        "first": "무신",
+        "ganjis": [
+          "戊申",
+          "丁未",
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥"
+        ]
+      }
+    },
+    {
+      "label": "음력 1987 윤6/20",
+      "group": "윤달",
+      "raw": {
+        "calendar": "lunar",
+        "year": 1987,
+        "month": 6,
+        "day": 20,
+        "leapMonth": true,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "정묘",
+        "month": "무신",
+        "day": "을미",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 3,
+        "direction": "backward",
+        "first": "정미",
+        "ganjis": [
+          "丁未",
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅",
+          "辛丑",
+          "庚子",
+          "己亥",
+          "戊戌"
+        ]
+      }
+    },
+    {
+      "label": "음력 1990 5/5 평달",
+      "group": "윤달",
+      "raw": {
+        "calendar": "lunar",
+        "year": 1990,
+        "month": 5,
+        "day": 5,
+        "hourKnown": true,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경오",
+        "month": "신사",
+        "day": "계사",
+        "hour": "병진"
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "forward",
+        "first": "임오",
+        "ganjis": [
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅",
+          "辛卯"
+        ]
+      }
+    },
+    {
+      "label": "2026-03-10 KST 23:30 (진태양시 22:57)",
+      "group": "야자시",
+      "raw": {
+        "year": 2026,
+        "month": 3,
+        "day": 10,
+        "hour": 23,
+        "minute": 30
+      },
+      "ours": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "계미",
+        "hour": "계해"
+      },
+      "manseryeok": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "계미",
+        "hour": "임자"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "yajasi",
+          "ours": "계해",
+          "theirs": "임자"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "임진",
+        "ganjis": [
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌",
+          "己亥",
+          "庚子",
+          "辛丑"
+        ]
+      }
+    },
+    {
+      "label": "2026-03-10 KST 23:40 (진태양시 23:07)",
+      "group": "야자시",
+      "raw": {
+        "year": 2026,
+        "month": 3,
+        "day": 10,
+        "hour": 23,
+        "minute": 40
+      },
+      "ours": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "계미",
+        "hour": "갑자"
+      },
+      "manseryeok": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "계미",
+        "hour": "임자"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "yajasi",
+          "ours": "갑자",
+          "theirs": "임자"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "임진",
+        "ganjis": [
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌",
+          "己亥",
+          "庚子",
+          "辛丑"
+        ]
+      }
+    },
+    {
+      "label": "2026-03-10 KST 23:40 조자시",
+      "group": "야자시",
+      "raw": {
+        "year": 2026,
+        "month": 3,
+        "day": 10,
+        "hour": 23,
+        "minute": 40,
+        "yajasi": "advance-day"
+      },
+      "ours": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "갑신",
+        "hour": "갑자"
+      },
+      "manseryeok": {
+        "year": "병오",
+        "month": "신묘",
+        "day": "계미",
+        "hour": "임자"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": false,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "day",
+          "reason": "yajasi",
+          "ours": "갑신",
+          "theirs": "계미"
+        },
+        {
+          "pillar": "hour",
+          "reason": "yajasi",
+          "ours": "갑자",
+          "theirs": "임자"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "임진",
+        "ganjis": [
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉",
+          "戊戌",
+          "己亥",
+          "庚子",
+          "辛丑"
+        ]
+      }
+    },
+    {
+      "label": "1957-12-15 KST 23:10 (보정 -2분)",
+      "group": "야자시",
+      "raw": {
+        "year": 1957,
+        "month": 12,
+        "day": 15,
+        "hour": 23,
+        "minute": 10
+      },
+      "ours": {
+        "year": "정유",
+        "month": "임자",
+        "day": "신유",
+        "hour": "경자"
+      },
+      "manseryeok": {
+        "year": "정유",
+        "month": "임자",
+        "day": "신유",
+        "hour": "무자"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "yajasi",
+          "ours": "경자",
+          "theirs": "무자"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 4,
+        "direction": "backward",
+        "first": "신해",
+        "ganjis": [
+          "辛亥",
+          "庚戌",
+          "己酉",
+          "戊申",
+          "丁未",
+          "丙午",
+          "乙巳",
+          "甲辰",
+          "癸卯",
+          "壬寅"
+        ]
+      }
+    },
+    {
+      "label": "1990-01-01 KST 00:10",
+      "group": "야자시",
+      "raw": {
+        "year": 1990,
+        "month": 1,
+        "day": 1,
+        "hour": 0,
+        "minute": 10
+      },
+      "ours": {
+        "year": "기사",
+        "month": "병자",
+        "day": "을축",
+        "hour": "무자"
+      },
+      "manseryeok": {
+        "year": "기사",
+        "month": "병자",
+        "day": "병인",
+        "hour": "무자"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": false,
+        "hour": true
+      },
+      "divergences": [
+        {
+          "pillar": "day",
+          "reason": "true-solar-time",
+          "ours": "을축",
+          "theirs": "병인"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "backward",
+        "first": "을해",
+        "ganjis": [
+          "乙亥",
+          "甲戌",
+          "癸酉",
+          "壬申",
+          "辛未",
+          "庚午",
+          "己巳",
+          "戊辰",
+          "丁卯",
+          "丙寅"
+        ]
+      }
+    },
+    {
+      "label": "1990-05-05 09:30 남",
+      "group": "평범",
+      "raw": {
+        "year": 1990,
+        "month": 5,
+        "day": 5,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "경진"
+      },
+      "manseryeok": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "신사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경진",
+          "theirs": "신사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "신사",
+        "ganjis": [
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅"
+        ]
+      }
+    },
+    {
+      "label": "1990-05-05 09:30 여",
+      "group": "평범",
+      "raw": {
+        "year": 1990,
+        "month": 5,
+        "day": 5,
+        "hour": 9,
+        "minute": 30,
+        "gender": "여"
+      },
+      "ours": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "경진"
+      },
+      "manseryeok": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": "신사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경진",
+          "theirs": "신사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 11,
+        "direction": "backward",
+        "first": "기묘",
+        "ganjis": [
+          "己卯",
+          "戊寅",
+          "丁丑",
+          "丙子",
+          "乙亥",
+          "甲戌",
+          "癸酉",
+          "壬申",
+          "辛未",
+          "庚午"
+        ]
+      }
+    },
+    {
+      "label": "1985-11-22 14:00 여",
+      "group": "평범",
+      "raw": {
+        "year": 1985,
+        "month": 11,
+        "day": 22,
+        "hour": 14,
+        "minute": 0,
+        "gender": "여"
+      },
+      "ours": {
+        "year": "을축",
+        "month": "정해",
+        "day": "을축",
+        "hour": "계미"
+      },
+      "manseryeok": {
+        "year": "을축",
+        "month": "정해",
+        "day": "을축",
+        "hour": "계미"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 6,
+        "direction": "forward",
+        "first": "무자",
+        "ganjis": [
+          "戊子",
+          "己丑",
+          "庚寅",
+          "辛卯",
+          "壬辰",
+          "癸巳",
+          "甲午",
+          "乙未",
+          "丙申",
+          "丁酉"
+        ]
+      }
+    },
+    {
+      "label": "1972-03-18 07:45 남",
+      "group": "평범",
+      "raw": {
+        "year": 1972,
+        "month": 3,
+        "day": 18,
+        "hour": 7,
+        "minute": 45
+      },
+      "ours": {
+        "year": "임자",
+        "month": "계묘",
+        "day": "무신",
+        "hour": "병진"
+      },
+      "manseryeok": {
+        "year": "임자",
+        "month": "계묘",
+        "day": "무신",
+        "hour": "병진"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 7,
+        "direction": "forward",
+        "first": "갑진",
+        "ganjis": [
+          "甲辰",
+          "乙巳",
+          "丙午",
+          "丁未",
+          "戊申",
+          "己酉",
+          "庚戌",
+          "辛亥",
+          "壬子",
+          "癸丑"
+        ]
+      }
+    },
+    {
+      "label": "2001-09-11 21:00 여",
+      "group": "평범",
+      "raw": {
+        "year": 2001,
+        "month": 9,
+        "day": 11,
+        "hour": 21,
+        "minute": 0,
+        "gender": "여"
+      },
+      "ours": {
+        "year": "신사",
+        "month": "정유",
+        "day": "정축",
+        "hour": "경술"
+      },
+      "manseryeok": {
+        "year": "신사",
+        "month": "정유",
+        "day": "정축",
+        "hour": "신해"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경술",
+          "theirs": "신해"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 10,
+        "direction": "forward",
+        "first": "무술",
+        "ganjis": [
+          "戊戌",
+          "己亥",
+          "庚子",
+          "辛丑",
+          "壬寅",
+          "癸卯",
+          "甲辰",
+          "乙巳",
+          "丙午",
+          "丁未"
+        ]
+      }
+    },
+    {
+      "label": "2015-06-30 12:00 남",
+      "group": "평범",
+      "raw": {
+        "year": 2015,
+        "month": 6,
+        "day": 30,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "을미",
+        "month": "임오",
+        "day": "정축",
+        "hour": "병오"
+      },
+      "manseryeok": {
+        "year": "을미",
+        "month": "임오",
+        "day": "정축",
+        "hour": "병오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "backward",
+        "first": "신사",
+        "ganjis": [
+          "辛巳",
+          "庚辰",
+          "己卯",
+          "戊寅",
+          "丁丑",
+          "丙子",
+          "乙亥",
+          "甲戌",
+          "癸酉",
+          "壬申"
+        ]
+      }
+    },
+    {
+      "label": "1948-08-15 12:00 남",
+      "group": "평범",
+      "raw": {
+        "year": 1948,
+        "month": 8,
+        "day": 15,
+        "hour": 12,
+        "minute": 0
+      },
+      "ours": {
+        "year": "무자",
+        "month": "경신",
+        "day": "임신",
+        "hour": "을사"
+      },
+      "manseryeok": {
+        "year": "무자",
+        "month": "경신",
+        "day": "임신",
+        "hour": "병오"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "을사",
+          "theirs": "병오"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 600,
+        "offsetMinutes": -92.09,
+        "daylightSaving": true
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "신유",
+        "ganjis": [
+          "辛酉",
+          "壬戌",
+          "癸亥",
+          "甲子",
+          "乙丑",
+          "丙寅",
+          "丁卯",
+          "戊辰",
+          "己巳",
+          "庚午"
+        ]
+      }
+    },
+    {
+      "label": "1930-05-05 09:30 남 (일제)",
+      "group": "평범",
+      "raw": {
+        "year": 1930,
+        "month": 5,
+        "day": 5,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경오",
+        "month": "경진",
+        "day": "을묘",
+        "hour": "경진"
+      },
+      "manseryeok": {
+        "year": "경오",
+        "month": "경진",
+        "day": "을묘",
+        "hour": "신사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": false
+      },
+      "divergences": [
+        {
+          "pillar": "hour",
+          "reason": "true-solar-time",
+          "ours": "경진",
+          "theirs": "신사"
+        }
+      ],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "신사",
+        "ganjis": [
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅"
+        ]
+      }
+    },
+    {
+      "label": "1910-06-15 09:30 남 (대한제국)",
+      "group": "평범",
+      "raw": {
+        "year": 1910,
+        "month": 6,
+        "day": 15,
+        "hour": 9,
+        "minute": 30
+      },
+      "ours": {
+        "year": "경술",
+        "month": "임오",
+        "day": "신해",
+        "hour": "계사"
+      },
+      "manseryeok": {
+        "year": "경술",
+        "month": "임오",
+        "day": "신해",
+        "hour": "계사"
+      },
+      "agrees": {
+        "year": true,
+        "month": true,
+        "day": true,
+        "hour": true
+      },
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 510,
+        "offsetMinutes": -2.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 9,
+        "direction": "forward",
+        "first": "계미",
+        "ganjis": [
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅",
+          "辛卯",
+          "壬辰"
+        ]
+      }
+    },
+    {
+      "label": "1990-05-05 시간 미상",
+      "group": "평범",
+      "raw": {
+        "year": 1990,
+        "month": 5,
+        "day": 5,
+        "hourKnown": false
+      },
+      "ours": {
+        "year": "경오",
+        "month": "경진",
+        "day": "경오",
+        "hour": null
+      },
+      "manseryeok": null,
+      "agrees": null,
+      "divergences": [],
+      "solarTime": {
+        "standardOffsetMinutes": 540,
+        "offsetMinutes": -32.09,
+        "daylightSaving": false
+      },
+      "daeun": {
+        "startAge": 1,
+        "direction": "forward",
+        "first": "신사",
+        "ganjis": [
+          "辛巳",
+          "壬午",
+          "癸未",
+          "甲申",
+          "乙酉",
+          "丙戌",
+          "丁亥",
+          "戊子",
+          "己丑",
+          "庚寅"
+        ]
+      }
+    }
+  ]
+}
