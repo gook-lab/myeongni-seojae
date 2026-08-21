@@ -28,6 +28,7 @@ import { Solar } from 'lunar-javascript';
 import { TEN_GOD_BY_HANJA, TEN_GOD_CATEGORY } from './constants';
 import { ERROR_MESSAGES, err, ok, type SajuResult } from './errors';
 import { pillarFromGanZhi } from './manse';
+import { STAGE_OUTWARDNESS, twelveStage } from './twelve-stages';
 import type {
   BirthInput,
   DaeunEntry,
@@ -119,6 +120,10 @@ export function buildTimeline(
       const startYear = d.getStartYear();
       const endYear = d.getEndYear();
 
+      // 십이운성은 일간이 그 대운 지지에서 어떤 상태인가를 본다.
+      // 십성이 "무슨 일이 있나"라면 이건 "그때 힘이 있나"다.
+      const stage = twelveStage(dayMaster.stem, pillar.branch);
+
       entries.push({
         index: entries.length,
         startAge: d.getStartAge(),
@@ -128,6 +133,8 @@ export function buildTimeline(
         pillar,
         tenGod,
         category: TEN_GOD_CATEGORY[tenGod],
+        stage,
+        outwardness: STAGE_OUTWARDNESS[stage],
         isCurrent: currentYear >= startYear && currentYear <= endYear,
       });
       if (entries.length >= DAEUN_COUNT) break;

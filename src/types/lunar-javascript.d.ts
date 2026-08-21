@@ -48,6 +48,11 @@ declare module 'lunar-javascript' {
     getDayWuXing(): string;
     getTimeWuXing(): string;
     getYearNaYin(): string;
+    /** 십이운성(地勢). 원국 지지에만 제공된다 — 대운용은 core/twelve-stages.ts */
+    getYearDiShi(): string;
+    getMonthDiShi(): string;
+    getDayDiShi(): string;
+    getTimeDiShi(): string;
     /** @param gender 1 = 남, 0 = 여 */
     getYun(gender: 0 | 1, sect?: 1 | 2): YunLike;
   }

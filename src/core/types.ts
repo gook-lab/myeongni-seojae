@@ -17,6 +17,10 @@ export type TenGod =
 
 export type TenGodCategory = '비겁' | '식상' | '재성' | '관성' | '인성';
 
+export type TwelveStage =
+  | '장생' | '목욕' | '관대' | '건록' | '제왕' | '쇠'
+  | '병' | '사' | '묘' | '절' | '태' | '양';
+
 export interface Pillar {
   stem: Stem;
   branch: Branch;
@@ -133,6 +137,13 @@ export interface DaeunEntry {
   pillar: Pillar;
   tenGod: TenGod;
   category: TenGodCategory;
+  /**
+   * 십이운성 — 그 대운 지지에서 일간의 상태.
+   * 십성이 "무슨 일이 있나"라면 십이운성은 "그때 힘이 있나"다.
+   */
+  stage: TwelveStage;
+  /** 밖으로 뻗는 힘 0~1. 좋고 나쁨이 아니다. */
+  outwardness: number;
   isCurrent: boolean;
 }
 

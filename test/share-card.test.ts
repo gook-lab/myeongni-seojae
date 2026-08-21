@@ -37,13 +37,17 @@ describe('공유 카드 데이터 — 생년월일이 없다', () => {
     // 출생 연도(1957)와 월일이 그대로 실리면 안 된다
     expect(serialized).not.toContain('1957-06-15');
     expect(serialized).not.toContain('19570615');
-    // 카드는 이런 필드만 갖는다
+    // ★프라이버시 허용목록★
+    // 카드에 필드가 하나라도 늘면 여기서 걸린다. 새 필드가 생년월일을
+    // 실어 나를 수 있으므로, 늘릴 때는 안전한지 확인하고 목록에 넣는다.
     for (const c of cards) {
       expect(Object.keys(c).sort()).toEqual(
         [
           'branchColor', 'category', 'endAge', 'endYear', 'ganji', 'ganjiKo',
           'index', 'isCurrent', 'prefix', 'startAge', 'startYear', 'stemColor',
           'tenGod', 'text', 'theme',
+          // 십이운성 — 일간과 지지로만 정해지므로 생년월일을 역산할 수 없다
+          'stage', 'stageHanja', 'outwardness', 'stageText',
         ].sort(),
       );
     }
@@ -118,5 +122,21 @@ describe('이름을 넣어도 생년월일은 안 들어간다', () => {
     const r = reading({ name: '홍길동' });
     expect(r.chart.input.name).toBe('홍길동');
     expect(JSON.stringify(r.cards)).not.toContain('홍길동');
+  });
+});
+
+describe('십이운성 필드도 생년월일을 담지 않는다', () => {
+  it('stage 관련 필드에 연도·날짜가 없다', () => {
+    for (const c of reading().cards) {
+      const stageFields = `${c.stage} ${c.stageHanja} ${c.outwardness} ${c.stageText}`;
+      expect(stageFields).not.toMatch(/19\d{2}|20\d{2}/);
+    }
+  });
+
+  it('outwardness 는 0~1 비율이지 점수가 아니다', () => {
+    for (const c of reading().cards) {
+      expect(c.outwardness).toBeGreaterThan(0);
+      expect(c.outwardness).toBeLessThanOrEqual(1);
+    }
   });
 });

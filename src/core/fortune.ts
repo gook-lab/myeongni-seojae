@@ -200,6 +200,11 @@ const ELEMENT_INDEX: Record<string, number> = {
 
 const BRANCH_ORDER = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
 
+/** 지지 두 개의 관계. 대운-세운, 궁합 양쪽에서 쓴다. */
+export function branchRelationBetween(a: string, b: string): BranchRelation {
+  return branchRelationOf(BRANCH_ORDER.indexOf(a), BRANCH_ORDER.indexOf(b));
+}
+
 /** 지지 육합 */
 const HARMONY_PAIRS: ReadonlyArray<readonly [number, number]> = [
   [0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7],
@@ -220,7 +225,7 @@ const PUNISH_GROUPS: ReadonlyArray<readonly number[]> = [
   [0, 3],      // 자묘
 ];
 
-function branchRelation(ab: number, bb: number): BranchRelation {
+export function branchRelationOf(ab: number, bb: number): BranchRelation {
   if (ab < 0 || bb < 0) return 'none';
   if (HARMONY_PAIRS.some(([x, y]) => (ab === x && bb === y) || (ab === y && bb === x))) {
     return 'harmony';
@@ -283,7 +288,7 @@ export function gunghap(
   return {
     kind,
     pair: { a: a.dayMaster, b: b.dayMaster },
-    branchRelation: branchRelation(
+    branchRelation: branchRelationOf(
       BRANCH_ORDER.indexOf(a.dayMaster.branch),
       BRANCH_ORDER.indexOf(b.dayMaster.branch),
     ),

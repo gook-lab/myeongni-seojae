@@ -276,3 +276,56 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await expect(page.getByRole('region', { name: '부가 운세' })).toHaveCount(0);
   });
 });
+
+test.describe('십이운성 — 그 10년의 힘', () => {
+  test('대운 칸마다 십이운성과 힘 막대가 나온다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    const timeline = page.getByRole('region', { name: '대운 인생 타임라인' });
+    const cards = timeline.locator('ol > li');
+    await expect(cards).toHaveCount(10);
+
+    // 십이운성 열두 이름 중 하나가 각 칸에 있다
+    const stages = ['장생','목욕','관대','건록','제왕','쇠','병','사','묘','절','태','양'];
+    for (let i = 0; i < 10; i += 1) {
+      const text = await cards.nth(i).innerText();
+      expect(stages.some((s) => text.includes(s)), `${i}번 칸: ${text}`).toBe(true);
+    }
+  });
+
+  test('힘 막대 길이가 칸마다 다르다 (한 값으로 뭉개지 않는다)', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    const widths = await page.evaluate(() =>
+      [...document.querySelectorAll('ol li div[style*="width"]')].map(
+        (el) => (el as HTMLElement).style.width,
+      ),
+    );
+    expect(widths.length).toBe(10);
+    expect(new Set(widths).size).toBeGreaterThanOrEqual(6);
+  });
+
+  test('펼치면 십이운성 설명이 나온다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    const timeline = page.getByRole('region', { name: '대운 인생 타임라인' });
+    const open = timeline.locator('button[aria-expanded="true"]');
+    await expect(open).toHaveCount(1);
+    // 펼친 칸 아래에 십이운성 한자 표기가 있다
+    await expect(timeline.getByText(/[長沐冠建帝衰病死墓絕胎養]/).first()).toBeVisible();
+  });
+
+  test('신년 화면이 지금 대운과의 관계를 보여준다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+    await page.getByRole('button', { name: /^신년/ }).click();
+
+    const year = page.getByRole('region', { name: /년 운세/ });
+    await expect(year.getByText('지금 대운과의 관계')).toBeVisible();
+    await expect(year.getByText(/대운 .{2} .+ · 세운 .{2}/)).toBeVisible();
+  });
+});

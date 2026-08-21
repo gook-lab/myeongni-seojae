@@ -10,7 +10,7 @@
  */
 
 import { buildTimeline } from '../core/daeun';
-import { dailyFortune, gunghap, yearFortune } from '../core/fortune';
+import { branchRelationBetween, dailyFortune, gunghap, yearFortune } from '../core/fortune';
 import type { Gunghap } from '../core/fortune';
 import type { SajuResult } from '../core/errors';
 import { normalize, resolveSolarYmd } from '../core/input';
@@ -22,10 +22,12 @@ import type {
   SajuChart,
   TenGodCategory,
 } from '../core/types';
+import { STAGE_HANJA } from '../core/twelve-stages';
 import { DAEUN_TEXT, daeunPrefix } from '../text/daeun-text';
+import { STAGE_TEXT } from '../text/stage-text';
 import {
   BRANCH_RELATION_TEXT, GUNGHAP_TEXT, MUTUAL_TEN_GOD_TEXT,
-  complementText, dailyLead, yearLead,
+  DAEUN_YEAR_TEXT, complementText, dailyLead, yearLead,
 } from '../text/fortune-text';
 import { DAY_MASTER_TEXT, GLOSS, INTERPRET, moneyText } from '../text/interpret';
 
@@ -39,6 +41,12 @@ export interface DaeunCard {
   ganjiKo: string;
   tenGod: string;
   category: TenGodCategory;
+  /** 십이운성 — 그 10년 동안 일간이 놓이는 자리 */
+  stage: string;
+  stageHanja: string;
+  /** 밖으로 뻗는 힘 0~1. 좋고 나쁨이 아니다 */
+  outwardness: number;
+  stageText: string;
   isCurrent: boolean;
   /** 시점 안내 — 지나온 / 지금 / 앞으로 */
   prefix: string;
@@ -66,6 +74,16 @@ export interface YearReading {
   category: TenGodCategory;
   lead: string;
   text: string;
+  /**
+   * 올해 세운이 지금 대운과 어떤 관계인가.
+   * 명리에서 실제로 크게 보는 대목인데 원본은 아예 안 봤다.
+   */
+  withDaeun: {
+    daeunGanji: string;
+    daeunTenGod: string;
+    relation: string;
+    text: string;
+  } | null;
   months: Array<{
     label: string;
     ganji: string;
@@ -142,6 +160,10 @@ export function computeReading(
     ganjiKo: `${e.pillar.stem}${e.pillar.branch}`,
     tenGod: e.tenGod,
     category: e.category,
+    stage: e.stage,
+    stageHanja: STAGE_HANJA[e.stage],
+    outwardness: e.outwardness,
+    stageText: STAGE_TEXT[e.stage],
     isCurrent: e.isCurrent,
     prefix: daeunPrefix(e.startYear, e.endYear, currentYear),
     text: DAEUN_TEXT[e.tenGod],
@@ -176,6 +198,17 @@ export function computeReading(
         category: yearRes.value.category,
         lead: yearLead(yearRes.value.year, yearRes.value.ganji, yearRes.value.tenGod),
         text: INTERPRET[yearRes.value.category].monthly.replace('달', '해'),
+        withDaeun: (() => {
+          const cur = timeline.entries.find((e) => e.isCurrent);
+          if (!cur) return null;
+          const rel = branchRelationBetween(cur.pillar.branch, yearRes.value.pillar.branch);
+          return {
+            daeunGanji: `${cur.pillar.stemHanja}${cur.pillar.branchHanja}`,
+            daeunTenGod: cur.tenGod,
+            relation: rel,
+            text: DAEUN_YEAR_TEXT[rel] ?? '',
+          };
+        })(),
         months: yearRes.value.months.map((m) => ({
           label: m.label,
           ganji: m.ganji,

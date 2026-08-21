@@ -151,11 +151,29 @@ export function Timeline({
                 <div className="mt-1.5 flex items-baseline justify-between gap-3">
                   <span className="text-sm text-ink-soft">
                     {card.tenGod}
-                    <span className="text-ink-faint"> · {card.category}</span>
+                    <span className="text-ink-faint"> · {card.stage}</span>
                   </span>
                   <span className="text-xs tabular-nums text-ink-faint">
                     {card.startYear}~{card.endYear}
                   </span>
+                </div>
+
+                {/*
+                  밖으로 뻗는 힘. 점수가 아니라 십이운성 열두 자리를
+                  막대 길이로 옮긴 것이다. 절·묘가 짧은 건 나쁘다는 뜻이
+                  아니라 안으로 여무는 시기라는 뜻이다.
+                */}
+                <div
+                  aria-hidden
+                  className="mt-2 h-1 w-full overflow-hidden rounded-full bg-line-soft"
+                >
+                  <div
+                    className="h-full rounded-full transition-[width]"
+                    style={{
+                      width: `${Math.round(card.outwardness * 100)}%`,
+                      backgroundColor: card.isCurrent ? '#A63A2B' : '#C9B98F',
+                    }}
+                  />
                 </div>
 
               </button>
@@ -169,6 +187,12 @@ export function Timeline({
                 >
                   <p className="mb-2 text-xs text-jumuk">{card.prefix}</p>
                   <p className="text-sm leading-[1.85] text-ink">{card.text}</p>
+                  <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-xs leading-relaxed text-ink-soft">
+                    <b className="text-jumuk">
+                      {card.stage}({card.stageHanja})
+                    </b>{' '}
+                    {card.stageText}
+                  </p>
                   <p className="mt-3 text-xs leading-relaxed text-ink-faint">{card.theme}</p>
                   <ShareButton card={card} {...(name ? { title: name } : {})} />
                 </div>

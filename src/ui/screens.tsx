@@ -117,6 +117,18 @@ function YearPanel() {
         <p className="mt-2.5 text-sm leading-[1.85] text-ink">{year.text}</p>
       </article>
 
+      {year.withDaeun && (
+        <article className="rounded-lg border border-line bg-card px-4 py-4">
+          <p className="mb-1.5 text-xs text-jumuk">지금 대운과의 관계</p>
+          <p className="mb-2 text-sm text-ink-soft">
+            대운 <b className="text-ink">{year.withDaeun.daeunGanji}</b>{' '}
+            {year.withDaeun.daeunTenGod} · 세운{' '}
+            <b className="text-ink">{year.ganji}</b> {year.tenGod}
+          </p>
+          <p className="text-sm leading-[1.85] text-ink">{year.withDaeun.text}</p>
+        </article>
+      )}
+
       <p className="px-1 text-xs leading-relaxed text-ink-faint">
         절기를 기준으로 나눈 열두 달입니다. 양력 달과 며칠씩 어긋납니다.
       </p>
