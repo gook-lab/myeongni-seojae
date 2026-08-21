@@ -388,3 +388,55 @@ test.describe('원국 심화 — 궁위 · 오행 균형', () => {
     await expect(s.getByText(/오늘 일진(이|과) 내 일지/)).toBeVisible();
   });
 });
+
+test.describe('용신 — 판정만 던지지 않는다', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.getByRole('button', { name: '압니다' }).click();
+    await fillBirth(page, '1990', '5', '5');
+    await page.getByLabel('시', { exact: true }).selectOption('9');
+    await page.getByLabel('분', { exact: true }).selectOption('30');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '상세 풀이 보기' }).click();
+  });
+
+  test('★어떤 방법을 썼는지 밝힌다★', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신강 신약과 용신' });
+    await expect(s).toBeVisible();
+    await expect(s.getByText(/억부용신법/)).toBeVisible();
+    await expect(s.getByText(/다른 방법을 쓰면 답이 달라질 수 있습니다/)).toBeVisible();
+  });
+
+  test('판정과 함께 득령·득지·득세를 보여준다', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신강 신약과 용신' });
+    await expect(s.getByText(/신강|중화|신약/).first()).toBeVisible();
+    for (const f of ['득령 (得令)', '득지 (得地)', '득세 (得勢)']) {
+      await expect(s.getByText(f)).toBeVisible();
+    }
+  });
+
+  test('★자리별 계산을 펼쳐볼 수 있다★', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신강 신약과 용신' });
+    const details = s.locator('details');
+    await expect(details).toHaveCount(1);
+    await details.locator('summary').click();
+
+    // 일곱 자리가 전부 나온다 (일간 자신 제외)
+    await expect(details.locator('li')).toHaveCount(7);
+    // 부호가 붙은 숫자가 보인다
+    await expect(details.getByText(/^[+−-]?\d/).first()).toBeVisible();
+    // 무게 근거도 적혀 있다
+    await expect(details.getByText(/월지가 가장 무겁습니다/)).toBeVisible();
+  });
+
+  test('용신과 도움·피할 기운이 나온다', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신강 신약과 용신' });
+    await expect(s.getByText('용신 — 가장 필요한 기운')).toBeVisible();
+    await expect(s.getByText(/도움 .+/)).toBeVisible();
+    await expect(s.getByText(/색 .+ · 방위 .+/)).toBeVisible();
+  });
+
+  test('용신 섹션에도 점수가 없다', async ({ page }) => {
+    const text = await page.getByRole('region', { name: '신강 신약과 용신' }).innerText();
+    expect(text).not.toMatch(/\d+\s*점(?!수)/);
+  });
+});

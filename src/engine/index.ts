@@ -17,6 +17,7 @@ import { normalize, resolveSolarYmd } from '../core/input';
 import { toSolarTime } from '../core/korea-time';
 import { computeChart } from '../core/manse';
 import { natalDetail } from '../core/natal';
+import { yongsin } from '../core/yongsin';
 import type {
   DaeunTimeline,
   RawFormValues,
@@ -31,6 +32,10 @@ import {
   PALACE_CATEGORY_TEXT, PALACE_MEANING, VOID_TEXT,
   balanceLead, missingLead,
 } from '../text/natal-text';
+import {
+  ELEMENT_PRACTICAL, FACTOR_TEXT, METHOD_NOTE, VERDICT_TEXT,
+  YONGSIN_ADVICE, strengthLead,
+} from '../text/yongsin-text';
 import {
   BRANCH_RELATION_TEXT, GUNGHAP_TEXT, MUTUAL_TEN_GOD_TEXT,
   DAEUN_YEAR_TEXT, DAILY_BRANCH_TEXT, complementText, dailyLead, yearLead,
@@ -131,8 +136,43 @@ export interface BalanceReading {
   hiddenIntro: string;
 }
 
+export interface StrengthFactorCard {
+  label: string;
+  ok: boolean;
+  text: string;
+}
+
+export interface YongsinReading {
+  /** 어떤 방법을 썼는지 반드시 밝힌다 */
+  method: string;
+  methodNote: string;
+  verdict: string;
+  verdictText: string;
+  lead: string;
+  /** 0~1 */
+  score: number;
+  factors: StrengthFactorCard[];
+  /** 자리별 근거 — 판정만 던지지 않는다 */
+  slots: Array<{
+    slot: string;
+    glyph: string;
+    tenGod: string;
+    category: string;
+    supports: boolean;
+    signed: number;
+  }>;
+  primary: string;
+  primaryElement: string;
+  advice: string;
+  practical: { color: string; direction: string };
+  helpful: string[];
+  avoid: string[];
+}
+
 export interface SajuReading {
   chart: SajuChart;
+  /** 신강·신약과 용신 (억부용신법) */
+  yongsin: YongsinReading;
   /** 궁위 — 십성이 인생의 어느 자리에 있는가 */
   palaces: PalaceCard[];
   balance: BalanceReading;
@@ -239,6 +279,37 @@ export function computeReading(
     };
   });
 
+  // ── 신강·신약과 용신 (억부용신법) ──
+  const y = yongsin(chart.pillars);
+  const st = y.strength;
+  const yongsinReading: YongsinReading = {
+    method: y.method,
+    methodNote: METHOD_NOTE,
+    verdict: st.verdict,
+    verdictText: VERDICT_TEXT[st.verdict],
+    lead: strengthLead(st.score, st.supportWeight, st.drainWeight, st.slots.length),
+    score: st.score,
+    factors: [
+      { label: FACTOR_TEXT.득령.label, ok: st.deukryeong, text: st.deukryeong ? FACTOR_TEXT.득령.yes : FACTOR_TEXT.득령.no },
+      { label: FACTOR_TEXT.득지.label, ok: st.deukji, text: st.deukji ? FACTOR_TEXT.득지.yes : FACTOR_TEXT.득지.no },
+      { label: FACTOR_TEXT.득세.label, ok: st.deukse, text: st.deukse ? FACTOR_TEXT.득세.yes : FACTOR_TEXT.득세.no },
+    ],
+    slots: st.slots.map((sl) => ({
+      slot: sl.slot,
+      glyph: sl.glyph,
+      tenGod: sl.tenGod,
+      category: sl.category,
+      supports: sl.supports,
+      signed: sl.signed,
+    })),
+    primary: y.primary,
+    primaryElement: y.primaryElement,
+    advice: YONGSIN_ADVICE[y.primary],
+    practical: ELEMENT_PRACTICAL[y.primaryElement],
+    helpful: y.helpful,
+    avoid: y.avoid,
+  };
+
   const bal = detail.balance;
   const balance: BalanceReading = {
     counts: bal.counts,
@@ -308,6 +379,7 @@ export function computeReading(
     ok: true,
     value: {
       chart,
+      yongsin: yongsinReading,
       palaces,
       balance,
       daily,

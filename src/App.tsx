@@ -102,6 +102,122 @@ function PillarTable() {
 }
 
 /**
+ * 신강·신약과 용신 (억부용신법).
+ *
+ * 판정만 던지지 않는다. "당신은 신강입니다"는 아무 도움이 안 되고,
+ * "월지가 인성이라 +3, 일지가 관성이라 −2" 는 사용자가 따져볼 수 있다.
+ * 그래서 자리별 근거를 전부 펼친다.
+ *
+ * 그리고 어떤 방법을 썼는지 반드시 밝힌다. 다른 방법을 쓰면 다른 답이
+ * 나오는데 정답인 척하는 것이 이 앱에서 가장 하면 안 되는 일이다.
+ */
+function Yongsin() {
+  const reading = useSajuStore((s) => s.reading);
+  if (!reading) return null;
+  const y = reading.yongsin;
+  const pct = Math.round(y.score * 100);
+
+  return (
+    <section aria-label="신강 신약과 용신" className="mx-auto w-full max-w-md px-5 pt-12">
+      <h2 className="mb-1.5 text-lg font-bold text-ink">일간의 힘과 용신</h2>
+      <p className="mb-3.5 text-xs leading-relaxed text-ink-faint">{y.methodNote}</p>
+
+      {/* 판정 + 저울 */}
+      <article className="rounded-lg border border-jumuk bg-card-warm px-4 py-4">
+        <div className="flex items-baseline justify-between">
+          <span className="text-xl font-bold text-jumuk">{y.verdict}</span>
+          <span className="text-xs tabular-nums text-ink-faint">돕는 비율 {pct}%</span>
+        </div>
+
+        {/* 돕는 쪽 vs 빼는 쪽 저울 */}
+        <div
+          aria-hidden
+          className="mt-2.5 flex h-2.5 w-full overflow-hidden rounded-full bg-line-soft"
+        >
+          <div className="h-full bg-jumuk" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="mt-1 flex justify-between text-[11px] text-ink-faint">
+          <span>돕는 기운</span>
+          <span>빼는 기운</span>
+        </div>
+
+        <p className="mt-3 text-xs leading-relaxed text-ink-faint">{y.lead}</p>
+        <p className="mt-2.5 text-sm leading-[1.85] text-ink">{y.verdictText}</p>
+      </article>
+
+      {/* 득령 · 득지 · 득세 */}
+      <div className="mt-2.5 space-y-2">
+        {y.factors.map((f) => (
+          <div
+            key={f.label}
+            className="flex gap-3 rounded-lg border border-line bg-card px-4 py-3"
+          >
+            <span
+              className={
+                'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ' +
+                (f.ok ? 'bg-jumuk text-card' : 'border border-line-dash text-ink-faint')
+              }
+            >
+              {f.ok ? 'O' : 'X'}
+            </span>
+            <span>
+              <span className="block text-sm font-bold text-ink">{f.label}</span>
+              <span className="mt-1 block text-xs leading-relaxed text-ink-soft">{f.text}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* 자리별 근거 — 판정만 던지지 않는다 */}
+      <details className="mt-2.5 rounded-lg border border-dashed border-line-dash px-4 py-3">
+        <summary className="cursor-pointer text-sm text-ink-soft">
+          자리별로 어떻게 셌는지 보기
+        </summary>
+        <ul className="mt-3 space-y-1.5">
+          {y.slots.map((sl) => (
+            <li key={sl.slot} className="flex items-center gap-2.5 text-xs">
+              <span className="w-8 shrink-0 text-ink-faint">{sl.slot}</span>
+              <span className="w-5 shrink-0 text-base text-ink">{sl.glyph}</span>
+              <span className="w-12 shrink-0 text-ink-soft">{sl.tenGod}</span>
+              <span className="flex-1 text-ink-faint">{sl.category}</span>
+              <span
+                className={
+                  'w-8 shrink-0 text-right tabular-nums ' +
+                  (sl.supports ? 'text-jumuk' : 'text-ink-faint')
+                }
+              >
+                {sl.signed > 0 ? `+${sl.signed}` : sl.signed}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
+          월지가 가장 무겁습니다(3). 태어난 계절의 기운이라 셋 중 비중이 가장 큽니다.
+          일지 2, 년지·시지 1.5, 천간 1.
+        </p>
+      </details>
+
+      {/* 용신 */}
+      <article className="mt-2.5 rounded-lg border border-line bg-card px-4 py-4">
+        <p className="text-xs text-jumuk">용신 — 가장 필요한 기운</p>
+        <p className="mt-1.5 flex items-baseline gap-2">
+          <span className="text-xl font-bold text-ink">{y.primary}</span>
+          <span className="text-sm text-ink-soft">{y.primaryElement}</span>
+        </p>
+        <p className="mt-2.5 text-sm leading-[1.85] text-ink">{y.advice}</p>
+        <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-xs text-ink-soft">
+          도움 {y.helpful.join(' · ')}
+          {y.avoid.length > 0 && <> · 피할 {y.avoid.join(' · ')}</>}
+        </p>
+        <p className="mt-2 text-xs text-ink-faint">
+          색 {y.practical.color} · 방위 {y.practical.direction}
+        </p>
+      </article>
+    </section>
+  );
+}
+
+/**
  * 궁위 — 십성이 인생의 어느 자리에 있는가.
  * 원본은 십성 카운트 하나로 뭉갰다. 같은 관성도 년주면 집안의 규율이고
  * 시주면 자식·말년의 책임이다.
@@ -300,6 +416,7 @@ function DetailScreen() {
           ‹ 타임라인
         </button>
       </div>
+      <Yongsin />
       <Palaces />
       <Balance />
       <Topics />
