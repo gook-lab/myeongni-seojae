@@ -115,6 +115,41 @@ describeIfBuilt('번들 분할', () => {
     }
   });
 
+  it('★빌드 산출물이 바깥 호스트를 부르지 않는다★', () => {
+    /*
+     * 처리방침에 "아무 데도 보내지 않습니다" 라고 적어뒀다. 그런데 실제로는
+     * 페이지를 열 때마다 fonts.googleapis.com 으로 요청이 나가고 있었다.
+     * 생년월일이 실려 가진 않지만 IP 와 접속 사실은 남는다 — 한 말과
+     * 하는 일이 달랐다.
+     *
+     * 폰트를 우리 쪽으로 가져왔고(pnpm fonts), 다시 새어 들어오지 않도록
+     * 여기서 막는다. CDN 한 줄이면 조용히 되돌아간다.
+     */
+    const HOSTS = [
+      'fonts.googleapis.com', 'fonts.gstatic.com',
+      'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
+      'googletagmanager.com', 'google-analytics.com',
+    ];
+    const files = [
+      join(DIST, 'index.html'),
+      ...readdirSync(ASSETS).filter((f) => f.endsWith('.js') || f.endsWith('.css'))
+        .map((f) => join(ASSETS, f)),
+    ];
+    const hits: string[] = [];
+    for (const f of files) {
+      const body = readFileSync(f, 'utf8');
+      for (const h of HOSTS) if (body.includes(h)) hits.push(`${f} → ${h}`);
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it('폰트를 우리 쪽에서 낸다', () => {
+    const html = readFileSync(join(DIST, 'index.html'), 'utf8');
+    expect(html).toContain('/fonts/gowun-batang.css');
+    // 조각이 실제로 함께 배포되는가
+    expect(existsSync(join(DIST, 'fonts', 'gowun-batang.css'))).toBe(true);
+  });
+
   it('Sentry 는 진입 청크에 들어가지 않는다', () => {
     // DSN 이 없으면 아예 받지 않아야 한다
     expect(entry.includes('sentry.io')).toBe(false);

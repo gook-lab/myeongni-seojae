@@ -20,7 +20,8 @@
     "verify:kasi": "tsx scripts/verify-kasi.ts",
     "gen:terms": "tsx scripts/gen-solar-terms.ts",
     "verify:python": "tsx scripts/verify-python.ts",
-    "shots": "playwright test --project=shots --workers=1"
+    "shots": "playwright test --project=shots --workers=1",
+    "fonts": "tsx scripts/fetch-fonts.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

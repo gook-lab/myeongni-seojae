@@ -152,3 +152,40 @@ test.describe('개인정보 처리방침', () => {
     }
   });
 });
+
+test('★한 줄도 바깥으로 나가지 않는다★', async ({ page }) => {
+  /*
+   * 처리방침에 "아무 데도 보내지 않습니다" 라고 적어뒀다. 그 말이 참인지
+   * 실제 네트워크로 확인한다 — 폰트 한 줄이면 조용히 되돌아가는 종류다.
+   */
+  const outside: string[] = [];
+  page.on('request', (r) => {
+    const host = new URL(r.url()).hostname;
+    if (!['127.0.0.1', 'localhost'].includes(host)) outside.push(r.url());
+  });
+
+  await firstVisit(page);
+  await page.getByRole('button', { name: '시작하기' }).click();
+  await page.getByRole('button', { name: /^사주 보기/ }).click();
+  await page.getByLabel('년', { exact: true }).selectOption('1957');
+  await page.getByRole('button', { name: '사주 풀어보기' }).click();
+  await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+
+  expect(outside, `바깥으로 나간 요청: ${outside.join(', ')}`).toEqual([]);
+});
+
+test('그래도 글꼴은 제대로 나온다', async ({ page }) => {
+  await firstVisit(page);
+  const font = await page.evaluate(() => {
+    const el = document.querySelector('h1') ?? document.body;
+    return getComputedStyle(el).fontFamily;
+  });
+  expect(font).toContain('Gowun Batang');
+
+  // 조각이 실제로 내려오는가
+  const loaded = await page.evaluate(async () => {
+    await (document as unknown as { fonts: FontFaceSet }).fonts.ready;
+    return (document as unknown as { fonts: FontFaceSet }).fonts.size > 0;
+  });
+  expect(loaded).toBe(true);
+});

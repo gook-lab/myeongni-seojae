@@ -6,12 +6,18 @@
     <meta name="theme-color" content="#FAF6EA" />
     <meta name="description" content="정확한 만세력으로 인생 전체를 10년 단위로 펼쳐보는 사주 — 명리서재" />
     <title>명리서재 — 대운 인생 타임라인</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
+    <!--
+      폰트를 우리 쪽에서 낸다.
+
+      처리방침에 "아무 데도 보내지 않습니다" 라고 적어놓고 페이지를 열 때마다
+      구글로 요청이 나가고 있었다. 생년월일이 실려 가지는 않지만 IP 와 접속
+      사실은 남는다. 한 말과 하는 일이 달랐다.
+
+      한글 폰트는 통으로 받으면 수 MB 지만 유니코드 구간별로 쪼개져 있어서,
+      브라우저는 화면에 실제로 쓰인 글자가 든 조각만 받는다.
+      다시 받으려면 pnpm fonts (scripts/fetch-fonts.ts).
+    -->
+    <link rel="stylesheet" href="/fonts/gowun-batang.css" />
   </head>
   <body>
     <div id="root"></div>
