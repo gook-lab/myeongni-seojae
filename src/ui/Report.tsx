@@ -288,6 +288,31 @@ export function Report() {
         </div>
       </Block>
 
+      {/* 3.5 신살 */}
+      <Block title="신살" note={reading.sinsal.methodNote}>
+        {reading.sinsal.emptyText ? (
+          <p className="text-xs leading-relaxed text-ink">{reading.sinsal.emptyText}</p>
+        ) : (
+          <div className="space-y-2">
+            {reading.sinsal.items.map((it) => (
+              <div key={it.name} className="border border-line px-3 py-2">
+                <p className="text-xs">
+                  <b className="text-ink">{it.name}</b>
+                  <span className="ml-1.5 text-ink-faint">{it.hanja}</span>
+                  <span className="float-right text-ink-faint">
+                    {[...new Set(it.palaces)].join(' · ')}
+                  </span>
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-ink">{it.body}</p>
+                <p className="mt-1 text-[10px] text-ink-faint">
+                  근거 · {it.bases.join(' / ')}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </Block>
+
       {/* 4. 궁위 */}
       <Block title="인생의 네 자리" note="같은 기운도 어느 자리에 있느냐에 따라 뜻이 달라집니다.">
         <div className="space-y-2">

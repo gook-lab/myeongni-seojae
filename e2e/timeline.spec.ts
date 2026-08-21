@@ -302,6 +302,12 @@ test.describe('십이운성 — 그 10년의 힘', () => {
     await fillBirth(page, '1957', '6', '15');
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
 
+    // 계산 엔진이 동적 import 라서 렌더를 기다려야 한다.
+    // 안 기다리면 번들이 커질수록 흔들린다 (실제로 그렇게 깨졌다).
+    await expect(
+      page.getByRole('region', { name: '대운 인생 타임라인' }).locator('ol > li'),
+    ).toHaveCount(10);
+
     const widths = await page.evaluate(() =>
       [...document.querySelectorAll('ol li div[style*="width"]')].map(
         (el) => (el as HTMLElement).style.width,
@@ -493,5 +499,56 @@ test.describe('리포트 — 종이에 남는 물건', () => {
     await expect(page.getByRole('button', { name: /인쇄 · PDF로 저장/ })).toBeHidden();
     await expect(page.getByRole('heading', { name: /인생 리포트/ })).toBeVisible();
     await page.emulateMedia({ media: 'screen' });
+  });
+});
+
+test.describe('신살 — 겁주지 않고 근거를 붙인다', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.getByRole('button', { name: '압니다' }).click();
+    await fillBirth(page, '2001', '9', '11');
+    await page.getByLabel('시', { exact: true }).selectOption('21');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: '상세 풀이 보기' }).click();
+  });
+
+  test('신살이 목록으로 나온다', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신살' });
+    await expect(s).toBeVisible();
+    await expect(s.locator('button[aria-expanded]')).not.toHaveCount(0);
+  });
+
+  test('★펼치면 판정 근거가 나온다★', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신살' });
+    await s.locator('button[aria-expanded]').first().click();
+    await expect(s.getByText(/판정 근거 ·/)).toBeVisible();
+    // 어느 자리를 기준으로 봤는지가 적혀 있다
+    await expect(s.getByText(/년지|일지|일간|간지/).first()).toBeVisible();
+  });
+
+  test('겁주는 표현이 없다', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신살' });
+    // 모두 펼친다
+    const btns = s.locator('button[aria-expanded]');
+    const n = await btns.count();
+    for (let i = 0; i < n; i += 1) {
+      await btns.nth(i).click();
+      const text = await s.innerText();
+      for (const w of ['죽음', '단명', '망한다', '재앙', '흉합니다']) {
+        expect(text, `"${w}"`).not.toContain(w);
+      }
+    }
+  });
+
+  test('유파 주의를 밝힌다', async ({ page }) => {
+    const s = page.getByRole('region', { name: '신살' });
+    await expect(s.getByText(/신살은 유파마다 종류와 판정 기준이 갈립니다/)).toBeVisible();
+    await expect(s.getByText(/삼재처럼 해마다 바뀌는 것은/)).toBeVisible();
+  });
+
+  test('리포트에도 신살이 들어간다', async ({ page }) => {
+    await page.getByRole('button', { name: /^‹ 타임라인/ }).click();
+    await page.getByRole('button', { name: /리포트/ }).click();
+    await expect(page.getByRole('heading', { name: '신살', exact: true })).toBeVisible();
+    await expect(page.getByText(/근거 ·/).first()).toBeVisible();
   });
 });

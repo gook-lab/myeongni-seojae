@@ -17,6 +17,7 @@ import { normalize, resolveSolarYmd } from '../core/input';
 import { toSolarTime } from '../core/korea-time';
 import { computeChart } from '../core/manse';
 import { natalDetail } from '../core/natal';
+import { findSinsal, groupSinsal } from '../core/sinsal';
 import { yongsin } from '../core/yongsin';
 import type {
   DaeunTimeline,
@@ -36,6 +37,9 @@ import {
   ELEMENT_PRACTICAL, FACTOR_TEXT, METHOD_NOTE, VERDICT_TEXT,
   YONGSIN_ADVICE, strengthLead,
 } from '../text/yongsin-text';
+import {
+  NO_SINSAL_TEXT, SINSAL_INTRO, SINSAL_METHOD_NOTE, SINSAL_TEXT,
+} from '../text/sinsal-text';
 import {
   BRANCH_RELATION_TEXT, GUNGHAP_TEXT, MUTUAL_TEN_GOD_TEXT,
   DAEUN_YEAR_TEXT, DAILY_BRANCH_TEXT, complementText, dailyLead, yearLead,
@@ -169,8 +173,30 @@ export interface YongsinReading {
   avoid: string[];
 }
 
+export interface SinsalCard {
+  name: string;
+  hanja: string;
+  short: string;
+  body: string;
+  /** 어느 자리에 있는가 */
+  palaces: string[];
+  glyphs: string[];
+  /** 무엇을 기준으로 판정했는가 — 사용자가 대조할 수 있게 */
+  bases: string[];
+}
+
+export interface SinsalReading {
+  intro: string;
+  methodNote: string;
+  items: SinsalCard[];
+  /** 하나도 없을 때의 안내 */
+  emptyText: string | null;
+}
+
 export interface SajuReading {
   chart: SajuChart;
+  /** 신살 — 겁주지 않고 기운의 결로 읽는다 */
+  sinsal: SinsalReading;
   /** 신강·신약과 용신 (억부용신법) */
   yongsin: YongsinReading;
   /** 궁위 — 십성이 인생의 어느 자리에 있는가 */
@@ -310,6 +336,25 @@ export function computeReading(
     avoid: y.avoid,
   };
 
+  // ── 신살 ──
+  // 이름에 살(殺) 이 붙어 겁주는 데 쓰여 왔지만 실제로는 기운의 결이다.
+  // 근거(어느 자리 기준으로 어느 글자를 봤는지)를 같이 낸다.
+  const sinsalGroups = groupSinsal(findSinsal(chart.pillars));
+  const sinsal: SinsalReading = {
+    intro: SINSAL_INTRO,
+    methodNote: SINSAL_METHOD_NOTE,
+    items: sinsalGroups.map((g) => ({
+      name: g.name,
+      hanja: SINSAL_TEXT[g.name].hanja,
+      short: SINSAL_TEXT[g.name].short,
+      body: SINSAL_TEXT[g.name].body,
+      palaces: g.palaces,
+      glyphs: g.glyphs,
+      bases: g.bases,
+    })),
+    emptyText: sinsalGroups.length === 0 ? NO_SINSAL_TEXT : null,
+  };
+
   const bal = detail.balance;
   const balance: BalanceReading = {
     counts: bal.counts,
@@ -379,6 +424,7 @@ export function computeReading(
     ok: true,
     value: {
       chart,
+      sinsal,
       yongsin: yongsinReading,
       palaces,
       balance,

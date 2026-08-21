@@ -10,6 +10,7 @@
  * 전체 신뢰가 무너진다. 숫자를 버리고 문장만 남겼다.
  */
 
+import { useState } from 'react';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Home } from './ui/Home';
 import { DailyScreen, GunghapScreen, YearScreen } from './ui/screens';
@@ -214,6 +215,79 @@ function Yongsin() {
           색 {y.practical.color} · 방위 {y.practical.direction}
         </p>
       </article>
+    </section>
+  );
+}
+
+/**
+ * 신살 — 겁주지 않고 기운의 결로 읽는다.
+ *
+ * 신살은 이름에 살(殺) 이 붙어 오래 겁주는 데 쓰여 왔다. 도화살은 바람기,
+ * 역마살은 떠돌이 팔자 하는 식이다. 여기서는 좋고 나쁨으로 나누지 않고,
+ * 그 기운이 잘 쓰일 때와 걸림돌이 될 때를 같이 적는다.
+ *
+ * 그리고 근거를 붙인다. "도화살이 있습니다" 만으로는 확인할 방법이 없지만
+ * "년지 酉 기준 → 월지 午" 는 다른 곳과 대조할 수 있다.
+ */
+function Sinsal() {
+  const reading = useSajuStore((s) => s.reading);
+  const [open, setOpen] = useState<string | null>(null);
+  if (!reading) return null;
+  const s = reading.sinsal;
+
+  return (
+    <section aria-label="신살" className="mx-auto w-full max-w-md px-5 pt-12">
+      <h2 className="mb-1.5 text-lg font-bold text-ink">신살</h2>
+      <p className="mb-3.5 text-xs leading-relaxed text-ink-faint">{s.intro}</p>
+
+      {s.emptyText ? (
+        <p className="rounded-lg border border-dashed border-line-dash px-4 py-4 text-sm leading-[1.85] text-ink-soft">
+          {s.emptyText}
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {s.items.map((it) => {
+            const isOpen = open === it.name;
+            return (
+              <div key={it.name}>
+                <button
+                  type="button"
+                  aria-expanded={isOpen}
+                  onClick={() => setOpen(isOpen ? null : it.name)}
+                  className={
+                    'w-full border px-4 py-3 text-left transition-colors ' +
+                    (isOpen ? 'rounded-t-lg border-b-0 ' : 'rounded-lg ') +
+                    'border-line bg-card'
+                  }
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span>
+                      <span className="text-sm font-bold text-ink">{it.name}</span>
+                      <span className="ml-1.5 text-[11px] text-ink-faint">{it.hanja}</span>
+                    </span>
+                    <span className="shrink-0 text-xs text-jumuk">
+                      {[...new Set(it.palaces)].join(' · ')}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-ink-soft">{it.short}</p>
+                </button>
+
+                {isOpen && (
+                  <div className="mt-[-1px] rounded-b-lg border border-t-0 border-line bg-card px-4 pb-3.5 pt-3.5">
+                    <p className="text-sm leading-[1.85] text-ink">{it.body}</p>
+                    {/* 근거 — 다른 곳과 대조할 수 있게 */}
+                    <p className="mt-3 border-t border-dashed border-line-dash pt-2.5 text-[11px] leading-relaxed text-ink-faint">
+                      판정 근거 · {it.bases.join(' / ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="mt-2.5 px-1 text-[11px] leading-relaxed text-ink-faint">{s.methodNote}</p>
     </section>
   );
 }
@@ -425,6 +499,7 @@ function DetailScreen() {
         </button>
       </div>
       <Yongsin />
+      <Sinsal />
       <Palaces />
       <Balance />
       <Topics />
