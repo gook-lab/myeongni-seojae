@@ -31,7 +31,7 @@ import {
   longitudeOffsetMinutes,
 } from './korea-time';
 import { pillarFromGanZhi } from './manse';
-import type { Pillar, TenGod, TenGodCategory } from './types';
+import type { Element, Pillar, TenGod, TenGodCategory } from './types';
 
 const STEM_HANJA_ORDER = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 
@@ -148,57 +148,148 @@ export function yearFortune(
 }
 
 // ── 궁합 ──────────────────────────────────────────────────────────
+//
+// 원본 saju.js 는 두 사람의 일간 오행과 일지 합충만 봤다. 사주 열두 자를
+// 계산해놓고 네 자만 쓰고 버리는 구조였다. 여기서는 이미 계산된 데이터를
+// 전부 쓴다.
+//
+// 보는 것 네 가지:
+//   1. 일간 관계        내 일간과 상대 일간의 오행 상생·상극  (원본에 있던 것)
+//   2. 일지 관계        육합 / 충 / 삼합 / 형                 (원본은 육합·충만)
+//   3. 오행 보완        내게 없는 오행을 상대가 갖고 있는가   (신규)
+//   4. 상호 십성        상대 일간이 나에게 어떤 십성인가      (신규)
+//
+// 용신·기신은 넣지 않는다. 신강·신약 판정법이 유파마다 갈려서 교차 검증할
+// 정답지가 없다. 검증할 수 없는 산식은 대운 타임라인의 신뢰까지 갉아먹는다.
 
 export type GunghapKind = 'same' | 'generating' | 'controlling';
 
+/** 지지 관계. 아래로 갈수록 약하다. */
+export type BranchRelation = 'harmony' | 'triple' | 'clash' | 'punish' | 'none';
+
+export interface ElementComplement {
+  /** 내게 없는 오행 중 상대가 가진 것 */
+  filled: Element[];
+  /** 내게 없고 상대에게도 없는 오행 */
+  stillMissing: Element[];
+  /** 상대가 채워주는 정도. 0~1 */
+  ratio: number;
+}
+
 export interface Gunghap {
   kind: GunghapKind;
-  /** 두 사람의 일간 */
+  /** 두 사람의 일주 */
   pair: { a: Pillar; b: Pillar };
-  /** 일지가 합(合)을 이루는가 */
-  branchHarmony: boolean;
-  /** 일지가 충(沖)인가 */
-  branchClash: boolean;
+  branchRelation: BranchRelation;
+  /** a 가 b 에게서 받는 오행 보완 */
+  aReceives: ElementComplement;
+  /** b 가 a 에게서 받는 오행 보완 */
+  bReceives: ElementComplement;
+  /** 상대 일간이 나에게 어떤 십성인가 */
+  aSeesB: TenGod;
+  bSeesA: TenGod;
 }
 
 /** 오행 상생: 목→화→토→금→수→목 */
 const generates = (e: number) => (e + 1) % 5;
-/** 오행 상극: 목→토→수→화→금→목 */
-const controls = (e: number) => (e + 2) % 5;
+// 상극은 별도 함수가 필요 없다. 같지도 않고 상생도 아니면 상극이다.
 
 const ELEMENT_INDEX: Record<string, number> = {
   목: 0, 화: 1, 토: 2, 금: 3, 수: 4,
 };
 
-/** 지지 육합 짝 */
+const BRANCH_ORDER = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
+
+/** 지지 육합 */
 const HARMONY_PAIRS: ReadonlyArray<readonly [number, number]> = [
   [0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7],
 ];
 
-const BRANCH_ORDER = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
+/** 지지 삼합 — 세 글자 중 둘만 있어도 반합으로 본다 */
+const TRIPLE_GROUPS: ReadonlyArray<readonly number[]> = [
+  [8, 0, 4],   // 신자진 수국
+  [2, 6, 10],  // 인오술 화국
+  [11, 3, 7],  // 해묘미 목국
+  [5, 9, 1],   // 사유축 금국
+];
+
+/** 지지 삼형·상형 */
+const PUNISH_GROUPS: ReadonlyArray<readonly number[]> = [
+  [2, 5, 8],   // 인사신
+  [1, 10, 7],  // 축술미
+  [0, 3],      // 자묘
+];
+
+function branchRelation(ab: number, bb: number): BranchRelation {
+  if (ab < 0 || bb < 0) return 'none';
+  if (HARMONY_PAIRS.some(([x, y]) => (ab === x && bb === y) || (ab === y && bb === x))) {
+    return 'harmony';
+  }
+  if (TRIPLE_GROUPS.some((g) => g.includes(ab) && g.includes(bb) && ab !== bb)) {
+    return 'triple';
+  }
+  if (Math.abs(ab - bb) === 6) return 'clash';
+  if (PUNISH_GROUPS.some((g) => g.includes(ab) && g.includes(bb) && ab !== bb)) {
+    return 'punish';
+  }
+  return 'none';
+}
+
+const ALL_ELEMENTS: readonly Element[] = ['목', '화', '토', '금', '수'];
 
 /**
- * 두 사람의 일간·일지로 관계의 결을 본다.
+ * 내게 없는 오행을 상대가 갖고 있는가.
+ *
+ * 사주에서 없는 오행은 그 방면의 힘이 약하다고 본다. 상대가 그걸 갖고
+ * 있으면 함께 있을 때 채워진다 — 궁합에서 실제로 크게 보는 대목이다.
+ */
+function complement(
+  mine: Record<Element, number>,
+  theirs: Record<Element, number>,
+): ElementComplement {
+  const missing = ALL_ELEMENTS.filter((e) => (mine[e] ?? 0) === 0);
+  const filled = missing.filter((e) => (theirs[e] ?? 0) > 0);
+  const stillMissing = missing.filter((e) => (theirs[e] ?? 0) === 0);
+  return {
+    filled,
+    stillMissing,
+    ratio: missing.length === 0 ? 1 : filled.length / missing.length,
+  };
+}
+
+const STEM_ORDER = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
+
+/**
+ * 두 사람의 명식으로 관계의 결을 본다.
  *
  * 점수를 내지 않는다. "78점"은 아무것도 설명하지 않지만
- * "상생이라 함께 있을수록 힘이 된다"는 읽힌다.
+ * "내게 없는 수(水)를 상대가 둘 갖고 있다"는 읽힌다.
  */
-export function gunghap(a: Pillar, b: Pillar): Gunghap {
-  const ae = ELEMENT_INDEX[a.stemElement] ?? 0;
-  const be = ELEMENT_INDEX[b.stemElement] ?? 0;
+export function gunghap(
+  a: { dayMaster: Pillar; elementCounts: Record<Element, number> },
+  b: { dayMaster: Pillar; elementCounts: Record<Element, number> },
+): Gunghap {
+  const ae = ELEMENT_INDEX[a.dayMaster.stemElement] ?? 0;
+  const be = ELEMENT_INDEX[b.dayMaster.stemElement] ?? 0;
 
   const kind: GunghapKind =
     ae === be ? 'same'
     : generates(ae) === be || generates(be) === ae ? 'generating'
-    : controls(ae) === be || controls(be) === ae ? 'controlling'
-    : 'generating';
+    : 'controlling';
 
-  const ab = BRANCH_ORDER.indexOf(a.branch);
-  const bb = BRANCH_ORDER.indexOf(b.branch);
-  const branchHarmony = HARMONY_PAIRS.some(
-    ([x, y]) => (ab === x && bb === y) || (ab === y && bb === x),
-  );
-  const branchClash = ab >= 0 && bb >= 0 && Math.abs(ab - bb) === 6;
+  const ai = STEM_ORDER.indexOf(a.dayMaster.stem);
+  const bi = STEM_ORDER.indexOf(b.dayMaster.stem);
 
-  return { kind, pair: { a, b }, branchHarmony, branchClash };
+  return {
+    kind,
+    pair: { a: a.dayMaster, b: b.dayMaster },
+    branchRelation: branchRelation(
+      BRANCH_ORDER.indexOf(a.dayMaster.branch),
+      BRANCH_ORDER.indexOf(b.dayMaster.branch),
+    ),
+    aReceives: complement(a.elementCounts, b.elementCounts),
+    bReceives: complement(b.elementCounts, a.elementCounts),
+    aSeesB: tenGodOf(ai, bi),
+    bSeesA: tenGodOf(bi, ai),
+  };
 }

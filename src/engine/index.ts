@@ -24,7 +24,8 @@ import type {
 } from '../core/types';
 import { DAEUN_TEXT, daeunPrefix } from '../text/daeun-text';
 import {
-  BRANCH_CLASH_TEXT, BRANCH_HARMONY_TEXT, GUNGHAP_TEXT, dailyLead, yearLead,
+  BRANCH_RELATION_TEXT, GUNGHAP_TEXT, MUTUAL_TEN_GOD_TEXT,
+  complementText, dailyLead, yearLead,
 } from '../text/fortune-text';
 import { DAY_MASTER_TEXT, GLOSS, INTERPRET, moneyText } from '../text/interpret';
 
@@ -249,10 +250,24 @@ function summarizeTopics(chart: SajuChart): SajuReading['topics'] {
 export interface GunghapReading {
   title: string;
   body: string;
-  branchNote: string | null;
   pairLabel: string;
+  /** 일지 관계 — 육합 / 삼합 / 충 / 형 / 없음 */
+  branchNote: string;
+  /** 오행 보완 — 서로 없는 기운을 채워주는가 */
+  complement: { a: string; b: string };
+  /** 상호 십성 — 상대가 나에게 어떤 역할로 오는가 */
+  mutual: { aSeesB: string; bSeesA: string; aText: string; bText: string };
 }
 
+/**
+ * 궁합 — 두 사람의 명식으로 관계의 결을 본다.
+ *
+ * 원본은 12자를 계산해놓고 4자(일간·일지)만 썼다. 여기서는 전부 쓴다:
+ * 일간 관계 · 일지 관계(육합/삼합/충/형) · 오행 보완 · 상호 십성.
+ *
+ * 점수를 내지 않는다. "78점"은 아무것도 설명하지 않지만
+ * "내게 없던 수(水)를 상대가 둘 갖고 있다"는 읽힌다.
+ */
 export function computeGunghap(
   a: RawFormValues,
   b: RawFormValues,
@@ -263,22 +278,33 @@ export function computeGunghap(
   const rb = computeReading(b, opts);
   if (!rb.ok) return rb;
 
-  const g: Gunghap = gunghap(ra.value.chart.dayMaster, rb.value.chart.dayMaster);
+  const ca = ra.value.chart;
+  const cb = rb.value.chart;
+  const g: Gunghap = gunghap(
+    { dayMaster: ca.dayMaster, elementCounts: ca.elementCounts },
+    { dayMaster: cb.dayMaster, elementCounts: cb.elementCounts },
+  );
   const t = GUNGHAP_TEXT[g.kind];
-  const da = ra.value.chart.dayMaster;
-  const db = rb.value.chart.dayMaster;
+  const da = ca.dayMaster;
+  const db = cb.dayMaster;
 
   return {
     ok: true,
     value: {
       title: t.title,
       body: t.body,
-      branchNote: g.branchHarmony
-        ? BRANCH_HARMONY_TEXT
-        : g.branchClash
-          ? BRANCH_CLASH_TEXT
-          : null,
       pairLabel: `${da.stemHanja}${da.stem}${da.stemElement} · ${db.stemHanja}${db.stem}${db.stemElement}`,
+      branchNote: BRANCH_RELATION_TEXT[g.branchRelation] ?? BRANCH_RELATION_TEXT.none ?? '',
+      complement: {
+        a: complementText('나', '상대', g.aReceives.filled, g.aReceives.stillMissing),
+        b: complementText('상대', '나', g.bReceives.filled, g.bReceives.stillMissing),
+      },
+      mutual: {
+        aSeesB: g.aSeesB,
+        bSeesA: g.bSeesA,
+        aText: MUTUAL_TEN_GOD_TEXT[g.aSeesB] ?? '',
+        bText: MUTUAL_TEN_GOD_TEXT[g.bSeesA] ?? '',
+      },
     },
   };
 }

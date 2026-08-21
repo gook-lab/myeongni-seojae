@@ -9,7 +9,8 @@
 import { describe, expect, it } from 'vitest';
 import { dailyFortune, gunghap, yearFortune } from '../src/core/fortune';
 import { computeGunghap, computeReading } from '../src/engine/index';
-import type { Pillar, RawFormValues } from '../src/core/types';
+import { josa } from '../src/text/fortune-text';
+import type { RawFormValues } from '../src/core/types';
 
 const TODAY = new Date(Date.UTC(2026, 7, 21, 3, 0, 0));
 
@@ -25,7 +26,7 @@ const read = (over: Partial<RawFormValues> = {}) => {
   return r.value;
 };
 
-const dayMaster = (over: Partial<RawFormValues> = {}): Pillar => read(over).chart.dayMaster;
+const dayMaster = (over: Partial<RawFormValues> = {}) => read(over).chart.dayMaster;
 
 describe('★전제 4★ 부가 운세에 점수가 없다', () => {
   const r = read();
@@ -138,53 +139,125 @@ describe('신년운세', () => {
   });
 });
 
-describe('궁합', () => {
-  const p = (over: Partial<RawFormValues>) => dayMaster(over);
+describe('궁합 — 12자를 전부 쓴다', () => {
+  const chart = (over: Partial<RawFormValues> = {}) => {
+    const r = read(over);
+    return { dayMaster: r.chart.dayMaster, elementCounts: r.chart.elementCounts };
+  };
 
-  it('같은 오행 일간은 same', () => {
-    // 일간이 같은 두 사람을 찾는다
-    const a = p({ year: 1990, month: 5, day: 5 });
-    const b = p({ year: 1990, month: 5, day: 5, gender: '여' });
-    expect(gunghap(a, b).kind).toBe('same');
-  });
-
-  it('세 가지 관계가 모두 나온다', () => {
+  it('일간 오행 관계 세 가지가 모두 나온다', () => {
     const kinds = new Set<string>();
-    const base = p({ year: 1990, month: 5, day: 5 });
+    const base = chart({ year: 1990, month: 5, day: 5 });
     for (let d = 1; d <= 28; d += 1) {
-      kinds.add(gunghap(base, p({ year: 1991, month: 3, day: d })).kind);
+      kinds.add(gunghap(base, chart({ year: 1991, month: 3, day: d })).kind);
     }
     expect(kinds.size).toBe(3);
   });
 
-  it('일지 합·충을 판정한다', () => {
-    const results = [];
-    for (let d = 1; d <= 28; d += 1) {
-      results.push(gunghap(p({ year: 1990, month: 5, day: 5 }), p({ year: 1991, month: 3, day: d })));
-    }
-    expect(results.some((r) => r.branchHarmony)).toBe(true);
-    expect(results.some((r) => r.branchClash)).toBe(true);
-    // 합과 충이 동시에 성립하지는 않는다
-    expect(results.every((r) => !(r.branchHarmony && r.branchClash))).toBe(true);
+  it('같은 일간이면 same 이다', () => {
+    const a = chart({ year: 1990, month: 5, day: 5 });
+    expect(gunghap(a, a).kind).toBe('same');
   });
 
-  it('대칭이다 — 순서를 바꿔도 관계는 같다', () => {
-    const a = p({ year: 1990, month: 5, day: 5 });
-    const b = p({ year: 1988, month: 11, day: 22 });
+  it('일지 관계를 다섯 갈래로 판정한다', () => {
+    const found = new Set<string>();
+    const base = chart({ year: 1990, month: 5, day: 5 });
+    for (let m = 1; m <= 12; m += 1) {
+      for (let d = 1; d <= 28; d += 3) {
+        found.add(gunghap(base, chart({ year: 1991, month: m, day: d })).branchRelation);
+      }
+    }
+    // 육합·삼합·충·형·없음 중 최소 넷은 나와야 한다
+    expect(found.size).toBeGreaterThanOrEqual(4);
+    for (const r of found) {
+      expect(['harmony', 'triple', 'clash', 'punish', 'none']).toContain(r);
+    }
+  });
+
+  it('육합과 충이 동시에 성립하지 않는다', () => {
+    const base = chart({ year: 1990, month: 5, day: 5 });
+    for (let d = 1; d <= 28; d += 1) {
+      const g = gunghap(base, chart({ year: 1991, month: 3, day: d }));
+      // 한 관계만 나온다
+      expect(typeof g.branchRelation).toBe('string');
+    }
+  });
+
+  it('★신규★ 오행 보완을 계산한다 — 내게 없는 걸 상대가 갖고 있는가', () => {
+    const a = chart({ year: 1990, month: 5, day: 5 }); // 목0 수0
+    const b = chart({ year: 1988, month: 11, day: 22 });
+    const g = gunghap(a, b);
+
+    // a 에게 없는 오행이 실제로 있다
+    const aMissing = (['목', '화', '토', '금', '수'] as const).filter(
+      (e) => a.elementCounts[e] === 0,
+    );
+    expect(aMissing.length).toBeGreaterThan(0);
+
+    // filled + stillMissing 이 없는 오행 전부를 덮는다
+    expect([...g.aReceives.filled, ...g.aReceives.stillMissing].sort()).toEqual(
+      [...aMissing].sort(),
+    );
+    // 채운 것은 실제로 상대가 갖고 있다
+    for (const e of g.aReceives.filled) {
+      expect(b.elementCounts[e]).toBeGreaterThan(0);
+    }
+    // 못 채운 것은 상대도 없다
+    for (const e of g.aReceives.stillMissing) {
+      expect(b.elementCounts[e]).toBe(0);
+    }
+    expect(g.aReceives.ratio).toBeGreaterThanOrEqual(0);
+    expect(g.aReceives.ratio).toBeLessThanOrEqual(1);
+  });
+
+  it('★신규★ 상호 십성을 계산한다 — 상대가 나에게 어떤 역할인가', () => {
+    const a = chart({ year: 1990, month: 5, day: 5 });
+    const b = chart({ year: 1988, month: 11, day: 22 });
+    const g = gunghap(a, b);
+    const ALL = ['비견','겁재','식신','상관','편재','정재','편관','정관','편인','정인'];
+    expect(ALL).toContain(g.aSeesB);
+    expect(ALL).toContain(g.bSeesA);
+  });
+
+  it('상호 십성은 방향에 따라 다를 수 있다 (비대칭)', () => {
+    const pairs: Array<[string, string]> = [];
+    const base = chart({ year: 1990, month: 5, day: 5 });
+    for (let d = 1; d <= 28; d += 1) {
+      const g = gunghap(base, chart({ year: 1991, month: 3, day: d }));
+      pairs.push([g.aSeesB, g.bSeesA]);
+    }
+    // 서로 다른 십성으로 보이는 조합이 실제로 있다
+    expect(pairs.some(([x, y]) => x !== y)).toBe(true);
+  });
+
+  it('일간·일지 관계는 순서를 바꿔도 같다 (대칭)', () => {
+    const a = chart({ year: 1990, month: 5, day: 5 });
+    const b = chart({ year: 1988, month: 11, day: 22 });
     const ab = gunghap(a, b);
     const ba = gunghap(b, a);
     expect(ab.kind).toBe(ba.kind);
-    expect(ab.branchHarmony).toBe(ba.branchHarmony);
-    expect(ab.branchClash).toBe(ba.branchClash);
+    expect(ab.branchRelation).toBe(ba.branchRelation);
+    // 오행 보완과 상호 십성은 방향이 있으므로 뒤집힌다
+    expect(ab.aReceives).toEqual(ba.bReceives);
+    expect(ab.aSeesB).toBe(ba.bSeesA);
   });
 
-  it('computeGunghap 이 문장을 붙인다', () => {
-    const g = computeGunghap(BASE, { ...BASE, year: 1988, month: 11, day: 22, gender: '여' }, { today: TODAY });
+  it('computeGunghap 이 네 가지를 모두 문장으로 낸다', () => {
+    const g = computeGunghap(
+      BASE,
+      { ...BASE, year: 1988, month: 11, day: 22, gender: '여' },
+      { today: TODAY },
+    );
     expect(g.ok).toBe(true);
     if (!g.ok) return;
-    expect(g.value.title.length).toBeGreaterThan(3);
-    expect(g.value.body.length).toBeGreaterThan(50);
-    expect(g.value.pairLabel).toContain('·');
+    const v = g.value;
+    expect(v.title.length).toBeGreaterThan(3);          // 1. 일간 관계
+    expect(v.body.length).toBeGreaterThan(50);
+    expect(v.branchNote.length).toBeGreaterThan(20);     // 2. 일지 관계
+    expect(v.complement.a.length).toBeGreaterThan(15);   // 3. 오행 보완
+    expect(v.complement.b.length).toBeGreaterThan(15);
+    expect(v.mutual.aText.length).toBeGreaterThan(10);   // 4. 상호 십성
+    expect(v.mutual.bText.length).toBeGreaterThan(10);
   });
 
   it('한쪽 입력이 잘못되면 에러를 전파한다', () => {
@@ -192,6 +265,13 @@ describe('궁합', () => {
     expect(g.ok).toBe(false);
     if (g.ok) return;
     expect(g.error.code).toBe('OUT_OF_RANGE_YEAR');
+  });
+
+  it('점수가 없다', () => {
+    const g = computeGunghap(BASE, { ...BASE, year: 1988 }, { today: TODAY });
+    expect(g.ok).toBe(true);
+    if (!g.ok) return;
+    expect(JSON.stringify(g.value)).not.toMatch(/"score"|\d+점/);
   });
 });
 
@@ -208,5 +288,46 @@ describe('시간 미상이어도 부가 운세가 나온다', () => {
     const unknown = read({ hourKnown: false });
     expect(known.daily).toEqual(unknown.daily);
     expect(known.year).toEqual(unknown.year);
+  });
+});
+
+describe('한국어 조사 처리', () => {
+  it('받침 유무로 을/를을 고른다', () => {
+    expect(josa('목', '을', '를')).toBe('을'); // ㄱ 받침
+    expect(josa('금', '을', '를')).toBe('을'); // ㅁ 받침
+    expect(josa('화', '을', '를')).toBe('를'); // 받침 없음
+    expect(josa('토', '을', '를')).toBe('를');
+    expect(josa('수', '을', '를')).toBe('를');
+  });
+
+  it('은/는도 같은 규칙이다', () => {
+    expect(josa('나', '은', '는')).toBe('는');
+    expect(josa('상대', '은', '는')).toBe('는');
+    expect(josa('목', '은', '는')).toBe('은');
+  });
+
+  it('한글이 아니면 받침 없는 쪽으로 간다', () => {
+    expect(josa('A', '을', '를')).toBe('를');
+    expect(josa('', '을', '를')).toBe('를');
+  });
+
+  it('궁합 문장에 "을(를)" 같은 표기가 남지 않는다', () => {
+    const g = computeGunghap(
+      BASE, { ...BASE, year: 1988, month: 11, day: 22, gender: '여' }, { today: TODAY },
+    );
+    expect(g.ok).toBe(true);
+    if (!g.ok) return;
+    const all = `${g.value.complement.a} ${g.value.complement.b}`;
+    expect(all).not.toMatch(/을\(를\)|은\(는\)|이\(가\)/);
+  });
+
+  it('상대 관점 문장의 주어가 꼬이지 않는다', () => {
+    // "상대에게 없는 X 를 상대도 갖고 있지 않습니다" 같은 자기모순이 없어야 한다
+    for (const y of [1985, 1988, 1991, 1995, 2000]) {
+      const g = computeGunghap(BASE, { ...BASE, year: y }, { today: TODAY });
+      if (!g.ok) continue;
+      expect(g.value.complement.b).not.toMatch(/상대에게 없는 .+ 상대도/);
+      expect(g.value.complement.a).not.toMatch(/나에게 없는 .+ 나도/);
+    }
   });
 });

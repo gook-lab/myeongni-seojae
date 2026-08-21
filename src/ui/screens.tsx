@@ -250,17 +250,38 @@ function GunghapPanel() {
       )}
 
       {result && (
-        <article className="rounded-lg border border-line bg-card px-4 py-4">
-          <p className="text-xs text-ink-faint">일간 {result.pairLabel}</p>
-          <h3 className="mt-1.5 text-base font-bold text-jumuk">{result.title}</h3>
-          <p className="mt-2.5 text-sm leading-[1.85] text-ink">{result.body}</p>
-          {result.branchNote && (
-            <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-xs leading-relaxed text-ink-soft">
-              {result.branchNote}
-            </p>
-          )}
+        <article className="space-y-4 rounded-lg border border-line bg-card px-4 py-4">
+          <div>
+            <p className="text-xs text-ink-faint">일간 {result.pairLabel}</p>
+            <h3 className="mt-1.5 text-base font-bold text-jumuk">{result.title}</h3>
+            <p className="mt-2 text-sm leading-[1.85] text-ink">{result.body}</p>
+          </div>
+
+          <Row label="일지 관계">{result.branchNote}</Row>
+
+          <Row label="오행 보완">
+            {result.complement.a}
+            <br />
+            {result.complement.b}
+          </Row>
+
+          <Row label="서로에게 어떤 자리인가">
+            <b className="text-ink">상대는 나에게 {result.mutual.aSeesB}</b> — {result.mutual.aText}
+            <br />
+            <b className="text-ink">나는 상대에게 {result.mutual.bSeesA}</b> — {result.mutual.bText}
+          </Row>
         </article>
       )}
+    </div>
+  );
+}
+
+/** 궁합 결과의 한 항목 */
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="border-t border-dashed border-line-dash pt-3.5">
+      <p className="mb-1.5 text-xs text-jumuk">{label}</p>
+      <p className="text-sm leading-[1.85] text-ink-soft">{children}</p>
     </div>
   );
 }
