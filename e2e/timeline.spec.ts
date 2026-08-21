@@ -8,7 +8,7 @@
  * 그래서 대표 시나리오가 1957년생 · 음력 · 시간 미상이다.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /** 생년월일을 셀렉트로 채운다 */
 async function fillBirth(

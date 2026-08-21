@@ -11,7 +11,7 @@
  * 라는 문구가 그걸 대놓고 권한다.
  */
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { DaeunCard } from '../engine';
 import { useSajuStore } from '../store/saju-store';
 
@@ -180,12 +180,16 @@ export function Timeline({
         )}
       </header>
 
-      <ol className="relative border-l border-line pl-0">
+      <ol className="brush-line relative pl-0">
         {cards.map((card) => {
           const isOpen = openCard === card.index;
           const isPast = card.endYear < currentYear;
           return (
-            <li key={card.index} className="relative pb-3 pl-6">
+            <li
+              key={card.index}
+              className="card-enter relative pb-3 pl-6"
+              style={{ '--i': card.index } as CSSProperties}
+            >
               {/* 세로선 위의 점 */}
               <span
                 aria-hidden
@@ -254,34 +258,37 @@ export function Timeline({
                   className="mt-2 h-1 w-full overflow-hidden rounded-full bg-line-soft"
                 >
                   <div
-                    className="h-full rounded-full transition-[width]"
+                    className="bar-fill h-full rounded-full"
                     style={{
                       width: `${Math.round(card.outwardness * 100)}%`,
                       backgroundColor: card.isCurrent ? '#A63A2B' : '#C9B98F',
-                    }}
+                      '--i': card.index,
+                    } as CSSProperties}
                   />
                 </div>
 
               </button>
 
               {isOpen && (
-                <div
-                  className={
-                    'mt-[-1px] rounded-b-lg border border-t-0 px-4 pb-4 pt-3.5 ' +
-                    (card.isCurrent ? 'border-jumuk bg-card-warm' : 'border-line bg-card')
-                  }
-                >
-                  <p className="mb-2 text-xs text-jumuk">{card.prefix}</p>
-                  <p className="text-sm leading-[1.85] text-ink">{card.text}</p>
-                  <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-xs leading-relaxed text-ink-soft">
-                    <b className="text-jumuk">
-                      {card.stage}({card.stageHanja})
-                    </b>{' '}
-                    {card.stageText}
-                  </p>
-                  <p className="mt-3 text-xs leading-relaxed text-ink-faint">{card.theme}</p>
-                  <LifeNote card={card} />
-                  <ShareButton card={card} {...(name ? { title: name } : {})} />
+                <div className="fold-open">
+                  <div
+                    className={
+                      'mt-[-1px] overflow-hidden rounded-b-lg border border-t-0 px-4 pb-4 pt-3.5 ' +
+                      (card.isCurrent ? 'border-jumuk bg-card-warm' : 'border-line bg-card')
+                    }
+                  >
+                    <p className="mb-2 text-xs text-jumuk">{card.prefix}</p>
+                    <p className="text-sm leading-[1.85] text-ink">{card.text}</p>
+                    <p className="mt-3 border-t border-dashed border-line-dash pt-3 text-xs leading-relaxed text-ink-soft">
+                      <b className="text-jumuk">
+                        {card.stage}({card.stageHanja})
+                      </b>{' '}
+                      {card.stageText}
+                    </p>
+                    <p className="mt-3 text-xs leading-relaxed text-ink-faint">{card.theme}</p>
+                    <LifeNote card={card} />
+                    <ShareButton card={card} {...(name ? { title: name } : {})} />
+                  </div>
                 </div>
               )}
             </li>

@@ -21,14 +21,32 @@ export default defineConfig({
     timezoneId: 'Asia/Seoul',
     locale: 'ko-KR',
     trace: 'retain-on-failure',
+    /*
+     * reducedMotion 은 여기 두지 않는다. 1.62.1 에서 config 의
+     * use.reducedMotion 이 적용되지 않아 e2e/fixtures.ts 가 page 마다
+     * emulateMedia 로 직접 건다. 이유는 그 파일에 적어뒀다.
+     */
   },
   projects: [
     {
       name: 'mobile',
+      testIgnore: /animation\.spec\.ts/,
       use: { ...devices['Galaxy S9+'] },
     },
     {
       name: 'desktop',
+      testIgnore: /animation\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      /*
+       * 움직임 전용. 여기서만 애니메이션을 켠다.
+       *
+       * 이 파일만 fixtures.ts 를 쓰지 않아 움직임이 살아 있다.
+       * mobile·desktop 은 testIgnore 로 이 파일을 건너뛴다.
+       */
+      name: 'motion',
+      testMatch: /animation\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
   ],

@@ -534,8 +534,8 @@ const YearScreen = lazy(() => import('./ui/screens').then((m) => ({ default: m.Y
 /** 나눠 받는 동안 보이는 것. 화면이 깜빡이지 않게 자리만 잡아둔다. */
 function ScreenFallback() {
   return (
-    <div className="px-5 py-16 text-center text-sm text-meok/50" role="status" aria-live="polite">
-      불러오는 중…
+    <div className="px-5 py-16 text-center text-sm text-ink-faint" role="status" aria-live="polite">
+      <span className="ink-breathe">불러오는 중…</span>
     </div>
   );
 }
@@ -550,15 +550,22 @@ export function App() {
       <div className="flex justify-end px-5 pt-4">
         <TextScaleToggle />
       </div>
-      {route === 'home' && <Home />}
-      {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
-      {route === 'detail' && <DetailScreen />}
-      <Suspense fallback={<ScreenFallback />}>
-        {route === 'report' && <Report />}
-        {route === 'daily' && <DailyScreen />}
-        {route === 'gunghap' && <GunghapScreen />}
-        {route === 'year' && <YearScreen />}
-      </Suspense>
+      {/*
+        화면이 바뀔 때마다 key 가 갈려 등장 애니메이션이 다시 돈다.
+        phase 까지 키에 넣는 이유는 입력 → 결과가 같은 route 안에서
+        일어나기 때문이다. 그 순간이 이 앱에서 제일 중요한 전환이다.
+      */}
+      <div key={`${route}:${phase === 'ready' ? 'ready' : 'form'}`} className="screen-enter">
+        {route === 'home' && <Home />}
+        {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
+        {route === 'detail' && <DetailScreen />}
+        <Suspense fallback={<ScreenFallback />}>
+          {route === 'report' && <Report />}
+          {route === 'daily' && <DailyScreen />}
+          {route === 'gunghap' && <GunghapScreen />}
+          {route === 'year' && <YearScreen />}
+        </Suspense>
+      </div>
     </ErrorBoundary>
   );
 }

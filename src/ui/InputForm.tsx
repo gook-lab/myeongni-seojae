@@ -243,7 +243,15 @@ export function InputForm() {
           'bg-jumuk text-card disabled:opacity-60'
         }
       >
-        {busy ? '펼치는 중…' : loadFailed ? '다시 시도' : '사주 풀어보기'}
+        {busy ? (
+          /* 느린 회선에서는 엔진 청크를 받는 동안 몇 초가 걸린다.
+             멈춘 게 아니라는 걸 보여준다 */
+          <span className="ink-breathe">펼치는 중…</span>
+        ) : loadFailed ? (
+          '다시 시도'
+        ) : (
+          '사주 풀어보기'
+        )}
       </button>
 
       {/*

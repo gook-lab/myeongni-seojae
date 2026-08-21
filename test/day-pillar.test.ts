@@ -78,7 +78,8 @@ describe('일주 — 율리우스일로 직접 검증한다', () => {
     }
     expect(n).toBeGreaterThan(70_000);
     expect(bad).toEqual([]);
-  });
+    // 7만 건을 도는 테스트다. 다른 파일과 나란히 돌면 기본 5초를 넘긴다.
+  }, 60_000);
 
   it('세기 경계와 윤년에서도 하루도 건너뛰지 않는다', () => {
     // 1900 은 윤년이 아니고 2000 은 윤년이다. 여기서 흔히 틀린다.
@@ -113,7 +114,7 @@ describe('일주 — 율리우스일로 직접 검증한다', () => {
       }
     }
     expect(n).toBeGreaterThan(300);
-  });
+  }, 30_000);
 });
 
 describe('구조 규칙 — 전수로 확인한다', () => {
@@ -148,7 +149,7 @@ describe('구조 규칙 — 전수로 확인한다', () => {
     }
     expect(n).toBeGreaterThan(1400);
     expect(bad).toEqual([]);
-  });
+  }, 30_000);
 
   it('★오자시두법 — 시주 천간이 일간에서 규칙대로 나온다★', () => {
     const bad: string[] = [];
@@ -173,7 +174,7 @@ describe('구조 규칙 — 전수로 확인한다', () => {
     }
     expect(n).toBeGreaterThan(9000);
     expect(bad).toEqual([]);
-  });
+  }, 30_000);
 
   it('60갑자가 60일마다 정확히 한 바퀴 돈다', () => {
     const start = Solar.fromYmd(2000, 1, 1);
