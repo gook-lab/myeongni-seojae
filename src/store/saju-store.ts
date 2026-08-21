@@ -18,6 +18,19 @@ import { computeWithLoad } from '../engine/load';
 export type TextScale = 'normal' | 'large' | 'xlarge';
 export type Phase = 'idle' | 'loading' | 'ready' | 'error';
 
+/**
+ * 화면 갈래. 원안 와이어플로우의 홈 네비게이션 구조 그대로다.
+ *
+ *   home  [사주 보기] [오늘] [궁합] [신년]
+ *           ↓          ↓      ↓      ↓
+ *         saju       daily  gunghap year
+ *
+ * 부가 기능을 결과 페이지 하단에 쌓지 않는다. 한 번 그렇게 만들었다가
+ * 결과 화면이 3.8화면 길이가 됐고, 대운 타임라인이 주인공 자리를 잃었다.
+ * 별도 화면으로 두면 기능을 잃지 않으면서 타임라인이 깨끗하게 유지된다.
+ */
+export type Route = 'home' | 'saju' | 'daily' | 'gunghap' | 'year';
+
 const currentYear = new Date().getFullYear();
 
 export const DEFAULT_FORM: RawFormValues = {
@@ -39,6 +52,7 @@ export const DEFAULT_FORM: RawFormValues = {
 const STORAGE_KEY = 'myeongri.reading.v1';
 
 interface SajuState {
+  route: Route;
   form: RawFormValues;
   phase: Phase;
   reading: SajuReading | null;
@@ -48,6 +62,7 @@ interface SajuState {
   openCard: number | null;
   tzdataOk: boolean;
 
+  go: (route: Route) => void;
   setField: <K extends keyof RawFormValues>(key: K, value: RawFormValues[K]) => void;
   setYajasi: (policy: YajasiPolicy) => void;
   setTextScale: (scale: TextScale) => void;
@@ -61,6 +76,7 @@ interface SajuState {
 }
 
 export const useSajuStore = create<SajuState>((set, get) => ({
+  route: 'home',
   form: { ...DEFAULT_FORM },
   phase: 'idle',
   reading: null,
@@ -68,6 +84,17 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   textScale: 'normal',
   openCard: null,
   tzdataOk: true,
+
+  go: (route) => {
+    // 부가 화면은 원국이 있어야 의미가 있다. 없으면 입력부터 받는다.
+    const needsChart = route === 'daily' || route === 'gunghap' || route === 'year';
+    if (needsChart && !get().reading) {
+      set({ route: 'saju', phase: 'idle' });
+      return;
+    }
+    set({ route });
+    window.scrollTo(0, 0);
+  },
 
   setField: (key, value) =>
     set((s) => ({ form: { ...s.form, [key]: value }, error: null })),
@@ -93,6 +120,7 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     // 현재 대운을 기본으로 펼친다 — 사람들이 제일 먼저 보고 싶은 칸이다
     const current = result.value.cards.find((c) => c.isCurrent);
     set({
+      route: 'saju',
       phase: 'ready',
       reading: result.value,
       error: null,
@@ -105,7 +133,8 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     await get().submit();
   },
 
-  reset: () => set({ phase: 'idle', reading: null, error: null, openCard: null }),
+  reset: () =>
+    set({ route: 'saju', phase: 'idle', reading: null, error: null, openCard: null }),
 
   restoreSaved: () => {
     const saved = readSavedForm();

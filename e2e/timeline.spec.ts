@@ -24,6 +24,8 @@ async function fillBirth(
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
+  // 원안 와이어플로우대로 홈 → 사주 보기로 들어간다
+  await page.getByRole('button', { name: /^사주 보기/ }).click();
 });
 
 test('첫 화면에서 시간 미상이 이미 골라져 있다', async ({ page }) => {
@@ -112,6 +114,7 @@ test('★1954~61 구간★ 표준시 이력이 결과에 반영된다', async ({
   // KST=UTC+9 로 가정하는 구현은 둘 다 丙申 으로 낸다.
   const yearPillar = async (hour: string, minute: string) => {
     await page.goto('/');
+    await page.getByRole('button', { name: /^사주 보기/ }).click();
     await page.getByRole('button', { name: '압니다' }).click();
     await fillBirth(page, '1957', '2', '4');
     await page.getByLabel('시', { exact: true }).selectOption(hour);
@@ -187,10 +190,89 @@ test('콘솔 에러 없이 전체 플로우가 끝난다', async ({ page }) => {
   page.on('pageerror', (e) => errors.push(e.message));
 
   await page.goto('/');
+  await page.getByRole('button', { name: /^사주 보기/ }).click();
   await fillBirth(page, '1957', '6', '15');
   await page.getByRole('button', { name: '사주 풀어보기' }).click();
   await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
   await page.getByRole('button', { name: '아주 크게' }).click();
 
   expect(errors).toEqual([]);
+});
+
+test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
+  test('홈이 첫 화면이고 부가 기능은 사주 전에는 잠겨 있다', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
+    await expect(page.getByText('사주를 먼저 본 뒤에 열립니다')).toBeVisible();
+    await expect(page.getByText('잠김').first()).toBeVisible();
+  });
+
+  test('사주 없이 궁합을 누르면 입력 화면으로 보낸다', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /궁합/ }).click();
+    await expect(page.getByRole('button', { name: '사주 풀어보기' })).toBeVisible();
+  });
+
+  test('사주를 보고 나면 홈에서 부가 화면이 열린다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+
+    await expect(page.getByText('내 명식으로 이어서 봅니다')).toBeVisible();
+    await expect(page.getByText('잠김')).toHaveCount(0);
+  });
+
+  test('궁합이 독립 화면으로 열리고 시각 없이 동작한다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+    await page.getByRole('button', { name: /궁합/ }).click();
+
+    const screen = page.getByRole('region', { name: '궁합' });
+    await expect(screen).toBeVisible();
+    // 타임라인은 이 화면에 없다 — 쌓지 않았다는 뜻
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toHaveCount(0);
+
+    await screen.getByLabel('상대 년').selectOption('1960');
+    await screen.getByLabel('상대 월').selectOption('3');
+    await screen.getByLabel('상대 일').selectOption('12');
+    await screen.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(screen.locator('article')).toContainText('일간');
+  });
+
+  test('오늘·신년도 독립 화면이다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+
+    await page.getByRole('button', { name: /^오늘/ }).click();
+    await expect(page.getByRole('region', { name: '오늘의 운세' })).toBeVisible();
+    await page.getByRole('button', { name: '‹ 홈' }).click();
+
+    await page.getByRole('button', { name: /^신년/ }).click();
+    const year = page.getByRole('region', { name: /년 운세/ });
+    await expect(year).toBeVisible();
+    await expect(year.locator('ol > li')).toHaveCount(12);
+  });
+
+  test('★어느 부가 화면에도 점수 배지가 없다★', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    for (const label of ['오늘', '신년']) {
+      await page.getByRole('button', { name: /홈으로|‹ 홈/ }).first().click();
+      await page.getByRole('button', { name: new RegExp(`^${label}`) }).click();
+      const text = await page.locator('body').innerText();
+      expect(text, `${label} 화면`).not.toMatch(/\d+\s*점/);
+    }
+  });
+
+  test('결과 화면에 부가 기능이 쌓여 있지 않다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+    // 섹션은 셋뿐이다
+    await expect(page.locator('h2')).toHaveCount(3);
+    await expect(page.getByRole('region', { name: '부가 운세' })).toHaveCount(0);
+  });
 });

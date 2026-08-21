@@ -29,6 +29,7 @@ export function InputForm() {
   const error = useSajuStore((s) => s.error);
   const setField = useSajuStore((s) => s.setField);
   const submit = useSajuStore((s) => s.submit);
+  const go = useSajuStore((s) => s.go);
 
   const thisYear = new Date().getFullYear();
   const years = useMemo(() => range(1900, Math.min(2100, thisYear)).reverse(), [thisYear]);
@@ -51,6 +52,10 @@ export function InputForm() {
         void submit();
       }}
     >
+      <button type="button" onClick={() => go('home')} className="mb-5 text-sm text-ink-soft">
+        ‹ 홈
+      </button>
+
       <header className="mb-9 text-center">
         <p className="mb-2 text-xs tracking-[0.3em] text-ink-faint">명리서재</p>
         <h1 className="text-2xl font-bold text-ink">인생을 10년 단위로</h1>

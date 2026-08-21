@@ -11,6 +11,8 @@
  */
 
 import { ErrorBoundary } from './ui/ErrorBoundary';
+import { Home } from './ui/Home';
+import { DailyScreen, GunghapScreen, YearScreen } from './ui/screens';
 import { InputForm } from './ui/InputForm';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
@@ -131,6 +133,7 @@ function Topics() {
 function Result() {
   const reading = useSajuStore((s) => s.reading);
   const reset = useSajuStore((s) => s.reset);
+  const go = useSajuStore((s) => s.go);
   if (!reading) return null;
   const { timeline, cards, hourUnknown } = reading;
   const displayName = reading.chart.input.name?.trim();
@@ -149,11 +152,18 @@ function Result() {
       </div>
       <PillarTable />
       <Topics />
-      <div className="mx-auto max-w-md px-5 pb-16">
+      <div className="mx-auto max-w-md space-y-2 px-5 pb-16">
+        <button
+          type="button"
+          onClick={() => go('home')}
+          className="w-full rounded-md border border-line bg-card px-4 py-3 text-ink-soft"
+        >
+          홈으로 — 오늘 · 궁합 · 신년 보기
+        </button>
         <button
           type="button"
           onClick={reset}
-          className="w-full rounded-md border border-line bg-card px-4 py-3 text-ink-soft"
+          className="w-full rounded-md border border-dashed border-line-dash px-4 py-3 text-ink-faint"
         >
           다른 사람 사주 보기
         </button>
@@ -163,6 +173,7 @@ function Result() {
 }
 
 export function App() {
+  const route = useSajuStore((s) => s.route);
   const phase = useSajuStore((s) => s.phase);
 
   return (
@@ -171,7 +182,11 @@ export function App() {
       <div className="flex justify-end px-5 pt-4">
         <TextScaleToggle />
       </div>
-      {phase === 'ready' ? <Result /> : <InputForm />}
+      {route === 'home' && <Home />}
+      {route === 'saju' && (phase === 'ready' ? <Result /> : <InputForm />)}
+      {route === 'daily' && <DailyScreen />}
+      {route === 'gunghap' && <GunghapScreen />}
+      {route === 'year' && <YearScreen />}
     </ErrorBoundary>
   );
 }
