@@ -29,6 +29,16 @@ import { test as base } from '@playwright/test';
 export const test = base.extend({
   page: async ({ page }, use) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    /*
+     * 계산 근거를 한 줄씩 드러내는 연출을 끈다.
+     *
+     * 제출하는 테스트가 예순 개쯤 되어 전체가 50초에서 1분 24초로 늘었다.
+     * 플로우 테스트가 확인하는 건 사람이 끝까지 갈 수 있는가지 표시 속도가
+     * 아니다. 연출 자체는 animation.spec.ts 가 이 구멍 없이 확인한다.
+     */
+    await page.addInitScript(() => {
+      (globalThis as { __CALC_PACING_MS__?: number }).__CALC_PACING_MS__ = 0;
+    });
     await use(page);
   },
 });

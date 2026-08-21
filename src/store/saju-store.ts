@@ -14,6 +14,7 @@ import { ERROR_MESSAGES, type SajuError } from '../core/errors';
 import type { RawFormValues, YajasiPolicy } from '../core/types';
 import type { SajuReading } from '../engine';
 import { computeWithLoad } from '../engine/load';
+import { buildCalcSteps, stepIntervalMs, type CalcStep } from '../ui/calc-steps';
 import {
   SHARE_HASH_KEY,
   buildShareUrl,
@@ -79,6 +80,15 @@ interface SajuState {
   notes: Record<string, string>;
   /** 링크를 복사한 직후 잠깐 뜨는 안내 */
   shareState: 'idle' | 'copied' | 'failed';
+  /**
+   * 계산 중 한 줄씩 드러나는 근거.
+   * 지어낸 진행 표시가 아니라 방금 계산한 실제 값이다 (ui/calc-steps.ts).
+   */
+  calcSteps: CalcStep[];
+  /** 지금까지 몇 줄이 드러났는가 */
+  calcShown: number;
+  /** 계산은 끝났지만 아직 근거를 드러내는 중인 결과. 건너뛰기가 쓴다. */
+  pendingReading: SajuReading | null;
 
   go: (route: Route) => void;
   setField: <K extends keyof RawFormValues>(key: K, value: RawFormValues[K]) => void;
@@ -95,6 +105,7 @@ interface SajuState {
   /** 주소의 프래그먼트에 토큰이 있으면 그대로 복원한다. 없으면 아무것도 안 한다. */
   restoreFromLink: () => Promise<boolean>;
   copyShareLink: () => Promise<void>;
+  skipCalc: () => void;
   setNote: (startYear: number, text: string) => void;
   clearNotes: () => void;
   noteFor: (startYear: number) => string;
@@ -111,6 +122,9 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   tzdataOk: true,
   notes: readNotes(),
   shareState: 'idle',
+  calcSteps: [],
+  calcShown: 0,
+  pendingReading: null,
 
   go: (route) => {
     // 부가 화면은 원국이 있어야 의미가 있다. 없으면 입력부터 받는다.
@@ -140,12 +154,37 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   setTzdataOk: (ok) => set({ tzdataOk: ok }),
 
   submit: async () => {
-    set({ phase: 'loading', error: null });
+    set({ phase: 'loading', error: null, calcSteps: [], calcShown: 0 });
+
+    // 여기가 진짜 기다림이다. 엔진 청크를 받는 구간으로, 느린 회선에서는
+    // 몇 초 걸린다. 빠른 회선에서는 0에 가깝다.
     const result = await computeWithLoad(get().form);
     if (!result.ok) {
-      set({ phase: 'error', error: result.error, reading: null });
+      set({ phase: 'error', error: result.error, reading: null, calcSteps: [] });
       return;
     }
+
+    /*
+     * 계산은 이미 끝났다. 이제 그 근거를 한 줄씩 드러낸다.
+     *
+     * 가짜 진행 막대가 아니다 — 숫자는 전부 방금 계산한 실제 값이고,
+     * 늦추는 것은 표시 속도뿐이다. 결과가 너무 빨리 나와서 하드코딩처럼
+     * 보인다는 지적을 받아 넣었다. 기다리는 시간에 이 앱이 무엇을 하는지
+     * 보여주는 편이, 빈 화면을 보여주는 것보다 정직하다.
+     */
+    const steps = buildCalcSteps(result.value);
+    const gap = stepIntervalMs();
+    set({ pendingReading: result.value });
+    set({ calcSteps: steps, calcShown: 0 });
+    for (let i = 1; i <= steps.length; i += 1) {
+      if (gap > 0) await new Promise((r) => { window.setTimeout(r, gap); });
+      // 도중에 사용자가 건너뛰었거나 다른 데로 갔으면 멈춘다
+      if (get().phase !== 'loading') return;
+      set({ calcShown: i });
+    }
+    if (gap > 0) await new Promise((r) => { window.setTimeout(r, gap); });
+    if (get().phase !== 'loading') return;
+
     // 현재 대운을 기본으로 펼친다 — 사람들이 제일 먼저 보고 싶은 칸이다
     const current = result.value.cards.find((c) => c.isCurrent);
     set({
@@ -154,6 +193,7 @@ export const useSajuStore = create<SajuState>((set, get) => ({
       reading: result.value,
       error: null,
       openCard: current ? current.index : null,
+      pendingReading: null,
     });
     persistForm(get().form);
   },
@@ -163,7 +203,10 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   },
 
   reset: () =>
-    set({ route: 'saju', phase: 'idle', reading: null, error: null, openCard: null }),
+    set({
+      route: 'saju', phase: 'idle', reading: null, error: null,
+      openCard: null, calcSteps: [], calcShown: 0,
+    }),
 
   restoreSaved: () => {
     const saved = readSavedForm();
@@ -187,6 +230,18 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     set({ form: decoded.form, route: 'saju' });
     await get().submit();
     return true;
+  },
+
+  /** 계산 화면에서 바로 결과로 건너뛴다. 이미 계산은 끝나 있다. */
+  skipCalc: () => {
+    const r = get().pendingReading;
+    if (!r) return;
+    const current = r.cards.find((c) => c.isCurrent);
+    set({
+      route: 'saju', phase: 'ready', reading: r, error: null,
+      openCard: current ? current.index : null,
+      calcShown: get().calcSteps.length,
+    });
   },
 
   copyShareLink: async () => {

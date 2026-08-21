@@ -104,3 +104,41 @@ test('힘 막대가 차오르고, 끝나면 제 길이다', async ({ page }) => 
     expect(t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)', `막대가 ${t} 로 남았다`).toBe(true);
   }
 });
+
+test('★계산 근거가 한 줄씩 드러난다 — 지어낸 값이 아니다★', async ({ page }) => {
+  // 이 파일만 fixtures.ts 를 안 쓰므로 실제 표시 속도로 돈다.
+  await page.goto('/');
+  await page.getByRole('button', { name: /^사주 보기/ }).click();
+  await page.getByLabel('년', { exact: true }).selectOption('1957');
+  await page.getByLabel('월', { exact: true }).selectOption('6');
+  await page.getByLabel('일', { exact: true }).selectOption('15');
+  await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+  const calc = page.getByRole('region', { name: '사주를 계산하는 중' });
+  await expect(calc).toBeVisible();
+
+  /*
+   * 1957년 6월은 표준시가 UTC+8:30 이면서 서머타임 구간이라 UTC+9:30 이다.
+   * 이 두 겹이 실제로 반영된 값이 나와야 한다 — 지어낸 문구였다면
+   * 이런 숫자가 나올 수 없다.
+   */
+  await expect(calc.getByText('UTC+9:30 · 서머타임')).toBeVisible();
+  await expect(calc.getByText(/진태양시 보정/)).toBeVisible();
+  await expect(calc.getByText('-62분 05초')).toBeVisible();
+  await expect(calc.getByText(/여기 나온 값은 전부 방금 계산한 것입니다/)).toBeVisible();
+
+  // 그리고 스스로 결과로 넘어간다
+  await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible({
+    timeout: 10_000,
+  });
+});
+
+test('기다리기 싫으면 건너뛸 수 있다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^사주 보기/ }).click();
+  await page.getByLabel('년', { exact: true }).selectOption('1990');
+  await page.getByRole('button', { name: '사주 풀어보기' }).click();
+
+  await page.getByRole('button', { name: '바로 결과 보기' }).click();
+  await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+});

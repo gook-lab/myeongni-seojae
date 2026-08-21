@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>없는 길입니다 · 명리서재</title>
+<!--
+  404 — 정적 호스팅이 모르는 주소를 받았을 때
+
+  이 파일은 빌드를 안 거친다. 없는 주소를 받은 상황이라 앱 번들이 뜬다는
+  보장이 없으므로, 스타일과 글자를 전부 안에 넣어 혼자 서게 만든다.
+  색은 styles.css 의 토큰을 그대로 옮겨 적었다.
+-->
+<style>
+  :root {
+    --hanji: #faf6ea;
+    --card: #fffdf6;
+    --ink: #4a4036;
+    --ink-soft: #6f614f;
+    --ink-faint: #8a7a63;
+    --jumuk: #a63a2b;
+    --line: #daccae;
+    --line-dash: #c9b98f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--hanji); }
+  body {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1.25rem;
+    color: var(--ink);
+    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { width: 100%; max-width: 26rem; text-align: center; }
+
+  /* 도장 자리. 낙관처럼 찍힌다. */
+  .seal {
+    width: 4.5rem; height: 4.5rem;
+    margin: 0 auto 1.75rem;
+    display: grid; place-items: center;
+    border: 2px solid var(--jumuk);
+    border-radius: 6px;
+    color: var(--jumuk);
+    font-size: 1.5rem; line-height: 1.1; letter-spacing: 0.05em;
+    animation: seal-press 520ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+  @keyframes seal-press {
+    from { opacity: 0; transform: scale(1.35) rotate(-6deg); }
+  }
+
+  h1 { margin: 0; font-size: 1.35rem; line-height: 1.5; }
+  .sub { margin: 0.75rem 0 0; color: var(--ink-soft); font-size: 0.9rem; line-height: 1.85; }
+  .rule { width: 6rem; height: 1px; margin: 1.75rem auto; background: var(--line-dash); }
+  .note { margin: 0; color: var(--ink-faint); font-size: 0.75rem; line-height: 1.9; }
+
+  a.home {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.85rem 1.6rem;
+    min-height: 2.75rem;
+    border-radius: 6px;
+    background: var(--jumuk);
+    color: var(--card);
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background-color 160ms ease;
+  }
+  a.home:hover { background: #8e2f22; }
+  a.home:active { background: #7a281d; }
+  a.home:focus-visible { outline: 2px solid var(--jumuk); outline-offset: 3px; }
+
+  .fade { animation: fade-up 420ms 120ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+  @keyframes fade-up { from { opacity: 0; transform: translateY(8px); } }
+
+  /* 움직임을 줄인 설정에서는 이동을 빼고 밝기만 남긴다 */
+  @media (prefers-reduced-motion: reduce) {
+    .seal, .fade { animation: fade-in 220ms both !important; }
+    @keyframes fade-in { from { opacity: 0; } }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="seal" aria-hidden="true">空</div>
+    <div class="fade">
+      <h1>이 주소에는 아무것도 없습니다</h1>
+      <p class="sub">
+        주소가 잘못 눌렸거나,<br />
+        메신저에서 링크 뒤가 잘렸을 수 있습니다.
+      </p>
+      <div class="rule"></div>
+      <p class="note">
+        사주 결과 링크는 <b>#r=</b> 로 끝납니다.<br />
+        그 뒷부분이 잘리면 결과를 되살릴 수 없습니다.<br />
+        보내주신 분께 링크를 다시 받아보세요.
+      </p>
+      <a class="home" href="/">처음으로</a>
+    </div>
+  </main>
+</body>
+</html>

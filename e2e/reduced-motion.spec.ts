@@ -33,17 +33,46 @@ test.describe('움직임을 줄인 설정', () => {
     for (const d of delays) expect(d).toBe('0s');
   });
 
-  test('숨쉬는 표시가 반복되지 않는다', async ({ page }) => {
+  test('계산 중 표시가 살아 있고 붓 획은 이동하지 않는다', async ({ page }) => {
     await page.goto('/');
-    const count = await page.evaluate(() => {
-      const el = document.createElement('span');
-      el.className = 'ink-breathe';
-      document.body.append(el);
-      const v = getComputedStyle(el).animationIterationCount;
-      el.remove();
-      return v;
+    const v = await page.evaluate(() => {
+      const breathe = document.createElement('span');
+      breathe.className = 'ink-breathe';
+      const sweep = document.createElement('span');
+      sweep.className = 'stroke-sweep';
+      document.body.append(breathe, sweep);
+      const r = {
+        breatheName: getComputedStyle(breathe).animationName,
+        breatheCount: getComputedStyle(breathe).animationIterationCount,
+        sweepName: getComputedStyle(sweep).animationName,
+      };
+      breathe.remove();
+      sweep.remove();
+      return r;
     });
-    expect(count).toBe('1');
+    // 상태 표시는 계속 쉰다
+    expect(v.breatheName).toBe('ink-breathe');
+    expect(v.breatheCount).toBe('infinite');
+    // 붓 획은 가로로 지나가는 이동이라 밝기 변화로 바뀐다
+    expect(v.sweepName).toBe('ink-breathe');
+  });
+
+  test('이동이 들어간 등장은 페이드로 바뀐다', async ({ page }) => {
+    await page.goto('/');
+    const names = await page.evaluate(() => {
+      const mk = (cls: string) => {
+        const el = document.createElement('div');
+        el.className = cls;
+        document.body.append(el);
+        const n = getComputedStyle(el).animationName;
+        el.remove();
+        return n;
+      };
+      return { screen: mk('screen-enter'), card: mk('card-enter'), bar: mk('bar-fill') };
+    });
+    expect(names.screen).toBe('ink-in-soft');
+    expect(names.card).toBe('ink-in-soft');
+    expect(names.bar).toBe('none');
   });
 
   test('모든 칸이 즉시 보인다', async ({ page }) => {
