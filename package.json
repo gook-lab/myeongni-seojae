@@ -18,7 +18,8 @@
     "mcp": "tsx src/mcp/index.ts",
     "build:mcp": "vite build -c vite.mcp.config.ts",
     "verify:kasi": "tsx scripts/verify-kasi.ts",
-    "gen:terms": "tsx scripts/gen-solar-terms.ts"
+    "gen:terms": "tsx scripts/gen-solar-terms.ts",
+    "verify:python": "tsx scripts/verify-python.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
