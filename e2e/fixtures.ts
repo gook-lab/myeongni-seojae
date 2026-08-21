@@ -44,3 +44,18 @@ export const test = base.extend({
 });
 
 export { expect } from '@playwright/test';
+
+/**
+ * 앱을 열고 메뉴까지 간다.
+ *
+ * 첫 화면이 인트로라 메뉴 앞에 한 장이 있다. 플로우 테스트가 확인하는 건
+ * 인트로가 아니라 그 뒤이므로 여기서 지나간다. 인트로 자체는
+ * intro.spec.ts 가 본다.
+ *
+ * 이미 본 사람은 인트로가 안 뜨므로 있을 때만 누른다.
+ */
+export async function openApp(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/');
+  const start = page.getByRole('button', { name: '시작하기' });
+  if (await start.isVisible().catch(() => false)) await start.click();
+}

@@ -168,6 +168,18 @@ button:not(:disabled):active, [role='button']:active { filter: brightness(0.93);
 
 .ink-breathe { animation: ink-breathe 1.4s ease-in-out infinite; }
 
+/* 도장이 찍힌다. 살짝 크게 들어와 제자리에 앉는다. */
+@keyframes seal-press {
+  from { opacity: 0; transform: scale(1.4) rotate(-7deg); }
+}
+.seal-press { display: inline-block; animation: seal-press 420ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+/* 가로선이 가운데에서 양쪽으로 그어진다 */
+@keyframes rule-spread {
+  from { transform: scaleX(0); }
+}
+.brush-rule { animation: rule-spread 620ms 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
 /*
  * 계산 화면의 붓 한 획. 왼쪽에서 오른쪽으로 지나간다.
  *
@@ -213,7 +225,11 @@ button:not(:disabled):active, [role='button']:active { filter: brightness(0.93);
 
   /* 그려지고 차오르는 것 → 결과 상태로 바로 둔다 */
   .brush-line::before,
+  .brush-rule,
   .bar-fill { animation: none !important; }
+
+  /* 도장은 확대가 들어가므로 밝기만 남긴다 */
+  .seal-press { animation: ink-in-soft 200ms both !important; }
 
   /* 펼침은 높이가 바뀌는 것이라 이동으로 친다. 페이드만. */
   .fold-open { animation: ink-in-soft 160ms both !important; }

@@ -15,6 +15,7 @@ import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Home } from './ui/Home';
 import { InputForm } from './ui/InputForm';
 import { Calculating } from './ui/Calculating';
+import { Intro } from './ui/Intro';
 import { ShareLink } from './ui/ShareLink';
 import { Timeline } from './ui/Timeline';
 import { TzWarning } from './ui/TzWarning';
@@ -557,6 +558,7 @@ export function App() {
         일어나기 때문이다. 그 순간이 이 앱에서 제일 중요한 전환이다.
       */}
       <div key={`${route}:${phase}`} className="screen-enter">
+        {route === 'intro' && <Intro />}
         {route === 'home' && <Home />}
         {route === 'saju' &&
           (phase === 'ready' ? <Result />

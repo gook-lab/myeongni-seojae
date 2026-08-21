@@ -18,6 +18,7 @@
  * 움직임을 끈 쪽은 reduced-motion.spec.ts 가 본다.
  */
 import { expect, test } from '@playwright/test';
+import { openApp } from './fixtures';
 
 /**
  * 애니메이션이 다 멎을 때까지 기다린다.
@@ -35,7 +36,7 @@ async function settled(page: import('@playwright/test').Page) {
 }
 
 async function toTimeline(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await openApp(page);
   await page.getByRole('button', { name: /^사주 보기/ }).click();
   await page.getByLabel('년', { exact: true }).selectOption('1957');
   await page.getByLabel('월', { exact: true }).selectOption('6');
@@ -47,7 +48,7 @@ async function toTimeline(page: import('@playwright/test').Page) {
 }
 
 test('애니메이션이 실제로 정의돼 있다', async ({ page }) => {
-  await page.goto('/');
+  await openApp(page);
   const names = await page.evaluate(() => {
     const out: string[] = [];
     for (const sheet of Array.from(document.styleSheets)) {
@@ -123,7 +124,7 @@ test('힘 막대가 차오르고, 끝나면 제 길이다', async ({ page }) => 
 
 test('★계산 근거가 한 줄씩 드러난다 — 지어낸 값이 아니다★', async ({ page }) => {
   // 이 파일만 fixtures.ts 를 안 쓰므로 실제 표시 속도로 돈다.
-  await page.goto('/');
+  await openApp(page);
   await page.getByRole('button', { name: /^사주 보기/ }).click();
   await page.getByLabel('년', { exact: true }).selectOption('1957');
   await page.getByLabel('월', { exact: true }).selectOption('6');
@@ -150,7 +151,7 @@ test('★계산 근거가 한 줄씩 드러난다 — 지어낸 값이 아니다
 });
 
 test('기다리기 싫으면 건너뛸 수 있다', async ({ page }) => {
-  await page.goto('/');
+  await openApp(page);
   await page.getByRole('button', { name: /^사주 보기/ }).click();
   await page.getByLabel('년', { exact: true }).selectOption('1990');
   await page.getByRole('button', { name: '사주 풀어보기' }).click();

@@ -40,7 +40,7 @@ export type Phase = 'idle' | 'loading' | 'ready' | 'error';
  * 결과 화면이 3.8화면 길이가 됐고, 대운 타임라인이 주인공 자리를 잃었다.
  * 별도 화면으로 두면 기능을 잃지 않으면서 타임라인이 깨끗하게 유지된다.
  */
-export type Route = 'home' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
+export type Route = 'intro' | 'home' | 'saju' | 'detail' | 'report' | 'daily' | 'gunghap' | 'year';
 
 const currentYear = new Date().getFullYear();
 
@@ -62,6 +62,13 @@ export const DEFAULT_FORM: RawFormValues = {
 
 const STORAGE_KEY = 'myeongri.reading.v1';
 const NOTES_KEY = 'myeongri.notes.v1';
+/**
+ * 인트로를 이미 본 사람인가.
+ *
+ * 한 번 읽은 다짐을 매번 다시 읽힐 이유가 없다. 두 번째부터는 메뉴로
+ * 바로 간다 — 첫 화면을 둔 것이 문턱이 되면 안 된다.
+ */
+const SEEN_INTRO_KEY = 'myeongri.seen-intro.v1';
 
 interface SajuState {
   route: Route;
@@ -91,6 +98,8 @@ interface SajuState {
   pendingReading: SajuReading | null;
 
   go: (route: Route) => void;
+  /** 인트로에서 메뉴로. 다음부터는 인트로를 건너뛴다. */
+  enterFromIntro: () => void;
   setField: <K extends keyof RawFormValues>(key: K, value: RawFormValues[K]) => void;
   setYajasi: (policy: YajasiPolicy) => void;
   setTextScale: (scale: TextScale) => void;
@@ -112,7 +121,7 @@ interface SajuState {
 }
 
 export const useSajuStore = create<SajuState>((set, get) => ({
-  route: 'home',
+  route: hasSeenIntro() ? 'home' : 'intro',
   form: { ...DEFAULT_FORM },
   phase: 'idle',
   reading: null,
@@ -125,6 +134,16 @@ export const useSajuStore = create<SajuState>((set, get) => ({
   calcSteps: [],
   calcShown: 0,
   pendingReading: null,
+
+  enterFromIntro: () => {
+    try {
+      localStorage.setItem(SEEN_INTRO_KEY, '1');
+    } catch {
+      // 사파리 프라이빗 모드 등. 못 적어도 동작에는 지장이 없다.
+    }
+    set({ route: 'home' });
+    window.scrollTo(0, 0);
+  },
 
   go: (route) => {
     // 부가 화면은 원국이 있어야 의미가 있다. 없으면 입력부터 받는다.
@@ -310,6 +329,15 @@ function persistNotes(notes: Record<string, string>): void {
     localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
   } catch {
     // 저장 실패는 치명적이지 않다
+  }
+}
+
+function hasSeenIntro(): boolean {
+  try {
+    return localStorage.getItem(SEEN_INTRO_KEY) === '1';
+  } catch {
+    // 저장소를 못 읽으면 보여준다. 안 보여주는 쪽이 더 나쁜 실패다.
+    return false;
   }
 }
 

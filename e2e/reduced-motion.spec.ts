@@ -8,7 +8,7 @@
  * reducedMotion: 'reduce' 라서(playwright.config.ts) 별도 설정이 필요 없다.
  * 덤으로 모든 플로우 테스트가 매번 이 경로를 밟는다.
  */
-import { expect, test } from './fixtures';
+import { expect, openApp, test } from './fixtures';
 
 /**
  * 애니메이션이 다 멎을 때까지 기다린다.
@@ -26,7 +26,7 @@ async function settled(page: import('@playwright/test').Page) {
 }
 
 async function toTimeline(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await openApp(page);
   await page.getByRole('button', { name: /^사주 보기/ }).click();
   await page.getByLabel('년', { exact: true }).selectOption('1957');
   await page.getByLabel('월', { exact: true }).selectOption('6');
@@ -49,7 +49,7 @@ test.describe('움직임을 줄인 설정', () => {
   });
 
   test('계산 중 표시가 살아 있고 붓 획은 이동하지 않는다', async ({ page }) => {
-    await page.goto('/');
+    await openApp(page);
     const v = await page.evaluate(() => {
       const breathe = document.createElement('span');
       breathe.className = 'ink-breathe';
@@ -73,7 +73,7 @@ test.describe('움직임을 줄인 설정', () => {
   });
 
   test('이동이 들어간 등장은 페이드로 바뀐다', async ({ page }) => {
-    await page.goto('/');
+    await openApp(page);
     const names = await page.evaluate(() => {
       const mk = (cls: string) => {
         const el = document.createElement('div');

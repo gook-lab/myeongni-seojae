@@ -8,7 +8,7 @@
  * 그래서 대표 시나리오가 1957년생 · 음력 · 시간 미상이다.
  */
 
-import { expect, test } from './fixtures';
+import { expect, openApp, test } from './fixtures';
 
 /** 생년월일을 셀렉트로 채운다 */
 async function fillBirth(
@@ -23,7 +23,7 @@ async function fillBirth(
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await openApp(page);
   // 원안 와이어플로우대로 홈 → 사주 보기로 들어간다
   await page.getByRole('button', { name: /^사주 보기/ }).click();
 });
@@ -113,7 +113,7 @@ test('★1954~61 구간★ 표준시 이력이 결과에 반영된다', async ({
   // KST 10:30 출생 → 입춘 이후 → 丁酉(당년)
   // KST=UTC+9 로 가정하는 구현은 둘 다 丙申 으로 낸다.
   const yearPillar = async (hour: string, minute: string) => {
-    await page.goto('/');
+    await openApp(page);
     await page.getByRole('button', { name: /^사주 보기/ }).click();
     await page.getByRole('button', { name: '압니다' }).click();
     await fillBirth(page, '1957', '2', '4');
@@ -189,7 +189,7 @@ test('콘솔 에러 없이 전체 플로우가 끝난다', async ({ page }) => {
   });
   page.on('pageerror', (e) => errors.push(e.message));
 
-  await page.goto('/');
+  await openApp(page);
   await page.getByRole('button', { name: /^사주 보기/ }).click();
   await fillBirth(page, '1957', '6', '15');
   await page.getByRole('button', { name: '사주 풀어보기' }).click();
@@ -201,14 +201,14 @@ test('콘솔 에러 없이 전체 플로우가 끝난다', async ({ page }) => {
 
 test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
   test('홈이 첫 화면이고 부가 기능은 사주 전에는 잠겨 있다', async ({ page }) => {
-    await page.goto('/');
+    await openApp(page);
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
     await expect(page.getByText('사주를 먼저 본 뒤에 열립니다')).toBeVisible();
     await expect(page.getByText('잠김').first()).toBeVisible();
   });
 
   test('사주 없이 궁합을 누르면 입력 화면으로 보낸다', async ({ page }) => {
-    await page.goto('/');
+    await openApp(page);
     await page.getByRole('button', { name: /궁합/ }).click();
     await expect(page.getByRole('button', { name: '사주 풀어보기' })).toBeVisible();
   });

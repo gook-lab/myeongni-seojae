@@ -38,6 +38,7 @@
  */
 
 import { solarTermsOf, TERMS_FROM_YEAR, TERMS_TO_YEAR } from './data/solar-terms';
+import { DAY_PILLAR_PHASE, julianDayNumber } from './day-cycle';
 
 export const STEMS = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'] as const;
 export const BRANCHES = [
@@ -196,28 +197,11 @@ export function monthPillar(instant: number): GanZhi | null {
  * 일주
  * ──────────────────────────────────────────────────────────────────────── */
 
-/**
- * 율리우스일. 그레고리력 표준 공식이다.
+/*
+ * 율리우스일과 일주 위상은 core/day-cycle.ts 에 있다.
+ * 절기표 없이도 도는 산술이라, 첫 화면이 절기표까지 받지 않도록 떼어뒀다.
  */
-export function julianDayNumber(year: number, month: number, day: number): number {
-  const a = Math.floor((14 - month) / 12);
-  const y = year + 4800 - a;
-  const m = month + 12 * a - 3;
-  return (
-    day + Math.floor((153 * m + 2) / 5) + 365 * y +
-    Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045
-  );
-}
-
-/**
- * 일주 위상 상수.
- *
- * 일진은 끊기지 않는 60갑자 순환이라 율리우스일 하나로 정해진다.
- * 이 상수가 1900~2100년 73,414일 전부를 설명한다는 것을 확인했다
- * (test/day-pillar.test.ts). 그래서 여기 적힌 49 는 임의의 값이 아니라
- * 관측으로 고정된 값이다.
- */
-export const DAY_PILLAR_PHASE = 49;
+export { DAY_PILLAR_PHASE, julianDayNumber } from './day-cycle';
 
 /** 일주. 진태양시 기준의 달력 날짜를 받는다. */
 export const dayPillar = (year: number, month: number, day: number): GanZhi =>
