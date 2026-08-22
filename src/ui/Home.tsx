@@ -107,7 +107,7 @@ export function Home() {
           onClick={() => go('privacy')}
           className="mt-1 underline underline-offset-2"
         >
-          어디로 가는지 자세히 보기
+          어디로 가는지 · 지우는 법
         </button>
       </p>
     </div>

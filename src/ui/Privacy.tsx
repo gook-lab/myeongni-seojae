@@ -17,7 +17,69 @@
  * 순서대로, 짧은 문장으로 적는다. 다만 **불리한 것도 빼지 않는다** —
  * 공유 링크를 받은 사람이 사주를 볼 수 있다는 사실이 그렇다.
  */
+import { useState } from 'react';
 import { useSajuStore } from '../store/saju-store';
+
+/**
+ * 전부 지우기.
+ *
+ * 예전에는 "브라우저에서 이 사이트의 데이터를 삭제하시면 됩니다" 라고
+ * 적어뒀다. 그건 안내가 아니라 떠넘기기다 — 관객이 부모님 세대인데
+ * 브라우저 설정에서 사이트 데이터를 찾으라고 하면 못 지운다.
+ * 우리가 만든 것이니 우리가 지우는 버튼을 준다.
+ *
+ * 되돌릴 수 없으므로 한 번 묻는다. 「지우기」가 곧바로 눌리는 자리에
+ * 있으면 손이 미끄러진다.
+ */
+function EraseAll() {
+  const resetAll = useSajuStore((s) => s.resetAll);
+  const [asked, setAsked] = useState(false);
+
+  return (
+    <div className="mt-10 border-t border-dashed border-line-dash pt-5">
+      <p className="text-base font-bold text-ink">지우고 싶어요</p>
+      <p className="mt-1.5 text-sm leading-[1.85] text-ink-soft">
+        이 기기에 남아 있는 것을 전부 지웁니다 — 마지막에 넣으신 생년월일,
+        대운 칸에 적어두신 기록, 첫 화면을 봤다는 표시입니다. 되돌릴 수 없습니다.
+      </p>
+
+      {asked ? (
+        <div className="mt-3 rounded-md border border-jumuk bg-card-warm px-3.5 py-3">
+          <p className="text-sm text-jumuk">정말 지울까요? 되돌릴 수 없습니다.</p>
+          <div className="mt-2.5 flex gap-2">
+            <button
+              type="button"
+              onClick={resetAll}
+              className="flex-1 rounded-md bg-jumuk px-3 py-2.5 text-sm font-bold text-card"
+            >
+              전부 지우기
+            </button>
+            <button
+              type="button"
+              onClick={() => setAsked(false)}
+              className="flex-1 rounded-md border border-line bg-card px-3 py-2.5 text-sm text-ink-soft"
+            >
+              그만두기
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setAsked(true)}
+          className="mt-3 w-full rounded-md border border-line bg-card px-4 py-2.5 text-sm text-ink-soft"
+        >
+          이 기기에서 전부 지우기
+        </button>
+      )}
+
+      <p className="mt-2.5 text-[11px] leading-relaxed text-ink-faint">
+        적어두신 글만 지우시려면 타임라인 아래 「적어둔 인생 기록 지우기」를
+        쓰시면 됩니다.
+      </p>
+    </div>
+  );
+}
 
 interface Item {
   q: string;
@@ -77,16 +139,6 @@ const ITEMS: Item[] = [
       </>
     ),
   },
-  {
-    q: '지우고 싶어요',
-    a: (
-      <>
-        타임라인 아래 「적어둔 인생 기록 지우기」로 적으신 글을 지우실 수
-        있습니다. 전부 지우시려면 브라우저에서 이 사이트의 데이터를 삭제하시면
-        됩니다.
-      </>
-    ),
-  },
 ];
 
 export function Privacy() {
@@ -120,6 +172,8 @@ export function Privacy() {
           </div>
         ))}
       </dl>
+
+      <EraseAll />
 
       <p className="mt-10 text-center text-xs leading-relaxed text-ink-faint">
         이 사이트는 사주를 재미로 보는 곳입니다.

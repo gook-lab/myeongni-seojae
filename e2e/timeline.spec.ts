@@ -155,7 +155,7 @@ test('다른 사람 사주 보기로 입력 화면에 돌아온다', async ({ pa
   await page.getByRole('button', { name: '사주 풀어보기' }).click();
   await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
 
-  await page.getByRole('button', { name: '다른 사람 사주 보기' }).click();
+  await page.getByRole('button', { name: /^처음부터 다시/ }).click();
   await expect(page.getByRole('button', { name: '사주 풀어보기' })).toBeVisible();
 });
 
@@ -658,7 +658,7 @@ test.describe('인생 대조표 — 맞다고 말해주는 대신 직접 적게 
     const timeline = await openPastCard(page);
     await timeline.locator('textarea').first().fill('첫 직장에 들어갔다');
 
-    await page.getByRole('button', { name: '다른 사람 사주 보기' }).click();
+    await page.getByRole('button', { name: /^처음부터 다시/ }).click();
     await fillBirth(page, '1990', '5', '15');
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
     const other = page.getByRole('region', { name: '대운 인생 타임라인' });

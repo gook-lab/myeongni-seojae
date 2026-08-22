@@ -110,7 +110,10 @@ interface SajuState {
 
   submit: () => Promise<void>;
   retry: () => Promise<void>;
+  /** 다른 사람 사주를 본다. 이 기기에 저장한 것은 남긴다. */
   reset: () => void;
+  /** 이 기기에서 전부 지운다. 되돌릴 수 없다. */
+  resetAll: () => void;
   restoreSaved: () => void;
 
   /** 주소의 프래그먼트에 토큰이 있으면 그대로 복원한다. 없으면 아무것도 안 한다. */
@@ -227,11 +230,53 @@ export const useSajuStore = create<SajuState>((set, get) => ({
     await get().submit();
   },
 
-  reset: () =>
+  reset: () => {
+    /*
+     * 주소의 공유 토큰도 같이 지운다.
+     *
+     * 링크로 들어와서 「다른 사람 사주 보기」를 누르면 화면은 비워지는데
+     * 주소에는 앞 사람이 그대로 남아 있었다. 새로고침 한 번에 되살아난다.
+     */
+    clearHash();
     set({
       route: 'saju', phase: 'idle', reading: null, error: null,
-      openCard: null, calcSteps: [], calcShown: 0,
-    }),
+      openCard: null, calcSteps: [], calcShown: 0, pendingReading: null,
+    });
+  },
+
+  resetAll: () => {
+    /*
+     * 이 기기에 남긴 것을 전부 지운다.
+     *
+     * 처리방침에 "브라우저에서 이 사이트의 데이터를 삭제하시면 됩니다" 라고
+     * 적어뒀었다. 그건 안내가 아니라 떠넘기기다 — 부모님 세대에게
+     * 브라우저 설정에서 사이트 데이터를 찾으라고 하면 못 지운다.
+     * 우리가 만든 것이니 우리가 지우는 버튼을 준다.
+     */
+    for (const key of [STORAGE_KEY, NOTES_KEY, SEEN_INTRO_KEY]) {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // 저장소를 못 건드려도 화면 상태는 비운다
+      }
+    }
+    clearHash();
+    set({
+      route: 'intro',
+      form: { ...DEFAULT_FORM },
+      phase: 'idle',
+      reading: null,
+      error: null,
+      openCard: null,
+      calcSteps: [],
+      calcShown: 0,
+      pendingReading: null,
+      notes: {},
+      shareState: 'idle',
+      returnTo: 'home',
+    });
+    window.scrollTo(0, 0);
+  },
 
   restoreSaved: () => {
     const saved = readSavedForm();

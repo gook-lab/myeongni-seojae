@@ -126,7 +126,7 @@ test.describe('개인정보 처리방침', () => {
   test('홈에서도 열리고 홈으로 돌아온다', async ({ page }) => {
     await firstVisit(page);
     await page.getByRole('button', { name: '시작하기' }).click();
-    await page.getByRole('button', { name: '어디로 가는지 자세히 보기' }).click();
+    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
     await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
     await page.getByRole('button', { name: '‹ 돌아가기' }).click();
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
@@ -247,5 +247,88 @@ test.describe('용어 — 모르는 말이 나오면', () => {
     await page.getByRole('button', { name: '리포트 · 인쇄하기' }).click();
     await expect(page.getByRole('heading', { name: '용어' })).toBeVisible();
     await expect(page.getByText(/이 문서의 뜻입니다/)).toBeVisible();
+  });
+});
+
+
+test.describe('초기화 — 남는 것 없이', () => {
+  async function toResult(page: import('@playwright/test').Page) {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '시작하기' }).click();
+    await page.getByRole('button', { name: /^사주 보기/ }).click();
+    await page.getByLabel('년', { exact: true }).selectOption('1957');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+  }
+
+  test('★공유 링크로 들어와도 다시 보기를 누르면 주소가 남지 않는다★', async ({
+    page,
+    context,
+  }) => {
+    /*
+     * 화면은 비워지는데 주소에는 앞 사람이 그대로 남아 있었다.
+     * 새로고침 한 번에 되살아난다.
+     */
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await toResult(page);
+    await page.getByRole('button', { name: '결과 링크 복사' }).click();
+    const url = await page.evaluate(() => navigator.clipboard.readText());
+
+    const fresh = await context.newPage();
+    await fresh.goto(url);
+    await expect(fresh.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible();
+
+    await fresh.getByRole('button', { name: /^처음부터 다시/ }).click();
+    expect(fresh.url()).not.toContain('#r=');
+
+    await fresh.reload();
+    await expect(fresh.getByRole('region', { name: '대운 인생 타임라인' })).toHaveCount(0);
+    await fresh.close();
+  });
+
+  test('★전부 지우면 처음 온 사람이 된다★', async ({ page }) => {
+    await toResult(page);
+    // 대운 칸에 기록을 남기고
+    const tl = page.getByRole('region', { name: '대운 인생 타임라인' });
+    await tl.locator('ol > li').first().getByRole('button').first().click();
+    await tl.locator('textarea').first().fill('여기 적어둔 것');
+
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
+    await page.getByRole('button', { name: '이 기기에서 전부 지우기' }).click();
+
+    // 되돌릴 수 없으므로 한 번 묻는다
+    await expect(page.getByText('정말 지울까요? 되돌릴 수 없습니다.')).toBeVisible();
+    await page.getByRole('button', { name: '전부 지우기' }).click();
+
+    // 첫 화면으로 돌아온다
+    await expect(page.getByRole('button', { name: '시작하기' })).toBeVisible();
+
+    // 저장된 것이 하나도 없다
+    const left = await page.evaluate(() =>
+      Object.keys(localStorage).filter((k) => k.startsWith('myeongri.')),
+    );
+    expect(left).toEqual([]);
+  });
+
+  test('그만두기를 누르면 아무것도 안 지운다', async ({ page }) => {
+    await toResult(page);
+    await page.getByRole('button', { name: /^홈으로/ }).click();
+    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
+    await page.getByRole('button', { name: '이 기기에서 전부 지우기' }).click();
+    await page.getByRole('button', { name: '그만두기' }).click();
+
+    const left = await page.evaluate(() =>
+      Object.keys(localStorage).filter((k) => k.startsWith('myeongri.')),
+    );
+    expect(left.length).toBeGreaterThan(0);
+  });
+
+  test('브라우저 설정으로 떠넘기지 않는다', async ({ page }) => {
+    await firstVisit(page);
+    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    const body = await page.locator('body').innerText();
+    expect(body).not.toContain('브라우저에서 이 사이트의 데이터를 삭제');
+    await expect(page.getByRole('button', { name: '이 기기에서 전부 지우기' })).toBeVisible();
   });
 });

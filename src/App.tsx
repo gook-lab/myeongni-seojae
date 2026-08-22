@@ -471,12 +471,16 @@ function Result() {
         >
           홈으로 — 오늘 · 궁합 · 신년 보기
         </button>
+        {/*
+          "다른 사람 사주 보기" 만 있었더니 초기화 기능이 없다고 읽혔다.
+          하는 일은 같은데 이름이 그 뜻을 안 담고 있었다.
+        */}
         <button
           type="button"
           onClick={reset}
           className="w-full rounded-md border border-dashed border-line-dash px-4 py-3 text-ink-faint"
         >
-          다른 사람 사주 보기
+          처음부터 다시 — 다른 사주 보기
         </button>
       </div>
       <ShareLink />
