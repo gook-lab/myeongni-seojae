@@ -114,5 +114,5 @@ pnpm gen:terms          # 절기표 다시 생성
 
 **Source-available — 오픈소스가 아닙니다.** 코드를 읽을 수 있게 공개했을 뿐,
 사용 권한을 준 것은 아닙니다. 다른 프로젝트에 가져다 쓰거나 재배포·상업적 이용을
-하려면 사전 서면 허락이 필요합니다. 전문은 [LICENSE](LICENSE) 참조.
+하려면 사전 서면 허락이 필요합니다. 전문은 [LICENSE](LICENSE), 한국어 안내는 [LICENSE.ko.md](LICENSE.ko.md) 참조.
 
