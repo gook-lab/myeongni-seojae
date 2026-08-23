@@ -240,10 +240,20 @@ function wrapLines(
 }
 
 /**
- * 줄을 그린다. maxY 를 넘으면 거기서 멈추고 마지막 줄에 말줄임을 붙인다.
+ * 줄을 그린다. maxY 를 넘으면 거기서 멈춘다.
  *
  * 본문 길이가 십성마다 달라서 고정 좌표로는 반드시 넘친다.
  * 남은 공간을 재서 자르는 쪽이 어떤 텍스트가 와도 안전하다.
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * 문장 중간에서 끊지 않는다
+ *
+ * 처음에는 넘치는 자리에서 그냥 자르고 말줄임을 붙였다. 그랬더니
+ * "…쉬어가…" 처럼 낱말 중간에서 끊긴 카드가 나왔다. 이건 사람들이
+ * 퍼뜨리는 그림이라 잘린 말이 그대로 남는다.
+ *
+ * 그래서 **마지막으로 온전히 끝난 문장까지만** 그린다. 문장 하나도
+ * 안 들어가는 극단적인 경우에만 예전처럼 말줄임으로 자른다.
  */
 function drawLines(
   ctx: CanvasRenderingContext2D,
@@ -256,14 +266,27 @@ function drawLines(
 ): number {
   // 먼저 몇 줄이 들어가는지 센다. 그린 다음 지우면 카드 배경에 구멍이 난다.
   const fits = Math.max(0, Math.floor((maxY - startY) / lineHeight) + 1);
-  const visible = lines.slice(0, Math.min(fits, lines.length));
-  const truncated = visible.length < lines.length;
+  let visible = lines.slice(0, Math.min(fits, lines.length));
+  const overflowed = visible.length < lines.length;
+  let ellipsis = false;
+
+  if (overflowed) {
+    // 들어가는 만큼 이어붙인 뒤, 마지막으로 끝난 문장까지 되돌린다
+    const joined = visible.join('');
+    const end = lastSentenceEnd(joined);
+    if (end > joined.length * 0.4) {
+      visible = wrapLines(ctx, joined.slice(0, end), maxWidth);
+    } else {
+      // 문장 하나도 못 담을 만큼 좁다. 이때만 말줄임으로 자른다.
+      ellipsis = true;
+    }
+  }
 
   let y = startY;
   visible.forEach((line, i) => {
     const isLast = i === visible.length - 1;
     let text = line;
-    if (isLast && truncated) {
+    if (isLast && ellipsis) {
       while (text.length > 1 && ctx.measureText(`${text}…`).width > maxWidth) {
         text = text.slice(0, -1);
       }
@@ -273,6 +296,19 @@ function drawLines(
     y += lineHeight;
   });
   return y;
+}
+
+/**
+ * 마지막으로 문장이 끝난 자리(끝 문자 다음 index). 없으면 -1.
+ *
+ * 한국어 본문이라 마침표만 보면 대체로 맞는다. 물음표·느낌표도 함께 본다.
+ */
+export function lastSentenceEnd(text: string): number {
+  for (let i = text.length - 1; i >= 0; i -= 1) {
+    const ch = text[i] as string;
+    if (ch === '.' || ch === '!' || ch === '?') return i + 1;
+  }
+  return -1;
 }
 
 function roundRect(

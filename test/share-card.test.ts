@@ -12,7 +12,7 @@
 import { describe, expect, it } from 'vitest';
 import { computeReading } from '../src/engine/index';
 import type { RawFormValues } from '../src/core/types';
-import { CARD_HEIGHT, CARD_WIDTH, shareFileName } from '../src/ui/share-card';
+import { CARD_HEIGHT, CARD_WIDTH, lastSentenceEnd, shareFileName } from '../src/ui/share-card';
 
 const TODAY = new Date(Date.UTC(2026, 7, 21));
 
@@ -138,5 +138,26 @@ describe('십이운성 필드도 생년월일을 담지 않는다', () => {
       expect(c.outwardness).toBeGreaterThan(0);
       expect(c.outwardness).toBeLessThanOrEqual(1);
     }
+  });
+});
+
+describe('문장 중간에서 끊지 않는다', () => {
+  it('마지막으로 문장이 끝난 자리를 찾는다', () => {
+    expect(lastSentenceEnd('가나다. 라마바.')).toBe(9);
+    expect(lastSentenceEnd('가나다. 라마바')).toBe(4);
+    expect(lastSentenceEnd('문장 끝이 없다')).toBe(-1);
+    expect(lastSentenceEnd('물음표는요? 네')).toBe(6);
+  });
+
+  it('★잘린 낱말이 카드에 남지 않는다★', () => {
+    /*
+     * 실제로 "…다음 10년을 버티게 할 바탕이 여기서 만들어집니다. 쉬어가…"
+     * 로 끝나는 카드가 나왔다. 사람들이 퍼뜨리는 그림이라 잘린 말이
+     * 그대로 남는다.
+     */
+    const text = '첫 문장입니다. 두 번째 문장입니다. 세 번째가 잘릴 자리입니다';
+    const cut = lastSentenceEnd(text);
+    expect(text.slice(0, cut)).toBe('첫 문장입니다. 두 번째 문장입니다.');
+    expect(text.slice(0, cut).endsWith('.')).toBe(true);
   });
 });
