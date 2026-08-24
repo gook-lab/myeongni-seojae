@@ -1,6 +1,6 @@
 # Myeongri Saje (명리서재)
 
-[한국어](README.md) · **English**
+[한국어](README.md) | **English**
 
 **A saju site that unfolds your life in 10-year cycles.**
 No fear-mongering, no scoring, no personal data collection.
