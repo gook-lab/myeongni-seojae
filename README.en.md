@@ -45,7 +45,7 @@ And this is the **only feature where accuracy actually matters**. Daily fortunes
 | **Integration** | Model Context Protocol SDK — engine exposed as 6 MCP tools |
 | **CI** | GitHub Actions — tzdata self-check → types → build → tests → E2E → golden re-diff |
 
-### What we actually tackled in this project
+### Actual Implementation Scope
 
 - **Timezones and calendars** — IANA tzdata, true solar time (진태양시), two separate timelines
 - **Celestial mechanics** — Solar apparent longitude, new moon (삭), mid-solar-terms to determine leap months
@@ -55,7 +55,7 @@ And this is the **only feature where accuracy actually matters**. Daily fortunes
 - **Accessibility** — explanation screens for users who don't know saju terms, WCAG AA color contrast **computed directly from tokens and tested**, `prefers-reduced-motion`, large text mode, 44px touch targets
 - **Validation design** — how do you verify a calculation when there's no answer key (e.g., yongsin, sinssal)?
 
-## At a Glance
+## Summary
 
 | | |
 |---|---|
@@ -92,7 +92,7 @@ pnpm fonts              # re-download web fonts locally
 pnpm gen:terms          # regenerate solar term table
 ```
 
-## What We Haven't Done Yet
+## Not Implemented
 
 - **KASI official check** — Solar terms verified directly against celestial mechanics (see "solar terms" above). Comparing to Korea Astronomy & Space Science Institute's public API is still in the backlog as `pnpm verify:kasi`, but public data portal key provisioning is manual, so we haven't run it live yet. We matched the response format from docs, so the first run needs `--raw` to verify.
 - **Automate Python checks** — `pnpm verify:python` is run by hand. A 17MB ephemeris file per month in CI isn't practical, so it stays as a manual step after large changes.
