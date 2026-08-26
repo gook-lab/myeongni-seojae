@@ -1,0 +1,5 @@
+{
+  "ignore": {
+    "files": ["reference/**", "verify/**", "dist/**", "build/**"]
+  }
+}
