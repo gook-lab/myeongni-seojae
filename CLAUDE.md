@@ -1,4 +1,4 @@
-# 명리서재 (myeongni-seojae)
+# 명리서재 (myeongri-seojae)
 
 ## 문서 규약
 
