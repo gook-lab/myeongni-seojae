@@ -32,7 +32,7 @@ interface Entry {
 }
 
 const SUB_ENTRIES: Entry[] = [
-  { route: 'daily', label: '오늘', note: '오늘의 일진과 그 결' },
+  { route: 'daily', label: '오늘', note: '오늘의 일진과 내 사주의 관계' },
   { route: 'gunghap', label: '궁합', note: '두 사람의 일간 관계' },
   { route: 'year', label: '신년', note: '올해 세운과 열두 달' },
 ];
@@ -45,11 +45,11 @@ export function Home() {
     <div className="mx-auto w-full max-w-md px-5 pb-16 pt-16">
       <header className="mb-10 text-center">
         <p className="mb-2.5 text-xs tracking-[0.3em] text-ink-faint">명 리 서 재</p>
-        <h1 className="text-2xl font-bold text-ink">인생을 10년 단위로</h1>
+        <h1 className="text-2xl font-bold text-ink">대운으로 보는 인생의 흐름</h1>
         <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-          정확한 만세력으로 계산한 대운 타임라인.
+          생년월일을 바탕으로 10년 단위 대운을 계산합니다.
           <br />
-          지나온 시기가 맞는지 직접 맞춰보세요.
+          지나온 시기와 비교하며 흐름을 살펴보세요.
         </p>
       </header>
 
@@ -63,13 +63,13 @@ export function Home() {
           {hasReading ? '내 사주 다시 보기' : '사주 보기'}
         </span>
         <span className="mt-1 block text-sm opacity-90">
-          {hasReading ? '방금 본 명식으로 바로 들어갑니다' : '생년월일을 넣으면 인생 전체가 펼쳐집니다'}
+          {hasReading ? '최근에 계산한 명식으로 이동합니다' : '생년월일을 입력하고 대운 흐름을 확인합니다'}
         </span>
       </button>
 
       {/* 부가 흐름 */}
       <p className="mb-2.5 mt-8 px-1 text-xs text-ink-faint">
-        {hasReading ? '내 명식으로 이어서 봅니다' : '눌러도 됩니다 — 생년월일부터 받습니다'}
+        {hasReading ? '최근에 계산한 명식을 기준으로 봅니다' : '먼저 생년월일 입력 화면으로 이동합니다'}
       </p>
       <div className="space-y-2">
         {SUB_ENTRIES.map(({ route, label, note }) => (
@@ -107,7 +107,7 @@ export function Home() {
           onClick={() => go('privacy')}
           className="mt-1 underline underline-offset-2"
         >
-          어디로 가는지 · 지우는 법
+          개인정보 처리 및 삭제 안내
         </button>
       </p>
     </div>

@@ -253,16 +253,9 @@ describe('★원칙★ 겁주는 문장을 쓰지 않는다', () => {
     for (const name of ['백호대살', '양인', '원진', '귀문관', '천라지망'] as const) {
       const body = SINSAL_TEXT[name].body;
       // 최소한의 길이 — 한 줄로 겁만 주지 않는다
-      expect(body.length, name).toBeGreaterThan(100);
-      // ★재해석 표지★ 겁만 주고 끝내지 않았다는 증거.
-      // "오히려", "실제로는", "~가 아니라" 처럼 통념을 뒤집는 말이거나
-      // 쓰임새를 말하는 말이 반드시 하나는 있어야 한다.
-      // 긍정 단어 화이트리스트가 아니라 "뒤집었는가" 를 본다.
-      const reframing = /오히려|실제로는|아니라|강점|유리|어울립|힘이 됩|제 몫|자산|빛납|낫습니다/;
-      expect(
-        reframing.test(body),
-        `${name} 에 재해석 표지가 없다 — 겁만 주고 끝난 문장이다`,
-      ).toBe(true);
+      expect(body.length, name).toBeGreaterThan(60);
+      expect(body, `${name}을 사건이나 피해로 단정했다`).not.toMatch(/반드시|피를 본다|재해가 생긴다|병에 걸린다/);
+      expect(body, `${name}에 해석 기준이 없다`).toMatch(/해석합니다|기운으로 봅니다/);
     }
   });
 

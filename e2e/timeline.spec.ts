@@ -34,7 +34,7 @@ test('첫 화면에서 시간 미상이 이미 골라져 있다', async ({ page 
     'aria-pressed',
     'true',
   );
-  await expect(page.getByText('대운 타임라인은 그대로')).toBeVisible();
+  await expect(page.getByText(/태어난 시각을 몰라도 대운은 계산할 수 있습니다/)).toBeVisible();
 });
 
 test('양력 + 시간 미상으로 타임라인까지 간다', async ({ page }) => {
@@ -48,7 +48,7 @@ test('양력 + 시간 미상으로 타임라인까지 간다', async ({ page }) 
   await expect(timeline.locator('ol > li')).toHaveCount(10);
 
   // 시각을 몰라도 정확하다는 안내
-  await expect(page.getByText('그대로 정확합니다')).toBeVisible();
+  await expect(page.getByText(/대운 시작 계산에는 태어난 시각을 사용하지 않습니다/)).toBeVisible();
 });
 
 test('음력 + 윤달로도 타임라인까지 간다', async ({ page }) => {
@@ -94,7 +94,7 @@ test('지나온 대운을 펼치면 대조를 권한다', async ({ page }) => {
   // 첫 칸은 반드시 과거다 (1957년생 기준)
   await timeline.locator('ol > li').first().getByRole('button').first().click();
 
-  await expect(timeline.getByText('이미 지나온 10년입니다. 그때가 어땠는지 맞춰보세요.')).toBeVisible();
+  await expect(timeline.getByText('이미 지나온 10년입니다. 당시의 경험과 비교해볼 수 있습니다.')).toBeVisible();
 });
 
 test('시간 미상이어도 사주팔자표가 나오고 시주만 비어 있다', async ({ page }) => {
@@ -104,7 +104,7 @@ test('시간 미상이어도 사주팔자표가 나오고 시주만 비어 있�
   const table = page.getByRole('region', { name: '사주팔자' });
   await expect(table).toBeVisible();
   await expect(table.getByText('시각미상')).toBeVisible();
-  await expect(page.getByText('여섯 글자 기준')).toBeVisible();
+  await expect(page.getByText(/여섯 글자를 기준으로 계산했습니다/)).toBeVisible();
 });
 
 test('★1954~61 구간★ 표준시 이력이 결과에 반영된다', async ({ page }) => {
@@ -208,7 +208,7 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
      */
     await openApp(page);
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
-    await expect(page.getByText('눌러도 됩니다 — 생년월일부터 받습니다')).toBeVisible();
+    await expect(page.getByText('먼저 생년월일 입력 화면으로 이동합니다')).toBeVisible();
     await expect(page.getByText('잠김')).toHaveCount(0);
 
     // 셋 다 실제로 눌리는 상태여야 한다
@@ -228,7 +228,7 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
     await page.getByRole('button', { name: '사주 풀어보기' }).click();
     await page.getByRole('button', { name: /홈으로/ }).click();
 
-    await expect(page.getByText('내 명식으로 이어서 봅니다')).toBeVisible();
+    await expect(page.getByText('최근에 계산한 명식을 기준으로 봅니다')).toBeVisible();
     await expect(page.getByText('생년월일부터')).toHaveCount(0);
   });
 
@@ -407,7 +407,7 @@ test.describe('원국 심화 — 궁위 · 오행 균형', () => {
     await page.getByRole('button', { name: /^오늘/ }).click();
 
     const s = page.getByRole('region', { name: '오늘의 운세' });
-    await expect(s.getByText(/안에 숨은 것/)).toBeVisible();
+    await expect(s.getByText(/의 지장간/)).toBeVisible();
     await expect(
       s.getByText(/(비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인)/).first(),
     ).toBeVisible();
@@ -428,7 +428,7 @@ test.describe('용신 — 판정만 던지지 않는다', () => {
   test('★어떤 방법을 썼는지 밝힌다★', async ({ page }) => {
     const s = page.getByRole('region', { name: '신강 신약과 용신' });
     await expect(s).toBeVisible();
-    await expect(s.getByText(/억부용신법/)).toBeVisible();
+    await expect(s.getByText(/억부용신법\(抑扶用神法\) 기준입니다/)).toBeVisible();
     await expect(s.getByText(/다른 방법을 쓰면 답이 달라질 수 있습니다/)).toBeVisible();
   });
 
@@ -490,8 +490,8 @@ test.describe('리포트 — 종이에 남는 물건', () => {
   });
 
   test('시간 미상이면 그 사실과 영향을 적는다', async ({ page }) => {
-    await expect(page.getByText(/태어난 시각 없이 계산했습니다/)).toBeVisible();
-    await expect(page.getByText(/대운 타임라인은 시각과 무관하므로 그대로 정확/)).toBeVisible();
+    await expect(page.getByText(/태어난 시각을 입력하지 않았습니다/)).toBeVisible();
+    await expect(page.getByText(/대운 시작 계산에는 시각을 사용하지 않으며/)).toBeVisible();
   });
 
   test('대운 10칸이 표로 들어간다', async ({ page }) => {
@@ -560,8 +560,8 @@ test.describe('신살 — 겁주지 않고 근거를 붙인다', () => {
 
   test('유파 주의를 밝힌다', async ({ page }) => {
     const s = page.getByRole('region', { name: '신살' });
-    await expect(s.getByText(/신살은 유파마다 종류와 판정 기준이 갈립니다/)).toBeVisible();
-    await expect(s.getByText(/삼재처럼 해마다 바뀌는 것은/)).toBeVisible();
+    await expect(s.getByText(/신살의 종류와 판정 기준은 유파마다 다릅니다/)).toBeVisible();
+    await expect(s.getByText(/판정 규칙을 명확히 구현할 수 있는 13종/)).toBeVisible();
   });
 
   test('리포트에도 신살이 들어간다', async ({ page }) => {
@@ -783,14 +783,14 @@ test.describe('궁합 — 여섯 자를 자리별로 본다', () => {
   test('십이운성으로 곁에 있을 때의 상태를 본다', async ({ page }) => {
     await toGunghap(page);
     await expect(page.getByText('곁에 있을 때 나는 어떤 상태가 되나')).toBeVisible();
-    await expect(page.getByText(/곁에서 나는 .*의 자리입니다/).first()).toBeVisible();
+    await expect(page.getByText(/관계에서 나의 십이운성은/).first()).toBeVisible();
   });
 
   test('★점수를 내지 않는다★', async ({ page }) => {
     await toGunghap(page);
     const body = await page.locator('body').innerText();
     expect(body).not.toMatch(/\d+\s*점/);
-    expect(body).toContain('점수를 내지 않습니다');
+    expect(body).toContain('궁합을 하나의 점수로 환산하지 않습니다');
   });
 
   test('★겁주는 말로 끝내지 않는다★', async ({ page }) => {
@@ -819,8 +819,8 @@ test.describe('오늘·신년 — 운이 내 원국 위를 지나간다', () => 
     await toReading(page);
     await page.getByRole('button', { name: '오늘' }).click();
     await expect(page.getByText('오늘 들어오는 기운', { exact: true })).toBeVisible();
-    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
-    await expect(page.getByText(/숨은 천간까지 세어/)).toBeVisible();
+    await expect(page.getByText(/이 명식에 필요한 기운은/)).toBeVisible();
+    await expect(page.getByText(/지장간을 포함해 계산했으며/)).toBeVisible();
   });
 
   test('★열두 시진을 낸다 — 하루를 한 덩어리로 말하지 않는다★', async ({ page }) => {
@@ -849,7 +849,7 @@ test.describe('오늘·신년 — 운이 내 원국 위를 지나간다', () => 
     await toReading(page);
     await page.getByRole('button', { name: '신년' }).click();
     await expect(page.getByText('올해 들어오는 기운')).toBeVisible();
-    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
+    await expect(page.getByText(/이 명식에 필요한 기운은/)).toBeVisible();
   });
 
   test('공망일이면 나쁜 날이라 하지 않는다', async ({ page }) => {
@@ -975,7 +975,7 @@ test.describe('궁합 — 숫자로 견주기', () => {
     await page.getByRole('button', { name: /^홈으로/ }).click();
     await page.getByRole('button', { name: '궁합' }).click();
     await page.getByRole('button', { name: '궁합 보기' }).click();
-    await expect(page.getByText(/겉에 없는 오행이 안에 숨어 있는 경우가 흔해서/)).toBeVisible();
+    await expect(page.getByText(/겉에 없는 오행이 지장간에 포함될 수 있으므로/)).toBeVisible();
     await expect(page.getByText(/속 \d+·\d+/).first()).toBeVisible();
   });
 });
@@ -1024,7 +1024,7 @@ test.describe('신년 — 어느 해를 볼지 고른다', () => {
     await page.getByRole('button', { name: '신년' }).click();
     await page.getByRole('button', { name: `${new Date().getFullYear() + 2}년` }).click();
     await expect(page.getByText('올해 들어오는 기운', { exact: true })).toBeVisible();
-    await expect(page.getByText(/당신에게 필요한 기운은/)).toBeVisible();
+    await expect(page.getByText(/이 명식에 필요한 기운은/)).toBeVisible();
   });
 
   test('★오행을 한자와 함께 적고 조사를 맞춘다★', async ({ page }) => {

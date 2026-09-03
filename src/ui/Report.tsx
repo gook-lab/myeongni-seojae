@@ -231,8 +231,8 @@ export function Report() {
             <li>야자시 {chart.input.yajasi === 'advance-day' ? '일주 넘김' : '일주 유지'} · 균시차 {chart.input.applyEquationOfTime ? '적용' : '미적용'}</li>
             {chart.hourUnknown && (
               <li className="text-jumuk">
-                태어난 시각 없이 계산했습니다. 대운 타임라인은 시각과 무관하므로 그대로
-                정확하고, 시주와 오행 분포만 여섯 자 기준입니다.
+                태어난 시각을 입력하지 않았습니다. 대운 시작 계산에는 시각을 사용하지 않으며,
+                시주와 오행 분포는 여섯 자를 기준으로 표시합니다.
               </li>
             )}
           </ul>

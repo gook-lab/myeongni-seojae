@@ -31,18 +31,18 @@ test('처음 오면 인트로가 뜬다', async ({ page }) => {
 
 test('★무엇을 하지 않는지 먼저 말한다★', async ({ page }) => {
   await firstVisit(page);
-  await expect(page.getByText('겁주지 않습니다')).toBeVisible();
-  await expect(page.getByText('점수를 매기지 않습니다')).toBeVisible();
-  await expect(page.getByText('생년월일을 보내지 않습니다')).toBeVisible();
+  await expect(page.getByText('불안을 키우는 표현을 줄였습니다')).toBeVisible();
+  await expect(page.getByText('점수 대신 해석 근거를 보여드립니다')).toBeVisible();
+  await expect(page.getByText('생년월일은 이 기기에서만 사용합니다')).toBeVisible();
 });
 
 test('★오늘의 일진이 진짜로 계산된 값이다★', async ({ page }) => {
   await firstVisit(page);
 
   // 화면이 말하는 일진
-  const shown = await page.getByRole('button', { name: /오늘은 .*일입니다/ })
+  const shown = await page.getByRole('button', { name: /오늘의 일진은 .*입니다/ })
     .getAttribute('aria-label');
-  const match = /오늘은 (..)일입니다/.exec(shown ?? '');
+  const match = /오늘의 일진은 (..)입니다/.exec(shown ?? '');
   expect(match, `aria-label 을 못 읽었다: ${shown}`).not.toBeNull();
 
   // 율리우스일로 직접 구한 값과 같아야 한다.
@@ -68,7 +68,7 @@ test('★오늘의 일진이 진짜로 계산된 값이다★', async ({ page })
 
 test('도장을 누르면 다시 찍힌다', async ({ page }) => {
   await firstVisit(page);
-  const seal = page.getByRole('button', { name: /오늘은 .*일입니다/ });
+  const seal = page.getByRole('button', { name: /오늘의 일진은 .*입니다/ });
   await seal.click();
   // 눌러도 화면이 넘어가지 않는다 — 시작하기만 넘긴다
   await expect(page.getByRole('button', { name: '시작하기' })).toBeVisible();
@@ -117,7 +117,7 @@ test.describe('개인정보 처리방침', () => {
   test('★인트로에서 열고, 읽고 나면 인트로로 돌아온다★', async ({ page }) => {
     // 홈으로 떨어뜨리면 아직 「시작하기」를 누르지도 않았는데 지나쳐버린다.
     await firstVisit(page);
-    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
     await page.getByRole('button', { name: '‹ 돌아가기' }).click();
     await expect(page.getByRole('button', { name: '시작하기' })).toBeVisible();
@@ -126,7 +126,7 @@ test.describe('개인정보 처리방침', () => {
   test('홈에서도 열리고 홈으로 돌아온다', async ({ page }) => {
     await firstVisit(page);
     await page.getByRole('button', { name: '시작하기' }).click();
-    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     await expect(page.getByRole('heading', { name: '생년월일은 어디로 가나요' })).toBeVisible();
     await page.getByRole('button', { name: '‹ 돌아가기' }).click();
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
@@ -135,7 +135,7 @@ test.describe('개인정보 처리방침', () => {
   test('★불리한 사실을 빼지 않는다★', async ({ page }) => {
     // 좋은 말만 적어두면 방침이 아니라 광고다.
     await firstVisit(page);
-    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     await expect(
       page.getByText('링크를 받으신 분은 그 사주를 그대로 볼 수 있습니다'),
     ).toBeVisible();
@@ -145,7 +145,7 @@ test.describe('개인정보 처리방침', () => {
 
   test('법률 문서 말투를 쓰지 않는다', async ({ page }) => {
     await firstVisit(page);
-    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     const text = await page.locator('body').innerText();
     for (const jargon of ['제3자', '수탁', '위탁', '동의를 거부할 권리', '이용목적']) {
       expect(text, `"${jargon}" 이 들어 있다`).not.toContain(jargon);
@@ -294,7 +294,7 @@ test.describe('초기화 — 남는 것 없이', () => {
     await tl.locator('textarea').first().fill('여기 적어둔 것');
 
     await page.getByRole('button', { name: /^홈으로/ }).click();
-    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     await page.getByRole('button', { name: '이 기기에서 전부 지우기' }).click();
 
     // 되돌릴 수 없으므로 한 번 묻는다
@@ -314,7 +314,7 @@ test.describe('초기화 — 남는 것 없이', () => {
   test('그만두기를 누르면 아무것도 안 지운다', async ({ page }) => {
     await toResult(page);
     await page.getByRole('button', { name: /^홈으로/ }).click();
-    await page.getByRole('button', { name: '어디로 가는지 · 지우는 법' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     await page.getByRole('button', { name: '이 기기에서 전부 지우기' }).click();
     await page.getByRole('button', { name: '그만두기' }).click();
 
@@ -326,7 +326,7 @@ test.describe('초기화 — 남는 것 없이', () => {
 
   test('브라우저 설정으로 떠넘기지 않는다', async ({ page }) => {
     await firstVisit(page);
-    await page.getByRole('button', { name: '생년월일은 어디로 가나요' }).click();
+    await page.getByRole('button', { name: '개인정보 처리 및 삭제 안내' }).click();
     const body = await page.locator('body').innerText();
     expect(body).not.toContain('브라우저에서 이 사이트의 데이터를 삭제');
     await expect(page.getByRole('button', { name: '이 기기에서 전부 지우기' })).toBeVisible();

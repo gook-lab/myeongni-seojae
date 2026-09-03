@@ -33,7 +33,7 @@ export function Calculating() {
     >
       <p className="text-center text-sm text-ink-faint">
         <span className="ink-breathe">
-          {waiting ? '만세력을 펼치는 중입니다' : '이렇게 계산했습니다'}
+          {waiting ? '계산 데이터를 불러오는 중입니다' : '계산 근거를 확인하고 있습니다'}
         </span>
       </p>
 
@@ -62,9 +62,9 @@ export function Calculating() {
       {!waiting && (
         <>
           <p className="mt-8 text-center text-[11px] leading-relaxed text-ink-faint">
-            여기 나온 값은 전부 방금 계산한 것입니다.
+            표시된 값은 이번 입력을 기준으로 계산했습니다.
             <br />
-            리포트에 그대로 실립니다.
+            같은 내용은 결과 리포트에서도 확인할 수 있습니다.
           </p>
           {canSkip && (
             /* 기다리기 싫은 사람을 붙잡아두지 않는다. 계산은 이미 끝났다. */
