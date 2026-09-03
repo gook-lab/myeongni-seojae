@@ -142,7 +142,7 @@ test('★계산 근거가 한 줄씩 드러난다 — 지어낸 값이 아니다
   await expect(calc.getByText('UTC+9:30 · 서머타임')).toBeVisible();
   await expect(calc.getByText(/진태양시 보정/)).toBeVisible();
   await expect(calc.getByText('-62분 05초')).toBeVisible();
-  await expect(calc.getByText(/여기 나온 값은 전부 방금 계산한 것입니다/)).toBeVisible();
+  await expect(calc.getByText(/표시된 값은 이번 입력을 기준으로 계산했습니다/)).toBeVisible();
 
   // 그리고 스스로 결과로 넘어간다
   await expect(page.getByRole('region', { name: '대운 인생 타임라인' })).toBeVisible({

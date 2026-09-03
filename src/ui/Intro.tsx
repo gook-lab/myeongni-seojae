@@ -57,7 +57,7 @@ export function Intro() {
         <button
           type="button"
           onClick={() => setStamp((n) => n + 1)}
-          aria-label={`오늘은 ${today.korean}일입니다. 눌러서 다시 찍기`}
+          aria-label={`오늘의 일진은 ${today.korean}입니다. 눌러서 다시 찍기`}
           className="card-enter mx-auto mt-7 grid size-20 place-items-center rounded-md border-2 border-jumuk text-jumuk"
           style={{ '--i': 1 } as never}
         >
