@@ -167,15 +167,15 @@ export function Timeline({
             <>
               {' '}
               <strong className="text-jumuk">
-                {monthsToNextTransition}개월 뒤 판이 바뀝니다.
+                {monthsToNextTransition}개월 뒤 다음 대운이 시작됩니다.
               </strong>
             </>
           )}
         </p>
         {hourUnknown && (
           <p className="mt-2.5 rounded-md border border-dashed border-line-dash px-3 py-2 text-xs leading-relaxed text-ink-faint">
-            태어난 시각 없이 계산했습니다. 이 타임라인은 시각과 무관하므로
-            <strong className="text-ink-soft"> 그대로 정확합니다.</strong>
+            대운 시작 계산에는 태어난 시각을 사용하지 않습니다. 시주를 제외한 입력값으로
+            타임라인을 계산했습니다.
           </p>
         )}
       </header>

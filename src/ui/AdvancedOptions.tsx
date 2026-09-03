@@ -54,7 +54,7 @@ export function AdvancedOptions() {
       {open && (
         <div className="mt-2.5 space-y-5 rounded-md border border-line bg-card px-4 py-4">
           <p className="text-xs leading-relaxed text-ink-faint">
-            만세력 유파가 갈리는 항목들입니다. 기본값 그대로 두셔도 됩니다.
+            계산 방식에 따라 결과가 달라질 수 있는 항목입니다. 필요한 경우에만 변경하세요.
           </p>
 
           {/* 출생지 — OQ2 */}
@@ -74,10 +74,10 @@ export function AdvancedOptions() {
             </select>
             <p className="mt-1.5 text-xs leading-relaxed text-ink-faint">
               {Math.abs(delta) < 0.5
-                ? '해 뜨는 시각이 서울과 거의 같습니다.'
+                ? '서울과의 경도 차이가 거의 없습니다.'
                 : delta > 0
-                  ? `서울보다 해가 ${Math.abs(delta).toFixed(0)}분 일찍 뜹니다. 시(時) 경계 근처 출생이면 시주가 달라질 수 있습니다.`
-                  : `서울보다 해가 ${Math.abs(delta).toFixed(0)}분 늦게 뜹니다. 시(時) 경계 근처 출생이면 시주가 달라질 수 있습니다.`}
+                  ? `서울 기준보다 태양시가 ${Math.abs(delta).toFixed(0)}분 빠릅니다. 시(時) 경계 근처 출생이면 시주가 달라질 수 있습니다.`
+                  : `서울 기준보다 태양시가 ${Math.abs(delta).toFixed(0)}분 늦습니다. 시(時) 경계 근처 출생이면 시주가 달라질 수 있습니다.`}
             </p>
           </div>
 
@@ -125,9 +125,9 @@ export function AdvancedOptions() {
               <span>
                 균시차 보정
                 <span className="mt-1 block text-xs leading-relaxed text-ink-faint">
-                  지구 궤도가 타원이라 해가 남중하는 시각이 계절마다 최대 ±16분
-                  달라집니다. 더 정밀하지만, 이 보정을 넣지 않는 만세력이 많아
-                  결과가 갈릴 수 있습니다.
+                  지구의 공전 궤도와 자전축 영향으로 태양이 남중하는 시각은 계절에
+                  따라 최대 ±16분 달라집니다. 균시차 적용 여부에 따라 다른 만세력과
+                  결과가 달라질 수 있습니다.
                 </span>
               </span>
             </label>

@@ -97,7 +97,7 @@ function PillarTable() {
       </div>
       {chart.hourUnknown && (
         <p className="mt-2.5 text-xs leading-relaxed text-ink-faint">
-          시각을 모르므로 오행 분포는 여섯 글자 기준입니다. 시각을 알면 더 정확해집니다.
+          태어난 시각을 입력하지 않아 오행 분포는 여섯 글자를 기준으로 계산했습니다.
         </p>
       )}
     </section>

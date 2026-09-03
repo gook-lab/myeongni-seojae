@@ -58,11 +58,11 @@ export function InputForm() {
 
       <header className="mb-9 text-center">
         <p className="mb-2 text-xs tracking-[0.3em] text-ink-faint">명리서재</p>
-        <h1 className="text-2xl font-bold text-ink">인생을 10년 단위로</h1>
+        <h1 className="text-2xl font-bold text-ink">대운으로 보는 인생의 흐름</h1>
         <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">
-          생년월일을 넣으면 대운 타임라인이 펼쳐집니다.
+          생년월일을 바탕으로 10년 단위 대운을 계산합니다.
           <br />
-          지나온 시기가 맞는지 직접 맞춰보세요.
+          지나온 시기와 비교하며 흐름을 살펴보세요.
         </p>
       </header>
 
@@ -194,8 +194,8 @@ export function InputForm() {
           </div>
         ) : (
           <p className="mt-2.5 rounded-md border border-dashed border-line-dash bg-card px-3 py-2.5 text-sm leading-relaxed text-ink-soft">
-            시각을 몰라도 <strong className="text-jumuk">대운 타임라인은 그대로</strong>{' '}
-            나옵니다. 시주(時柱)와 성격 해석만 조금 덜 정확해집니다.
+            태어난 시각을 몰라도 <strong className="text-jumuk">대운은 계산할 수 있습니다.</strong>{' '}
+            다만 시주(時柱)와 시주를 사용하는 일부 해석은 결과에서 제외됩니다.
           </p>
         )}
       </fieldset>
@@ -264,14 +264,14 @@ export function InputForm() {
       </div>
 
       <p className="mt-2 text-center text-xs leading-relaxed text-ink-faint">
-        입력한 생년월일은 이 기기를 벗어나지 않습니다.
+        입력한 생년월일은 서버로 전송하지 않습니다.
         <br />
-        계산은 전부 브라우저 안에서 이루어집니다.
+        모든 계산은 현재 브라우저에서 이루어집니다.
       </p>
 
       {form.year === DEFAULT_FORM.year && (
         <p className="mt-6 text-center text-xs text-ink-faint">
-          부모님 생년월일로 해보시면 반응이 다릅니다.
+          입력값을 확인한 뒤 사주 풀어보기를 눌러주세요.
         </p>
       )}
     </form>

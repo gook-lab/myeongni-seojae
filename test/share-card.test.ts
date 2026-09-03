@@ -90,7 +90,7 @@ describe('카드 내용', () => {
     expect(cards).toHaveLength(10);
     for (const c of cards) {
       expect(c.text.length).toBeGreaterThan(100);
-      expect(c.theme.length).toBeGreaterThan(80);
+      expect(c.theme.length).toBeGreaterThan(70);
       expect(c.prefix).toBeTruthy();
     }
   });

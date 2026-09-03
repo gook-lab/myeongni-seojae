@@ -34,9 +34,9 @@ import { todayInKorea } from '../core/day-cycle';
 import { useSajuStore } from '../store/saju-store';
 
 const PROMISES = [
-  { head: '겁주지 않습니다', body: '살(殺)이 붙은 이름도 기운의 결로 읽습니다' },
-  { head: '점수를 매기지 않습니다', body: '사람을 숫자 한 개로 줄이지 않습니다' },
-  { head: '생년월일을 보내지 않습니다', body: '적어주신 날짜는 이 기기 안에만 있습니다' },
+  { head: '불안을 키우는 표현을 줄였습니다', body: '신살도 좋고 나쁨으로 단정하지 않고 양쪽 가능성을 함께 설명합니다' },
+  { head: '점수 대신 해석 근거를 보여드립니다', body: '하나의 숫자로 평가하지 않고 계산에 사용한 기준을 함께 표시합니다' },
+  { head: '생년월일은 이 기기에서만 사용합니다', body: '입력한 정보는 서버로 전송하지 않고 브라우저에서 계산합니다' },
 ];
 
 export function Intro() {
@@ -66,10 +66,7 @@ export function Intro() {
           </span>
         </button>
         <p className="card-enter mt-3 text-sm text-ink-soft" style={{ '--i': 2 } as never}>
-          오늘은 <b className="text-jumuk">{today.korean}</b>일입니다
-        </p>
-        <p className="card-enter mt-1 text-[11px] text-ink-faint" style={{ '--i': 2 } as never}>
-          방금 계산한 값입니다
+          오늘의 일진은 <b className="text-jumuk">{today.korean}</b>입니다
         </p>
       </header>
 
@@ -94,16 +91,16 @@ export function Intro() {
       </button>
 
       <p className="card-enter mt-4 text-center text-[11px] leading-relaxed text-ink-faint" style={{ '--i': 7 } as never}>
-        표준시가 여러 번 바뀐 시절에 태어나신 분도
+        과거 한국 표준시와 서머타임 변경 이력을 반영해
         <br />
-        그 시절 시간으로 계산합니다.
+        출생 당시의 시각을 계산합니다.
         <br />
         <button
           type="button"
           onClick={() => go('privacy')}
           className="mt-2 underline underline-offset-2"
         >
-          생년월일은 어디로 가나요
+          개인정보 처리 및 삭제 안내
         </button>
       </p>
     </div>

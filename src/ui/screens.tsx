@@ -63,7 +63,7 @@ export function DailyScreen() {
   return (
     <Screen
       title="오늘의 운세"
-      subtitle="오늘 들어오는 기운이 내게 필요한 것인지, 원국의 어느 자리를 건드리는지 봅니다."
+      subtitle="오늘의 간지가 내 사주와 어떤 관계를 이루는지 살펴봅니다."
     >
       <DailyPanel />
     </Screen>
@@ -81,7 +81,7 @@ export function YearScreen() {
   return (
     <Screen
       title="신년 운세"
-      subtitle="세운이 내 원국 위를 어떻게 지나가는지, 절기로 나눈 열두 달과 함께 봅니다."
+      subtitle="선택한 해의 세운과 절기를 기준으로 나눈 열두 달의 흐름을 살펴봅니다."
     >
       <YearPanel />
     </Screen>
@@ -92,7 +92,7 @@ export function GunghapScreen() {
   return (
     <Screen
       title="궁합"
-      subtitle="두 분의 여섯 자를 자리별로 나란히 놓고 봅니다. 점수를 내지 않습니다."
+      subtitle="두 사람의 명식을 나란히 비교하고, 일간·일지·오행의 관계를 설명합니다."
     >
       <GunghapPanel />
     </Screen>
@@ -133,13 +133,13 @@ function DailyPanel() {
         </p>
         <p className="text-sm leading-[1.85] text-ink">{daily.yongsin.text}</p>
         <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
-          지지 안에 숨은 천간까지 세어 그날 실제로 도는 기운을 봅니다.
-          당신에게 필요한 기운은 <b className="text-ink-soft">{daily.yongsin.need}</b>입니다.
+          지장간을 포함해 계산했으며, 이 명식에 필요한 기운은{' '}
+          <b className="text-ink-soft">{daily.yongsin.need}</b>입니다.
         </p>
       </Card>
 
       {daily.hidden.tenGods.length > 0 && (
-        <Card label={`${daily.hidden.glyph} 안에 숨은 것`}>
+        <Card label={`${daily.hidden.glyph}의 지장간`}>
           <p className="mb-1.5 text-sm text-ink">
             {daily.hidden.tenGods.map((g, i) => (
               <span key={g + String(i)}>
@@ -153,7 +153,7 @@ function DailyPanel() {
       )}
 
       {daily.contacts.length > 0 && (
-        <Card label="오늘이 건드리는 자리">
+        <Card label="오늘과 관계가 있는 사주 자리">
           {daily.contacts.map((c) => (
             <div key={c.palace} className="mt-1 first:mt-0">
               <p className="text-sm text-ink-soft">
@@ -260,13 +260,13 @@ function YearPanel() {
         </p>
         <p className="text-sm leading-[1.85] text-ink">{year.yongsin.text}</p>
         <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
-          당신에게 필요한 기운은 <b className="text-ink-soft">{year.yongsin.need}</b>입니다.
-          지지 안에 숨은 천간까지 세었습니다.
+          지장간을 포함해 계산했으며, 이 명식에 필요한 기운은{' '}
+          <b className="text-ink-soft">{year.yongsin.need}</b>입니다.
         </p>
       </Card>
 
       {year.contacts.length > 0 && (
-        <Card label="올해가 건드리는 자리">
+        <Card label="올해와 관계가 있는 사주 자리">
           {year.contacts.map((c) => (
             <div key={c.palace} className="mt-1 first:mt-0">
               <p className="text-sm text-ink-soft">

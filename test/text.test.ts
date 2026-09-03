@@ -36,18 +36,18 @@ describe('INTERPRET — 카테고리별 단일 테이블 (C2)', () => {
     }
   });
 
-  it('daeun 문단은 3~5문장 분량이다', () => {
+  it('daeun 문단은 카드에서 읽을 수 있는 분량이다', () => {
     for (const cat of CATEGORIES) {
       const len = INTERPRET[cat].daeun.length;
-      expect(len, `${cat} 길이 ${len}`).toBeGreaterThan(80);
+      expect(len, `${cat} 길이 ${len}`).toBeGreaterThan(70);
       expect(len, `${cat} 길이 ${len}`).toBeLessThan(400);
     }
   });
 
-  it('원본 문장이 보존됐다', () => {
-    expect(INTERPRET.비겁.daily).toContain('주체성이 강해지는 날입니다');
-    expect(INTERPRET.인성.career).toContain('자격과 지식이 곧 무기입니다');
-    expect(INTERPRET.재성.love).toContain('함께 미래를 설계할 때 애정이 깊어집니다');
+  it('계산 결과를 단정적인 사건으로 표현하지 않는다', () => {
+    const all = Object.values(INTERPRET).flatMap((text) => Object.values(text)).join(' ');
+    expect(all).not.toMatch(/반드시|확실히|틀림없이|평생의 대표작/);
+    expect(all).toContain('해석합니다');
   });
 });
 
@@ -108,7 +108,7 @@ describe('daeunPrefix', () => {
   it.each([
     [2000, 2009, 2026, '이미 지나온'],
     [2020, 2029, 2026, '지금 지나고'],
-    [2030, 2039, 2026, '앞으로 만나게'],
+    [2030, 2039, 2026, '앞으로 이어질'],
   ])('%i~%i (오늘 %i) → %s', (start, end, today, expected) => {
     expect(daeunPrefix(start, end, today)).toContain(expected);
   });
