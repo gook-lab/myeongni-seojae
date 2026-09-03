@@ -44,7 +44,7 @@
 | **도메인 엔진** | 직접 구현 (`core/pillars.ts`) + 직접 생성한 절기표 (23.6KB) |
 | **음력** | `korean-lunar-calendar` — 한국천문연구원 자료 |
 | **관측** | `@sentry/react` — 생년월일 세탁 게이트를 통과해야만 나간다 |
-| **테스트** | Vitest 3 (**558**) · Playwright 1.62 (**246**, 모바일·데스크톱·움직임 3프로젝트) |
+| **테스트** | Vitest 3 (**558**) · Playwright 1.62 (**248**, 모바일·데스크톱·움직임 3프로젝트) |
 | **검증 도구** | astronomy-engine (천체력) · lunar-javascript · manseryeok · **Python + skyfield/JPL DE421** |
 | **통합** | Model Context Protocol SDK — 엔진을 MCP 도구 6개로 노출 |
 | **CI** | GitHub Actions — tzdata 자가진단 → 타입 → 빌드 → 테스트 → E2E → 골든 재생성 diff |

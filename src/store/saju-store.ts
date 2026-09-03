@@ -112,6 +112,8 @@ interface SajuState {
   retry: () => Promise<void>;
   /** 다른 사람 사주를 본다. 이 기기에 저장한 것은 남긴다. */
   reset: () => void;
+  /** 홈에서 저장한 사주와 인생 기록만 지운다. 첫 방문 안내 상태는 남긴다. */
+  clearSavedReading: () => void;
   /** 이 기기에서 전부 지운다. 되돌릴 수 없다. */
   resetAll: () => void;
   restoreSaved: () => void;
@@ -242,6 +244,31 @@ export const useSajuStore = create<SajuState>((set, get) => ({
       route: 'saju', phase: 'idle', reading: null, error: null,
       openCard: null, calcSteps: [], calcShown: 0, pendingReading: null,
     });
+  },
+
+  clearSavedReading: () => {
+    for (const key of [STORAGE_KEY, NOTES_KEY]) {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // 저장소를 못 건드려도 현재 화면의 정보는 지운다.
+      }
+    }
+    clearHash();
+    set({
+      route: 'home',
+      form: { ...DEFAULT_FORM },
+      phase: 'idle',
+      reading: null,
+      error: null,
+      openCard: null,
+      calcSteps: [],
+      calcShown: 0,
+      pendingReading: null,
+      notes: {},
+      shareState: 'idle',
+    });
+    window.scrollTo(0, 0);
   },
 
   resetAll: () => {

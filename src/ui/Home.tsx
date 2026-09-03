@@ -8,20 +8,11 @@
  * 부가 기능을 결과 페이지 하단에 쌓지 않고 여기서 갈라놓으면
  * 대운 타임라인 화면이 깨끗하게 유지된다.
  *
- * 원국이 없는 상태에서 부가 화면으로 가려 하면 store 의 go() 가
- * 입력 화면으로 돌린다. 여기서는 그 사실을 문구로 미리 알려준다.
- *
- * ─────────────────────────────────────────────────────────────────────────
- * "잠김" 이라고 쓰지 않는다
- *
- * 처음에는 그렇게 적었는데, 실제로는 눌리고 누르면 입력 화면으로 간다.
- * 글자가 동작과 달랐다 — 눌러도 안 될 것처럼 써놓고 눌리게 해두면
- * 사람은 아예 안 누른다. 정작 그 버튼이 하는 일이 "여기부터 하세요" 인데.
- *
- * 그렇다고 진짜 잠그는 것도 답이 아니다. 막다른 문은 어떻게 열어야 하는지
- * 알려주지 않는다. 동작은 그대로 두고 글자를 동작에 맞춘다.
+ * 오늘·궁합·신년은 내 명식이 있어야 계산할 수 있다. 첫 방문에는 세 버튼을
+ * 비활성화하고, 무엇을 먼저 해야 하는지 바로 위에서 설명한다.
  */
 
+import { useState } from 'react';
 import { useSajuStore } from '../store/saju-store';
 import type { Route } from '../store/saju-store';
 
@@ -39,7 +30,9 @@ const SUB_ENTRIES: Entry[] = [
 
 export function Home() {
   const go = useSajuStore((s) => s.go);
+  const clearSavedReading = useSajuStore((s) => s.clearSavedReading);
   const hasReading = useSajuStore((s) => s.reading !== null);
+  const [askingToClear, setAskingToClear] = useState(false);
 
   return (
     <div className="mx-auto w-full max-w-md px-5 pb-16 pt-16">
@@ -69,7 +62,7 @@ export function Home() {
 
       {/* 부가 흐름 */}
       <p className="mb-2.5 mt-8 px-1 text-xs text-ink-faint">
-        {hasReading ? '최근에 계산한 명식을 기준으로 봅니다' : '먼저 생년월일 입력 화면으로 이동합니다'}
+        {hasReading ? '최근에 계산한 명식을 기준으로 봅니다' : '사주를 먼저 보면 아래 메뉴가 열립니다'}
       </p>
       <div className="space-y-2">
         {SUB_ENTRIES.map(({ route, label, note }) => (
@@ -77,12 +70,13 @@ export function Home() {
             key={route}
             type="button"
             onClick={() => go(route)}
-            aria-label={hasReading ? label : `${label} — 생년월일을 먼저 넣습니다`}
+            disabled={!hasReading}
+            aria-label={hasReading ? label : `${label} — 사주를 먼저 봐야 열립니다`}
             className={
               'flex w-full items-center justify-between rounded-lg border px-4 py-3.5 text-left transition-colors ' +
               (hasReading
                 ? 'border-line bg-card'
-                : 'border-dashed border-line-dash bg-transparent')
+                : 'cursor-not-allowed border-dashed border-line-dash bg-transparent opacity-50')
             }
           >
             <span>
@@ -93,11 +87,47 @@ export function Home() {
               aria-hidden
               className={hasReading ? 'text-ink-faint' : 'text-xs text-ink-faint'}
             >
-              {hasReading ? '›' : '생년월일부터 ›'}
+              {hasReading ? '›' : '사주를 먼저 봐주세요'}
             </span>
           </button>
         ))}
       </div>
+
+      {hasReading && (
+        <div className="mt-6 border-t border-dashed border-line-dash pt-4">
+          {askingToClear ? (
+            <div className="rounded-md border border-jumuk bg-card-warm px-3.5 py-3">
+              <p className="text-sm leading-relaxed text-jumuk">
+                저장한 사주와 대운 기록을 지울까요? 되돌릴 수 없습니다.
+              </p>
+              <div className="mt-2.5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={clearSavedReading}
+                  className="flex-1 rounded-md bg-jumuk px-3 py-2.5 text-sm font-bold text-card"
+                >
+                  저장한 정보 지우기
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAskingToClear(false)}
+                  className="flex-1 rounded-md border border-line bg-card px-3 py-2.5 text-sm text-ink-soft"
+                >
+                  그만두기
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAskingToClear(true)}
+              className="w-full rounded-md border border-line bg-card px-4 py-2.5 text-sm text-ink-soft"
+            >
+              저장한 사주 지우기
+            </button>
+          )}
+        </div>
+      )}
 
       <p className="mt-10 text-center text-xs leading-relaxed text-ink-faint">
         적어주신 생년월일은 이 기기 밖으로 나가지 않습니다.

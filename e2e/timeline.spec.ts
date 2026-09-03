@@ -200,27 +200,19 @@ test('콘솔 에러 없이 전체 플로우가 끝난다', async ({ page }) => {
 });
 
 test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
-  test('★부가 기능은 잠긴 척하지 않는다★', async ({ page }) => {
-    /*
-     * 예전에는 "잠김" 이라고 적어놓고 실제로는 눌렸다. 글자가 동작과
-     * 다르면 사람은 아예 안 누르는데, 정작 그 버튼이 하는 일이
-     * "여기부터 하세요" 다. 동작은 그대로 두고 글자를 맞췄다.
-     */
+  test('★사주를 보기 전에는 부가 기능이 비활성화된다★', async ({ page }) => {
     await openApp(page);
     await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
-    await expect(page.getByText('먼저 생년월일 입력 화면으로 이동합니다')).toBeVisible();
-    await expect(page.getByText('잠김')).toHaveCount(0);
+    await expect(page.getByText('사주를 먼저 보면 아래 메뉴가 열립니다')).toBeVisible();
 
-    // 셋 다 실제로 눌리는 상태여야 한다
     for (const name of ['오늘', '궁합', '신년']) {
-      await expect(page.getByRole('button', { name: new RegExp(name) })).toBeEnabled();
+      await expect(page.getByRole('button', { name: new RegExp(name) })).toBeDisabled();
     }
   });
 
-  test('사주 없이 궁합을 누르면 입력 화면으로 보낸다', async ({ page }) => {
+  test('사주 없이 궁합을 선택할 수 없다', async ({ page }) => {
     await openApp(page);
-    await page.getByRole('button', { name: /궁합/ }).click();
-    await expect(page.getByRole('button', { name: '사주 풀어보기' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /궁합/ })).toBeDisabled();
   });
 
   test('사주를 보고 나면 홈에서 부가 화면이 열린다', async ({ page }) => {
@@ -230,6 +222,25 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
 
     await expect(page.getByText('최근에 계산한 명식을 기준으로 봅니다')).toBeVisible();
     await expect(page.getByText('생년월일부터')).toHaveCount(0);
+  });
+
+  test('홈에서 저장한 사주와 기록을 바로 지울 수 있다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+
+    await page.getByRole('button', { name: '저장한 사주 지우기' }).click();
+    await expect(page.getByText('저장한 사주와 대운 기록을 지울까요? 되돌릴 수 없습니다.')).toBeVisible();
+    await page.getByRole('button', { name: '저장한 정보 지우기' }).click();
+
+    await expect(page.getByRole('button', { name: /^사주 보기/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /궁합/ })).toBeDisabled();
+    const saved = await page.evaluate(() => ({
+      reading: localStorage.getItem('myeongri.reading.v1'),
+      notes: localStorage.getItem('myeongri.notes.v1'),
+      intro: localStorage.getItem('myeongri.seen-intro.v1'),
+    }));
+    expect(saved).toEqual({ reading: null, notes: null, intro: '1' });
   });
 
   test('궁합이 독립 화면으로 열리고 시각 없이 동작한다', async ({ page }) => {
