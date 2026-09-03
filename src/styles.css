@@ -276,6 +276,7 @@ button:not(:disabled):active, [role='button']:active { filter: brightness(0.93);
 
   /* 화면 조작부는 종이에 나오면 안 된다 */
   .report-controls,
+  .aux-controls,
   [role='status'],
   [aria-label='글씨 크기'] {
     display: none !important;
@@ -289,6 +290,23 @@ button:not(:disabled):active, [role='button']:active { filter: brightness(0.93);
   .report {
     max-width: none;
     padding: 0;
+  }
+
+  .aux-report {
+    max-width: none;
+    padding: 0;
+  }
+
+  .aux-report > header {
+    border-bottom: 2px solid var(--color-jumuk);
+    padding-bottom: 4mm;
+  }
+
+  .aux-report article,
+  .aux-report li,
+  .aux-report table {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   /* 섹션이 페이지 경계에서 잘리지 않게 */

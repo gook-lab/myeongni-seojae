@@ -42,11 +42,11 @@ function Screen({ title, subtitle, children }: {
 }) {
   const go = useSajuStore((s) => s.go);
   return (
-    <section aria-label={title} className="mx-auto w-full max-w-md px-5 pb-16 pt-8">
+    <section aria-label={title} className="aux-report mx-auto w-full max-w-md px-5 pb-16 pt-8">
       <button
         type="button"
         onClick={() => go('home')}
-        className="mb-5 text-sm text-ink-soft"
+        className="aux-controls mb-5 text-sm text-ink-soft"
       >
         ‹ 홈
       </button>
@@ -56,6 +56,24 @@ function Screen({ title, subtitle, children }: {
       </header>
       {children}
     </section>
+  );
+}
+
+/** 화면 결과를 브라우저의 인쇄 창에서 종이나 PDF로 남긴다. */
+function PrintButton() {
+  return (
+    <div className="aux-controls mt-6 border-t border-dashed border-line-dash pt-4">
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="w-full rounded-md bg-jumuk px-4 py-2.5 text-sm font-bold text-card"
+      >
+        인쇄 · PDF로 저장
+      </button>
+      <p className="mt-2 text-center text-[11px] leading-relaxed text-ink-faint">
+        인쇄 창에서 대상을 PDF로 저장으로 바꾸면 파일로 남습니다.
+      </p>
+    </div>
   );
 }
 
@@ -193,6 +211,7 @@ function DailyPanel() {
           ))}
         </ol>
       </Card>
+      <PrintButton />
     </div>
   );
 }
@@ -221,7 +240,7 @@ function YearPanel() {
   return (
     <div className="space-y-2.5">
       {/* 어느 해를 볼지 고른다 */}
-      <div className="flex gap-2">
+      <div className="aux-controls flex gap-2">
         {[thisYear, thisYear + 1, thisYear + 2].map((y) => (
           <button
             key={y}
@@ -308,6 +327,7 @@ function YearPanel() {
           </li>
         ))}
       </ol>
+      <PrintButton />
     </div>
   );
 }
@@ -381,7 +401,7 @@ function GunghapPanel() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-line bg-card px-4 py-4">
+      <div className="aux-controls rounded-lg border border-line bg-card px-4 py-4">
         <p className="mb-2.5 text-sm text-ink-soft">상대방 생년월일</p>
 
         <div className="mb-2 grid grid-cols-2 gap-2">
@@ -733,6 +753,7 @@ function GunghapPanel() {
           )}
 
           <p className="px-1 pt-1 text-xs leading-relaxed text-ink-faint">{GUNGHAP_CLOSING}</p>
+          <PrintButton />
         </div>
       )}
     </div>
