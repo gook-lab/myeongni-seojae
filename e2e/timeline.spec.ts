@@ -269,12 +269,38 @@ test.describe('원안 구조 — 홈 네비 + 별도 화면', () => {
 
     await page.getByRole('button', { name: /^오늘/ }).click();
     await expect(page.getByRole('region', { name: '오늘의 운세' })).toBeVisible();
+    await expect(page.getByRole('button', { name: '인쇄 · PDF로 저장' })).toBeVisible();
     await page.getByRole('button', { name: '‹ 홈' }).click();
 
     await page.getByRole('button', { name: /^신년/ }).click();
     const year = page.getByRole('region', { name: /년 운세/ });
     await expect(year).toBeVisible();
     await expect(year.locator('ol > li')).toHaveCount(12);
+    await expect(page.getByRole('button', { name: '인쇄 · PDF로 저장' })).toBeVisible();
+  });
+
+  test('궁합 결과가 나온 뒤 PDF 저장 기능이 열린다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+    await page.getByRole('button', { name: /^궁합/ }).click();
+
+    await expect(page.getByRole('button', { name: '인쇄 · PDF로 저장' })).toHaveCount(0);
+    await page.getByRole('button', { name: '궁합 보기' }).click();
+    await expect(page.getByRole('button', { name: '인쇄 · PDF로 저장' })).toBeVisible();
+  });
+
+  test('부가 운세를 인쇄할 때 화면 조작부를 숨긴다', async ({ page }) => {
+    await fillBirth(page, '1957', '6', '15');
+    await page.getByRole('button', { name: '사주 풀어보기' }).click();
+    await page.getByRole('button', { name: /홈으로/ }).click();
+    await page.getByRole('button', { name: /^신년/ }).click();
+
+    await page.emulateMedia({ media: 'print' });
+    await expect(page.getByRole('button', { name: '인쇄 · PDF로 저장' })).toBeHidden();
+    await expect(page.getByRole('button', { name: '‹ 홈' })).toBeHidden();
+    await expect(page.getByRole('button', { name: `${new Date().getFullYear()}년` })).toBeHidden();
+    await expect(page.getByRole('heading', { name: '신년 운세' })).toBeVisible();
   });
 
   // 화면마다 처음부터 다시 들어간다. 결과 화면 버튼이 늘어나도 안 흔들린다.
